@@ -21,7 +21,8 @@ declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data 
             typeswitch ($root)
                 case element(expath:package) return (
                     <title>{$root/expath:title/text()}</title>,
-                    <abbrev>{$root/@abbrev/string()}</abbrev>
+                    <abbrev>{$root/@abbrev/string()}</abbrev>,
+                    <version>{$root/@version/string()}</version>
                 )
                 case element(repo:meta) return (
                     for $author in $root/repo:author
@@ -43,7 +44,7 @@ declare function local:entry-filter($path as xs:anyURI, $type as xs:string, $par
 declare function local:extract-metadata($resource as xs:string) {
     let $xar := concat($config:public, "/", $resource)
     return
-        <app path="{$xar}">
+        <app path="{$resource}">
         {
             compression:unzip(util:binary-doc($xar), util:function(xs:QName("local:entry-filter"), 3), (),  
                 util:function(xs:QName("local:entry-data"), 4), $resource)
