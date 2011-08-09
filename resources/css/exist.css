@@ -155,11 +155,12 @@ form { margin: 20px 0; }
     position: relative;
 }
 
-.package img {
+.package > img {
     display: block;
     margin-left: auto;
     margin-right: auto;
     text-align: center;
+    cursor: pointer;
 }
 
 .package h3 {
@@ -186,12 +187,9 @@ form { margin: 20px 0; }
 	box-shadow: 10px 10px 5px #888;
 }
 
-.package:hover .details {
-    display: block;
-}
-
 .details table {
     width: 100%;
+    margin-top: 1em;
 }
 
 #main .details ul {
@@ -214,5 +212,12 @@ form { margin: 20px 0; }
 }
 
 .details .download {
-    text-align: right;
+    padding: 1em 0 0 8px;
+}
+
+.close-details {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
 }

@@ -9,6 +9,13 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
  : your application, add more functions to this module.
  :)
 declare function app:list-packages($node as node(), $params as element(parameters)?, $model as item()*) {
+    let $ajax := $params/param[@name = "mode"]/@value eq "ajax"
+    let $uri := 
+        if ($ajax) then
+            let $url := request:get-url()
+            return
+                concat(replace($url, "^(.*)/[^/]+$", "$1"), "/")
+        else ()
     for $app in collection($config:public)//app
     let $icon :=
         if ($app/icon != "") then
@@ -18,9 +25,10 @@ declare function app:list-packages($node as node(), $params as element(parameter
     let $link := concat("public/", $app/@path)
     return
         <div class="package">
-            <img src="{$icon}" alt="{$app/title}" width="48"/>
+            <img class="icon" src="{$uri}{$icon}" alt="{$app/title}" width="48"/>
             <h3>{$app/title/string()} ({$app/version/string()})</h3>
             <div class="details">
+                <img class="close-details" src="{$uri}resources/images/close.png" alt="Close" title="Close"/>
                 <table>
                     <tr>
                         <th>Title:</th>
@@ -55,7 +63,23 @@ declare function app:list-packages($node as node(), $params as element(parameter
                         <td><a href="{$app/website}">{ $app/website/text() }</a></td>
                     </tr>
                     <tr>
-                        <td colspan="2" class="download"><a href="{$link}">Download</a></td>
+                        <td colspan="2" class="download">
+                            {
+                                if ($ajax) then
+                                    <form action="admin.xql" method="POST">
+                                        <input type="hidden" name="package-url" value="{$uri}{$link}"/>
+                                        <input type="hidden" name="panel" value="repo"/>
+                                        <button name="action" value="download">
+                                            <img src="{$uri}resources/images/install.png" alt="Install" title="Install"/>
+                                        </button>
+                                    </form>
+                                else
+                                    ()
+                            }
+                            <a href="{$uri}{$link}">
+                                <img src="{$uri}resources/images/download.png" alt="Download" title="Download"/>
+                            </a>
+                        </td>
                     </tr>
                 </table>
             </div>

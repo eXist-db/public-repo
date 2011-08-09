@@ -1,5 +1,6 @@
-xquery version "1.0";
+xquery version "3.0";
 
+import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "modules/scan.xql";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 (: The following external variables are set by the repo:deploy function :)
@@ -41,4 +42,5 @@ declare function local:get-repo-dir() {
 
 (: store the collection configuration :)
 local:mkcol($target, "public"),
-xdb:store-files-from-pattern(concat($target, "/public"), local:get-repo-dir(), "*.xar")
+xdb:store-files-from-pattern(concat($target, "/public"), local:get-repo-dir(), "*.xar"),
+scanrepo:scan()
