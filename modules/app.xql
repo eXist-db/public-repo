@@ -24,8 +24,10 @@ declare function app:list-packages($node as node(), $params as element(parameter
             "resources/images/package.png"
     let $link := concat("public/", $app/@path)
     return
-        <div class="package">
-            <img class="icon" src="{$uri}{$icon}" alt="{$app/title}" width="48"/>
+        <li class="package">
+            <div class="icon">
+                <img src="{$uri}{$icon}" alt="{$app/title}" width="64"/>
+            </div>
             <h3>{$app/title/string()} ({$app/version/string()})</h3>
             <div class="details">
                 <img class="close-details" src="{$uri}resources/images/close.png" alt="Close" title="Close"/>
@@ -83,5 +85,5 @@ declare function app:list-packages($node as node(), $params as element(parameter
                     </tr>
                 </table>
             </div>
-        </div>
+        </li>
 };
