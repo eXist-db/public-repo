@@ -1,3 +1,5 @@
+xquery version "3.0";
+
 module namespace app="http://exist-db.org/xquery/app";
 
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
@@ -8,8 +10,8 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
  : are required for a function to be callable from the templating system. To build 
  : your application, add more functions to this module.
  :)
-declare function app:list-packages($node as node(), $params as element(parameters)?, $model as item()*) {
-    let $ajax := $params/param[@name = "mode"]/@value eq "ajax"
+declare function app:list-packages($node as node(), $model as map(*), $mode as xs:string?) {
+    let $ajax := exists($mode)
     let $uri := 
         if ($ajax) then
             let $url := request:get-url()
