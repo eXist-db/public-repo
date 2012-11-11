@@ -20,6 +20,7 @@ declare function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $da
         return
             typeswitch ($root)
                 case element(expath:package) return (
+                    <name>{$root/@name/string()}</name>,
                     <title>{$root/expath:title/text()}</title>,
                     <abbrev>{$root/@abbrev/string()}</abbrev>,
                     <version>{$root/@version/string()}</version>
@@ -30,7 +31,8 @@ declare function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $da
                         <author>{$author/text()}</author>,
                     <description>{$root/repo:description/text()}</description>,
                     <website>{$root/repo:website/text()}</website>,
-                    <license>{$root/repo:license/text()}</license>
+                    <license>{$root/repo:license/text()}</license>,
+                    <type>{$root/repo:type/text()}</type>
                 )
                 default return
                     ()

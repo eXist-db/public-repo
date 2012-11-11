@@ -8,13 +8,18 @@ if ($exist:path eq "/") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <redirect url="index.html"/>
     </dispatch>
-    
+
 else if (ends-with($exist:resource, ".html")) then
     (: the html page is run through view.xql to expand templates :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <view>
             <forward url="modules/view.xql"/>
         </view>
+    </dispatch>
+
+else if (ends-with($exist:resource, ".zip")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="modules/find.xql"/>
     </dispatch>
 
 (: paths starting with /libs/ will be loaded from the webapp directory on the file system :)
