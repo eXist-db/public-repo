@@ -17,15 +17,20 @@ else if (ends-with($exist:resource, ".html")) then
         </view>
     </dispatch>
 
-else if (ends-with($exist:resource, ".zip")) then
+else if ($exist:resource = "find" or ends-with($exist:resource, ".zip")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="modules/find.xql"/>
     </dispatch>
-
+    
 (: paths starting with /libs/ will be loaded from the webapp directory on the file system :)
 else if (starts-with($exist:path, "/libs/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="/{substring-after($exist:path, 'libs/')}" absolute="yes"/>
+    </dispatch>
+
+else if (ends-with($exist:path, ".xml")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <set-header name="Cache-Control" value="no-cache"/>
     </dispatch>
 
 else
