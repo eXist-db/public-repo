@@ -4,15 +4,21 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 
 let $abbrev := request:get-parameter("abbrev", ())
 let $name := request:get-parameter("name", ())
+let $version := request:get-parameter("version", ())
 let $zip := request:get-parameter("zip", ())
 let $app :=
     if ($name) then
         collection($config:app-root || "/public")//app[name = $name]
     else
         collection($config:app-root || "/public")//app[abbrev = $abbrev]
+let $path :=
+    if ($version) then
+        $app[version = $version]/@path | $app/other/version[@version = $version]/@path
+    else
+        $app/@path
 return
     if ($app) then
-        let $xar := util:binary-doc($config:app-root || "/public/" || $app/@path)
+        let $xar := util:binary-doc($config:app-root || "/public/" || $path)
         return
             if ($zip) then
                 let $entry :=
@@ -21,8 +27,8 @@ return
                 return
                     response:stream-binary($zip, "application/zip", "pkg.zip")
             else
-                response:stream-binary($xar, "application/zip", $app/@path)
+                response:stream-binary($xar, "application/zip", $path)
     else (
         response:set-status-code(404),
-        <p>Package file {$app/@path/string()} not found!</p>
+        <p>Package file {$path} not found!</p>
     )
