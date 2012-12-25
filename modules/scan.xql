@@ -76,8 +76,8 @@ declare function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $da
                     <title>{$root/expath:title/text()}</title>,
                     <abbrev>{$root/@abbrev/string()}</abbrev>,
                     <version>{$root/@version/string()}</version>,
-                    if ($root/expath:dependency/@processor = "eXist-db") then
-                        <requires>{ $root/expath:dependency/@version }</requires>
+                    if ($root/expath:dependency[@processor = "eXist-db"]/@version) then
+                        <requires>{ $root/expath:dependency[@processor = "eXist-db"]/@version }</requires>
                     else
                         ()
                 )

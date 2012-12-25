@@ -7,8 +7,9 @@
     <repo:license>GNU-LGPL</repo:license>
     <repo:copyright>true</repo:copyright>
     <repo:type>application</repo:type>
-    <repo:target>/db/public-repo</repo:target>
+    <repo:target>public-repo</repo:target>
     <repo:prepare>pre-install.xql</repo:prepare>
     <repo:finish>post-install.xql</repo:finish>
-    <repo:permissions user="admin" password="" group="dba" mode="0744"/>
+    <permissions user="admin" password="" group="dba" mode="rw-rw-r--"/>
+    <deployed>2012-12-24T19:48:01.424+01:00</deployed>
 </repo:meta>
