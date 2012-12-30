@@ -22,6 +22,11 @@ else if ($exist:resource = "find" or ends-with($exist:resource, ".zip")) then
         <forward url="modules/find.xql"/>
     </dispatch>
     
+else if ($exist:resource = "feed.xml") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="modules/feed.xql"/>
+    </dispatch>
+    
 (: paths starting with /libs/ will be loaded from the webapp directory on the file system :)
 else if (starts-with($exist:path, "/libs/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
