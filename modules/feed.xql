@@ -22,7 +22,7 @@ declare function local:feed-entries() {
     let $content := 
         <div xmlns="http://www.w3.org/1999/xhtml">
             <div>
-                <img src="../{$icon}" alt="{$title}" width="64"/>
+                <img src="{$icon}" alt="{$title}" width="64"/>
             </div>
             <div class="details">
                 <dl>
