@@ -25,13 +25,13 @@ declare function scanrepo:process($apps as element(app)*) {
             </app>
 };
 
-declare function scanrepo:find-newest($apps as element(app)*, $newest as element(app)?) {
+declare function scanrepo:find-newest($apps as element()*, $newest as element(app)?) {
     if (empty($apps)) then
         $newest
     else
         let $app := head($apps)
         let $newer :=
-            if (empty($newest) or scanrepo:is-newer($app/version, $newest/version)) then
+            if (empty($newest) or scanrepo:is-newer(($app/version, $app/@version), ($newest/version, $newest/@version))) then
                 $app
             else
                 $newest
@@ -39,22 +39,63 @@ declare function scanrepo:find-newest($apps as element(app)*, $newest as element
             scanrepo:find-newest(tail($apps), $newer)
 };
 
+declare function scanrepo:find-version($apps as element()*, $minVersion as xs:string?, $maxVersion as xs:string?) {
+    let $minVersion := if ($minVersion) then $minVersion else "0"
+    let $maxVersion := if ($maxVersion) then $maxVersion else "9999"
+    return
+        scanrepo:find-version($apps, $minVersion, $maxVersion, ())
+};
+
+declare %private function scanrepo:find-version($apps as element()*, $minVersion as xs:string, $maxVersion as xs:string, $newest as element()?) {
+    if (empty($apps)) then
+        $newest
+    else
+        let $app := head($apps)
+        let $appVersion := $app/version | $app/@version
+        let $newer :=
+            if (
+                (empty($newest) or scanrepo:is-newer($appVersion, ($newest/version, $newest/@version))) and
+                scanrepo:is-newer($appVersion, $minVersion) and
+                scanrepo:is-older($appVersion, $maxVersion)
+            ) then
+                $app
+            else
+                $newest
+        return
+            scanrepo:find-version(tail($apps), $minVersion, $maxVersion, $newer)
+};
+
 declare %private function scanrepo:is-newer($available as xs:string, $installed as xs:string) as xs:boolean {
     let $verInstalled := tokenize($installed, "\.")
     let $verAvailable := tokenize($available, "\.")
     return
-        scanrepo:compare-versions($verInstalled, $verAvailable)
+        scanrepo:compare-versions($verInstalled, $verAvailable, function($version1, $version2) {
+            number($version1) >= number($version2)
+        })
 };
 
-declare %private function scanrepo:compare-versions($installed as xs:string*, $available as xs:string*) as xs:boolean {
+declare %private function scanrepo:is-older($available as xs:string, $installed as xs:string) as xs:boolean {
+    let $verInstalled := tokenize($installed, "\.")
+    let $verAvailable := tokenize($available, "\.")
+    return
+        scanrepo:compare-versions($verInstalled, $verAvailable, function($version1, $version2) {
+            number($version1) <= number($version2)
+        })
+};
+
+declare %private function scanrepo:compare-versions($installed as xs:string*, $available as xs:string*,
+    $compare as function(*)) as xs:boolean {
     if (empty($installed)) then
         exists($available)
     else if (empty($available)) then
         false()
     else if (head($available) = head($installed)) then
-        scanrepo:compare-versions(tail($installed), tail($available))
+        if (count($available) = 1 and count($installed) = 1) then
+            true()
+        else
+            scanrepo:compare-versions(tail($installed), tail($available), $compare)
     else
-        number(head($available)) > number(head($installed))
+        $compare(head($available), head($installed))
 };
 
 declare function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()*
