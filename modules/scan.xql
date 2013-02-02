@@ -132,7 +132,16 @@ declare function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $da
                     <type>{$root/repo:type/text()}</type>,
                     for $note in $root/repo:note
                     return
-                        <note>{$note/text()}</note>
+                        <note>{$note/text()}</note>,
+                    <changelog>
+                    {
+                        for $change in $root/repo:changelog/repo:change
+                        return
+                            <change version="{$change/@version}">
+                            { $change/node() }
+                            </change>
+                    }
+                    </changelog>
                 )
                 default return
                     ()
@@ -146,7 +155,7 @@ declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $
 declare function scanrepo:extract-metadata($resource as xs:string) {
     let $xar := concat($config:public, "/", $resource)
     return
-        <app path="{$resource}">
+        <app path="{$resource}" size="{xmldb:size($config:public, $resource)}">
         {
             compression:unzip(util:binary-doc($xar), util:function(xs:QName("scanrepo:entry-filter"), 3), (),  
                 util:function(xs:QName("scanrepo:entry-data"), 4), $resource)
