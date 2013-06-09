@@ -28,7 +28,7 @@ declare function app:list-packages($node as node(), $model as map(*), $mode as x
     return
         <li class="package">
             <div class="icon">
-                <img src="{$uri}{$icon}" alt="{$app/title}" width="64"/>
+                <a href="{$link}"><img src="{$uri}{$icon}" alt="{$app/title}" width="64"/></a>
             </div>
             <h3>{$app/title/string()} ({$app/version/string()})</h3>
             <div class="details">
