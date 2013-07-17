@@ -3,6 +3,6 @@
     <property name="build.dir" value="build"/>
     <target name="xar">
         <mkdir dir="${build.dir}"/>
-        <zip basedir="." destfile="${build.dir}/public-repo-0.2.xar" excludes="${build.dir}/*,public/*"/>
+        <zip basedir="." destfile="${build.dir}/public-repo-0.3.xar" excludes="${build.dir}/*,public/*"/>
     </target>
 </project>

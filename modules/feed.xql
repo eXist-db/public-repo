@@ -7,10 +7,14 @@ declare option exist:serialize "method=xml media-type=application/atom+xml";
 declare function local:feed-entries() {
     for $app in collection($config:public)//app
     let $icon :=
-        if ($app/icon != "") then
-            concat("public/", $app/icon)
-        else
-            "resources/images/package.png"
+        concat(
+            substring-before(request:get-url(), 'feed.xml')
+            ,
+            if ($app/icon != "") then
+                concat("public/", $app/icon)
+            else
+                "resources/images/package.png"
+            )
     let $link := concat("public/", $app/@path)
     let $title := $app/title
     let $version := $app/version
@@ -18,10 +22,22 @@ declare function local:feed-entries() {
     let $description := $app/description
     let $license := $app/license
     let $website := $app/website
+    let $has-changelog := $app/changelog/*
+    let $changes := 
+        if ($has-changelog) then
+            for $change in $app/changelog/change
+            let $version := $change/@version
+            let $comment := $change/node()
+            return
+                (
+                <dt xmlns="http://www.w3.org/1999/xhtml">Version { $version/string() }</dt>,
+                <dd xmlns="http://www.w3.org/1999/xhtml">{ $comment }</dd>
+                )
+        else ()
     let $updated := xmldb:last-modified($config:public, $app/@path)
     let $content := 
         <div xmlns="http://www.w3.org/1999/xhtml">
-            <div>
+            <div class="icon">
                 <img src="{$icon}" alt="{$title}" width="64"/>
             </div>
             <div class="details">
@@ -29,15 +45,17 @@ declare function local:feed-entries() {
                     <dt>Title:</dt>
                     <dd>{ $title/string() }</dd>
                     <dt>Author(s):</dt>
-                    <dd>{string-join($authors, ', ')}</dd>
+                    <dd>{ if ($authors[1] ne '') then string-join($authors, ', ') else '(No author provided)'}</dd>
                     <dt>Version:</dt>
-                    <dd>{ $version/string() }</dd>
+                    <dd>{ if ($version ne '') then $version/string() else '(No version information provided)' }</dd>
                     <dt>Description:</dt>
-                    <dd>{ $description/string() }</dd>
+                    <dd>{ if ($description ne '') then $description/string() else '(No description provided)'}</dd>
                     <dt>License:</dt>
-                    <dd>{ $license/string() }</dd>
+                    <dd>{ if ($license ne '') then $license/string() else '(No license specified)' }</dd>
                     <dt>Website:</dt>
-                    <dd>{ if ($website/node()) then <a href="{$website}">{ $website/string() }</a> else () }</dd>
+                    <dd>{ if ($website/node()) then <a href="{$website}">{ $website/string() }</a> else '(No website provided)' }</dd>
+                    <dt>Change Log:</dt>
+                    <dd>{ if ($has-changelog) then <dl>{ $changes }</dl> else '(No change log provided)' }</dd>
                 </dl>
             </div>
         </div>
