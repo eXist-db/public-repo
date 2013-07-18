@@ -457,21 +457,25 @@ declare function templates:expand-links($node as node(), $model as map(*), $exte
 
 declare %private function templates:expand-links($node as node(), $external as xs:string?) {
     typeswitch ($node)
-        case element(a) return
-            let $href := $node/@href
-            let $expanded :=
-                if (starts-with($href, "/")) then
-                    concat(request:get-context-path(), $href)
-                else
-                    templates:expand-link($href, $external)
-            return
-                <a href="{$expanded}">
-                { $node/@* except $href, $node/node() }
-                </a>
         case element() return
-            element { node-name($node) } {
-                $node/@*, for $child in $node/node() return templates:expand-links($child, $external)
-            }
+            let $href := ($node/@href, $node/@src)[not(. = '')]
+            return 
+                if (exists($href)) then
+                    let $expanded :=
+                        if (starts-with($href, "/")) then
+                            concat(request:get-context-path(), $href)
+                        else
+                            concat(request:get-context-path(), '/apps/public-repo/', $href)
+                    return
+                        element { node-name($node) } 
+                            { 
+                            attribute {name($href)} {$expanded}, 
+                            $node/@* except $href, 
+                            for $child in $node/node() return templates:expand-links($child, $external) 
+                            }
+                else 
+                    element { node-name($node) } 
+                        { $node/@*, for $child in $node/node() return templates:expand-links($child, $external) }
         default return
             $node
 };

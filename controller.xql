@@ -9,6 +9,16 @@ if ($exist:path eq "/") then
         <redirect url="index.html"/>
     </dispatch>
 
+else if (ends-with($exist:resource, ".html") and starts-with($exist:path, "/packages")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{concat($exist:controller, '/packages.html')}"/>
+        <view>
+            <forward url="{concat($exist:controller, '/modules/view.xql')}">
+                <add-parameter name="package-id" value="{substring-before($exist:resource, '.html')}"/>
+            </forward>
+        </view>
+    </dispatch>
+    
 else if (ends-with($exist:resource, ".html")) then
     (: the html page is run through view.xql to expand templates :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

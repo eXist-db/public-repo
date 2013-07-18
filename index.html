@@ -1,15 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <div class="templates:surround?with=templates/page.html&amp;at=content">
     <h1>Public Application Repository</h1>
-    <p>This server hosts a public repository of application packages which can be installed
-    into an eXist database instance. You can install any package by:</p>
+    <p>This server hosts a public repository of application packages which can be installed into an
+        eXist-db database instance. You can install any package by:</p>
     <ul>
-        <li>Downloading the package and uploading it to eXist, either via eXide or the admin web app.</li>
-        <li>Going to the "Package Repository" page within the admin webapp and use the following URL
-            as public repository: <a
-                href="http://demo.exist-db.org/exist/apps/public-repo/public/apps.xml"
-                >http://demo.exist-db.org/exist/apps/public-repo/public/apps.xml</a></li>
+        <li>Downloading the package and uploading it to an eXist-db database via the Dashboard's
+            Package Manager app.</li>
+        <li>Install the package directly from the Dashboard's Package Manager app. (By default the
+            Package Manager is configured to access the eXist-db public application repository feed,
+            at <a href="http://demo.exist-db.org/exist/apps/public-repo/public/apps.xml"
+                >http://demo.exist-db.org/exist/apps/public-repo/public/apps.xml</a>. To check or
+            edit the repository URL your Package Manager is using, go to your Dashboard, click on
+            the gear icon beneath the eXist-db icon, and you will see a field, "Public Repository
+            URL.") </li>
     </ul>
-    <ul class="packages">
-        <li class="app:list-packages"/>
-    </ul>
+    <div id="listWrapper">
+        <h2>Packages</h2>
+        <ul class="packages">
+            <li class="app:list-packages"/>
+        </ul>
+    </div>
 </div>

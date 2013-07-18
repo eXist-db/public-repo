@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<repo:meta xmlns="http://exist-db.org/xquery/repo" xmlns:repo="http://exist-db.org/xquery/repo">
-    <repo:description>Scripts to maintain eXist's public application repository.</repo:description>
-    <repo:author>Wolfgang Meier</repo:author>
-    <repo:website/>
-    <repo:status>alpha</repo:status>
-    <repo:license>GNU-LGPL</repo:license>
-    <repo:copyright>true</repo:copyright>
-    <repo:type>application</repo:type>
-    <repo:target>public-repo</repo:target>
-    <repo:prepare>pre-install.xql</repo:prepare>
-    <repo:finish>post-install.xql</repo:finish>
+<meta xmlns="http://exist-db.org/xquery/repo">
+    <description>Scripts to maintain eXist's public application repository.</description>
+    <author>Wolfgang Meier</author>
+    <website/>
+    <status>alpha</status>
+    <license>GNU-LGPL</license>
+    <copyright>true</copyright>
+    <type>application</type>
+    <target>public-repo</target>
+    <prepare>pre-install.xql</prepare>
+    <finish>post-install.xql</finish>
     <permissions user="admin" password="" group="dba" mode="rw-rw-r--"/>
     <deployed>2012-12-24T19:48:01.424+01:00</deployed>
-</repo:meta>
+    <changelog>
+        <change version="0.4">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Changed homepage display from grid to list, with separate detailed view for each
+                    package</li>
+                <li>Added display of change log to atom feed and detailed web view</li>
+            </ul>
+        </change>
+    </changelog>
+</meta>
