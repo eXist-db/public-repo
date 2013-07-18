@@ -1,8 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xdb="http://exist-db.org/ant" default="xar" name="Public Repository">
-    <property name="build.dir" value="build"/>
+<project xmlns:xdb="http://exist-db.org/ant" default="all" name="Public Application Repository">
+    <property file="local.build.properties"/>
+    <property file="build.properties"/>
+    <property name="project.app" value="public-repo"/>
+    <property name="project.version" value="0.3.1"/>
+    <property name="build" value="./build"/>
+    <property name="server.url" value="http://demo.exist-db.org/exist/apps/public-repo/public/"/>
+    <condition property="git.commit" value="${git.commit}" else="">
+        <isset property="git.commit"/>
+    </condition>
+
+    <target name="all" depends="xar"/>
+    <target name="rebuild" depends="clean,all"/>
+
+    <target name="clean">
+        <delete dir="${ace}"/>
+        <delete dir="${build}"/>
+        <delete file="expath-pkg.xml"/>
+    </target>
     <target name="xar">
-        <mkdir dir="${build.dir}"/>
-        <zip basedir="." destfile="${build.dir}/public-repo-0.3.xar" excludes="${build.dir}/*,public/*"/>
+        <mkdir dir="${build}"/>
+        <copy file="expath-pkg.xml.tmpl" tofile="expath-pkg.xml" filtering="true" overwrite="true">
+            <filterset>
+                <filter token="project.version" value="${project.version}"/>
+            </filterset>
+        </copy>
+        <zip destfile="${build}/${project.app}-${project.version}${git.commit}.xar">
+            <fileset dir=".">
+                <include name="*.*"/>
+                <include name="modules/**"/>
+                <include name="resources/**"/>
+                <include name="templates/**"/>
+                <exclude name="${build}/*"/>
+                <exclude name="public/*"/>
+                <exclude name=".git*"/>
+                <exclude name="*.tmpl"/>
+                <exclude name="*.properties"/>
+            </fileset>
+        </zip>
+    </target>
+    <target name="upload">
+        <input message="Enter password:" addproperty="server.pass" defaultvalue="">
+            <handler type="secure"/>
+        </input>
+        <property name="xar" value="${project.app}-${project.version}${git.commit}.xar"/>
+        <exec executable="curl">
+            <arg line="-T ${build}/${xar} -u admin:${server.pass} ${server.url}/${xar}"/>
+        </exec>
     </target>
 </project>
