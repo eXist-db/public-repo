@@ -27,6 +27,15 @@ declare function local:mkcol($collection, $path) {
     local:mkcol-recursive($collection, tokenize($path, "/"))
 };
 
+declare function local:copy-current-public-to-temp() {
+local:mkcol("/db/", "temp"),
+if (xdb:collection-available(concat($target, "/public"))) then
+  xdb:copy(concat($target, "/public"), "/db/temp/")
+else
+  ()
+};
+
 (: store the collection configuration :)
 local:mkcol("/db/system/config", $target),
-xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf")
+xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf"),
+local:copy-current-public-to-temp()

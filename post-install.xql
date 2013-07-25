@@ -1,6 +1,8 @@
 xquery version "3.0";
 
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "modules/scan.xql";
+import module namespace system="http://exist-db.org/xquery/system";
+import module namespace util="http://exist-db.org/xquery/util";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 
 (: The following external variables are set by the repo:deploy function :)
@@ -40,7 +42,15 @@ declare function local:get-repo-dir() {
             concat($home, $pathSep, "/webapp/repo/packages")
 };
 
+declare function local:copy-previous-public-from-temp-or-create() {
+if (xdb:collection-available("/db/temp/public")) then
+  let $copy-dummy := xdb:copy("/db/temp/public", $target)
+  return xdb:remove("/db/temp/public")
+else
+  local:mkcol($target, "public")
+};
+
 (: store the collection configuration :)
-local:mkcol($target, "public"),
+local:copy-previous-public-from-temp-or-create(),
 xdb:store-files-from-pattern(concat($target, "/public"), local:get-repo-dir(), "*.xar"),
 scanrepo:scan()
