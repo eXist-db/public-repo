@@ -13,6 +13,11 @@
     <permissions user="admin" password="" group="dba" mode="rw-rw-r--"/>
     <deployed>2012-12-24T19:48:01.424+01:00</deployed>
     <changelog>
+        <change version="0.4.2">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Updated atom feed entries to link to each app's html page</li>
+            </ul>
+        </change>
         <change version="0.4">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Changed homepage display from grid to list, with separate detailed view for each

@@ -5,17 +5,17 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 declare option exist:serialize "method=xml media-type=application/atom+xml";
 
 declare function local:feed-entries() {
+    let $repoURL := concat(substring-before(request:get-url(), 'public-repo/'), 'public-repo/')
     for $app in collection($config:public)//app
     let $icon :=
-        concat(
-            substring-before(request:get-url(), 'feed.xml')
-            ,
-            if ($app/icon != "") then
-                concat("public/", $app/icon)
+        if ($app/icon) then
+            if ($app/@status) then
+                $app/icon[1]
             else
-                "resources/images/package.png"
-            )
-    let $link := concat("public/", $app/@path)
+                $repoURL || "public/" || $app/icon[1]
+        else
+            $repoURL || "resources/images/package.png"
+    let $info-url := concat($repoURL, 'packages/', $app/abbrev, '.html')
     let $title := $app/title
     let $version := $app/version
     let $authors := $app/author
@@ -63,7 +63,7 @@ declare function local:feed-entries() {
     return
         <entry xmlns="http://www.w3.org/2005/Atom">
             <title>{$title || ' ' || $version}</title>
-            <link href="{substring-before(request:get-url(), 'feed.xml')}" />
+            <link href="{$info-url}" />
             <id>{'urn:uuid:' || util:uuid($title || '-' || $version)}</id>
             <updated>{$updated}</updated>
             <content type="xhtml">{$content}</content>
@@ -72,7 +72,6 @@ declare function local:feed-entries() {
                 return
                     <author>
                         <name>{$author/string()}</name>
-                        <uri>{$website/string()}</uri>
                     </author>
             }
         </entry>
