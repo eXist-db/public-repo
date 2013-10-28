@@ -113,7 +113,10 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                                 <tr>
                                     <td>Download older versions:</td>
                                     <td>{
-                                        let $versions := $app/other/version 
+                                        let $versions := 
+                                            for $version in $app/other/version 
+                                            order by $version/@version 
+                                            return $version
                                         for $version at $n in $versions
                                         let $download-version-url := concat($repoURL, 'public/', $version/@path)
                                         return
@@ -136,6 +139,7 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                                 for $change in $app/changelog/change
                                 let $version := $change/@version/string()
                                 let $comment := $change/node()
+                                order by $version descending
                                 return
                                     <tr>
                                         <td>{$version}</td>
