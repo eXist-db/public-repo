@@ -37,5 +37,5 @@ else
 
 (: store the collection configuration :)
 local:mkcol("/db/system/config", $target),
-xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf"),
+xmldb:store-files-from-pattern(concat("/system/config", $target), $dir, "**/*.xconf", "text/xml", true()),
 local:copy-current-public-to-temp()
