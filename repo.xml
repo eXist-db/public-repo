@@ -13,6 +13,16 @@
     <permissions user="admin" password="" group="dba" mode="rw-rw-r--"/>
     <deployed>2012-12-24T19:48:01.424+01:00</deployed>
     <changelog>
+        <change version="0.5.1">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Fixed auto-upload.xql to consider only the xar type files.</li>
+            </ul>
+        </change>    
+        <change version="0.5.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Added support for automatic updating of apps.xml in case one adds, updates, or deletes a xar file from public folder.</li>
+            </ul>
+        </change>      
         <change version="0.4.2">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Updated atom feed entries to link to each app's html page</li>
