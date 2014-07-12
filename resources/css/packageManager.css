@@ -1,17 +1,19 @@
+@import url('$shared/resources/css/exist-2.2.css');
+
 /* adapted from dashboard packageManager plugin */
 
 #listWrapper {
-  width: 100%;
+  /*width: 100%;*/
+  line-height: 20px;
 }
 #listWrapper ul {
-  margin: 0;
-  padding: 0;
-  list-style-type: none;
-  font-size: .8em
+    position: relative;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
 }
 #listWrapper ul li {
-  float: left;
-  margin: 5px 0 0 5px;
+  margin: 5px 0 0 0;
   -webkit-border-radius: 0px 20px 0px 0px;
   -moz-border-radius: 0px 20px 0px 0px;
   border-radius: 0px 20px 0px 0px;

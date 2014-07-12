@@ -36,13 +36,21 @@ else if ($exist:resource = "feed.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="modules/feed.xql"/>
     </dispatch>
-    
-(: paths starting with /libs/ will be loaded from the webapp directory on the file system :)
-else if (starts-with($exist:path, "/libs/")) then
+
+else if (contains($exist:path, "/$shared/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/{substring-after($exist:path, 'libs/')}" absolute="yes"/>
+        <forward url="/shared-resources/{substring-after($exist:path, '/$shared/')}">
+            <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
+        </forward>
     </dispatch>
 
+else if (contains($exist:path, "/resources/")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/resources/{substring-after($exist:path, '/resources/')}">
+            <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
+        </forward>
+    </dispatch>
+    
 else if (ends-with($exist:path, ".xml")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <set-header name="Cache-Control" value="no-cache"/>
