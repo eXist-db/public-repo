@@ -1,13 +1,51 @@
 xquery version "1.0";
 
+import module namespace login="http://exist-db.org/xquery/login" at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+
 declare variable $exist:path external;
 declare variable $exist:resource external;
+declare variable $exist:controller external;
 
+login:set-user("org.exist.public-repo.login", (), false()),
 if ($exist:path eq "/") then
     (: forward root path to index.xql :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <redirect url="index.html"/>
     </dispatch>
+
+else if ($exist:resource = "update.xql") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/update.xql"/>
+        <view>
+            <forward url="{$exist:controller}/index.html"/>
+            <forward url="{$exist:controller}/modules/view.xql">
+                <set-header name="Cache-Control" value="no-cache"/>
+            </forward>
+        </view>
+    </dispatch>
+    
+(:  Protected resource: user is required to log in with valid credentials.
+    If the login fails or no credentials were provided, the request is redirected
+    to the login.html page. :)
+else if ($exist:resource eq 'admin.html') then (
+    if (request:get-attribute("org.exist.public-repo.login.user")) then
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <view>
+                <forward url="{$exist:controller}/modules/view.xql">
+                    <set-header name="Cache-Control" value="no-cache"/>
+                </forward>
+            </view>
+        </dispatch>
+    else
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="login.html"/>
+            <view>
+                <forward url="{$exist:controller}/modules/view.xql">
+                    <set-header name="Cache-Control" value="no-cache"/>
+                </forward>
+            </view>
+        </dispatch>
+)
 
 else if (ends-with($exist:resource, ".html") and starts-with($exist:path, "/packages")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

@@ -1,5 +1,13 @@
 @import url('$shared/resources/css/exist-2.2.css');
 
+.fileinput-button {
+    margin: 20px 0 20px 0;
+}
+
+#files {
+    margin-top: 20px;
+}
+
 /* adapted from dashboard packageManager plugin */
 
 #listWrapper {

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<div xmlns="http://www.w3.org/1999/xhtml" class="templates:surround?with=templates/page.html&amp;at=container-body">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Package Upload</h1>
+            <p>Upload xar packages to the public repository. New packages will not appear in the list of
+            available packages immediately. Instead you will have to trigger an update afterwards, using
+            the "publish" button below. This way you can upload multiple packages before publishing them.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <span class="btn btn-success fileinput-button">
+                <i class="glyphicon glyphicon-plus"/>
+                <span>Select files...</span>
+                <!-- The file input field used as target for the file upload widget -->
+                <input id="fileupload" type="file" name="files[]" multiple="multiple"/>
+            </span>
+            <!-- The global progress bar -->
+            <div id="progress" class="progress">
+                <div class="progress-bar progress-bar-success"/>
+            </div>
+            <!-- The container for the uploaded files -->
+            <table id="files" class="files table table-striped"/>
+        </div>
+        <div class="col-md-6">
+            <p>
+                <a href="index.html?publish=true" class="btn btn-primary">
+                    <i class="glyphicon glyphicon-share"/> Publish
+                </a>
+            </p>
+            <p>Publishing will take a while to process apps.</p>
+            <a href="index.html?logout=true" class="btn btn-default">
+                <i class="glyphicon glyphicon-log-out"/> Log out</a>
+        </div>
+    </div>
+    <script type="text/javascript" src="resources/scripts/jquery.ui.widget.js"/>
+    <script type="text/javascript" src="resources/scripts/jquery.iframe-transport.js"/>
+    <script type="text/javascript" src="resources/scripts/jquery.fileupload.js"/>
+    <script type="text/javascript">
+    $(function () {
+        'use strict';
+        $('#fileupload').fileupload({
+            url: "modules/upload.xql",
+            dataType: 'json',
+            done: function (e, data) {
+                $.each(data.result.files, function (index, file) {
+                    var tr = document.createElement("tr");
+                    var td = document.createElement("td");
+                    td.appendChild(document.createTextNode(file.name));
+                    tr.appendChild(td);
+                    $("#files").append(tr);
+                });
+            },
+            progressall: function (e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('#progress .progress-bar').css(
+                    'width',
+                    progress + '%'
+                );
+            }
+        }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+    });
+    </script>
+</div>
