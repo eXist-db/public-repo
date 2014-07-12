@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <div xmlns="http://www.w3.org/1999/xhtml" class="templates:surround?with=templates/page.html&amp;at=content">
     <h1 class="rounded">Administrator Login</h1>
+    <div class="alert alert-success">
+        Please login. The user has to be a member of the "repo" or "dba" group.
+    </div>
     <form method="POST" class="form form-horizontal">
         <div class="form-group">
             <label class="control-label col-md-1" for="user">User:</label>
@@ -12,13 +15,6 @@
             <label class="control-label col-md-1" for="password">Password:</label>
             <div class="col-md-3">
                 <input type="password" name="password" class="form-control"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-md-4 col-md-offset-1">
-                <label class="checkbox">
-                    <input type="checkbox" name="duration" value="P14D"/> Remember me for 2 weeks
-                </label>
             </div>
         </div>
         <div class="form-group">

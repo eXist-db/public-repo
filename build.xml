@@ -3,16 +3,14 @@
     <property file="local.build.properties"/>
     <property file="build.properties"/>
     <property name="project.app" value="public-repo"/>
-    <property name="project.version" value="0.5.1"/>
+    <property name="project.version" value="0.5.2"/>
     <property name="build" value="./build"/>
     <property name="server.url" value="http://demo.exist-db.org/exist/apps/public-repo/public/"/>
     <condition property="git.commit" value="${git.commit}" else="">
         <isset property="git.commit"/>
     </condition>
-
     <target name="all" depends="xar"/>
     <target name="rebuild" depends="clean,all"/>
-
     <target name="clean">
         <delete dir="${build}"/>
         <delete file="expath-pkg.xml"/>
@@ -30,12 +28,13 @@
                 <include name="modules/**"/>
                 <include name="resources/**"/>
                 <include name="templates/**"/>
-                <include name="public/*"/>            	
+                <include name="public/*"/>
                 <exclude name="${build}/*"/>
                 <exclude name=".git*"/>
                 <exclude name="*.tmpl"/>
                 <exclude name="*.properties"/>
-		<exclude name=".project"/>
+                <exclude name=".project"/>
+                <exclude name="public/*"/>
             </fileset>
         </zip>
     </target>

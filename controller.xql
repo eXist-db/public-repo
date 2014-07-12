@@ -28,23 +28,25 @@ else if ($exist:resource = "update.xql") then
     If the login fails or no credentials were provided, the request is redirected
     to the login.html page. :)
 else if ($exist:resource eq 'admin.html') then (
-    if (request:get-attribute("org.exist.public-repo.login.user")) then
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <view>
-                <forward url="{$exist:controller}/modules/view.xql">
-                    <set-header name="Cache-Control" value="no-cache"/>
-                </forward>
-            </view>
-        </dispatch>
-    else
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="login.html"/>
-            <view>
-                <forward url="{$exist:controller}/modules/view.xql">
-                    <set-header name="Cache-Control" value="no-cache"/>
-                </forward>
-            </view>
-        </dispatch>
+    let $user := request:get-attribute("org.exist.public-repo.login.user")
+    return
+        if ($user and (sm:is-dba($user) or "repo" = sm:get-user-groups($user))) then
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <view>
+                    <forward url="{$exist:controller}/modules/view.xql">
+                        <set-header name="Cache-Control" value="no-cache"/>
+                    </forward>
+                </view>
+            </dispatch>
+        else
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="login.html"/>
+                <view>
+                    <forward url="{$exist:controller}/modules/view.xql">
+                        <set-header name="Cache-Control" value="no-cache"/>
+                    </forward>
+                </view>
+            </dispatch>
 )
 
 else if (ends-with($exist:resource, ".html") and starts-with($exist:path, "/packages")) then

@@ -50,7 +50,8 @@ else
   local:mkcol($target, "public")
 };
 
-(: store the collection configuration :)
-local:copy-previous-public-from-temp-or-create(),
-xdb:store-files-from-pattern(concat($target, "/public"), local:get-repo-dir(), "*.xar"),
-scanrepo:scan()
+system:as-user("repo", "repo", (
+    local:copy-previous-public-from-temp-or-create(),
+    xdb:store-files-from-pattern(concat($target, "/public"), local:get-repo-dir(), "*.xar"),
+    scanrepo:scan()
+))
