@@ -17,9 +17,13 @@ declare function scanrepo:process($apps as element(app)*) {
                 { $newest/@*, $newest/* }
                 <other>
                 {
-                    for $older in $app[version != $newest/version]
-                    return
-                        <version version="{$older/version}">{$older/@path}</version>
+                    reverse(
+                        for $older in $app[version != $newest/version]
+                        let $n := tokenize($older/version, "\.") ! xs:int(.)
+                        order by $n[1], $n[2], $n[3]
+                        return
+                            <version version="{$older/version}">{$older/@path}</version>
+                    )
                 }
                 </other>
             </app>
@@ -117,8 +121,8 @@ declare function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $da
                     <title>{$root/expath:title/text()}</title>,
                     <abbrev>{$root/@abbrev/string()}</abbrev>,
                     <version>{$root/@version/string()}</version>,
-                    if ($root/expath:dependency[@processor = "eXist-db"]/@version) then
-                        <requires>{ $root/expath:dependency[@processor = "eXist-db"]/@version }</requires>
+                    if ($root/expath:dependency[starts-with(@processor, "http://exist-db.org")]) then
+                        <requires>{ $root/expath:dependency[starts-with(@processor, "http://exist-db.org")]/@* }</requires>
                     else
                         ()
                 )

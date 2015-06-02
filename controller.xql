@@ -13,6 +13,11 @@ if ($exist:path eq "/") then
         <redirect url="index.html"/>
     </dispatch>
 
+else if ($exist:path = "/public/apps.xml") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/list.xql"/>
+    </dispatch>
+    
 else if ($exist:resource = "update.xql") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/update.xql"/>
@@ -63,7 +68,9 @@ else if (ends-with($exist:resource, ".html")) then
     (: the html page is run through view.xql to expand templates :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <view>
-            <forward url="modules/view.xql"/>
+            <forward url="modules/view.xql">
+                <set-header name="Cache-Control" value="no-cache"/>
+            </forward>
         </view>
     </dispatch>
 
