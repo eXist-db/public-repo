@@ -21,7 +21,7 @@ declare function list:is-older-or-same($version1 as xs:string, $version2 as xs:s
 };
 
 declare function list:version-to-number($version as xs:string) as xs:int {
-    let $v := tokenize($version, "\.") ! number(.)
+    let $v := tokenize($version, "\.") ! number(analyze-string(., "(\d+)")//fn:group[1])
     return
         sum(($v[1] * 1000000, $v[2] * 1000, $v[3]))
 };
