@@ -7,11 +7,31 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
 
+declare function scanrepo:is-newer-or-same($version1 as xs:string, $version2 as xs:string?) {
+    empty($version2) or
+        scanrepo:check-version($version1, $version2, function($v1, $v2) { $v1 >= $v2 })
+};
+
+declare function scanrepo:is-older-or-same($version1 as xs:string, $version2 as xs:string?) {
+    empty($version2) or
+        scanrepo:check-version($version1, $version2, function($v1, $v2) { $v1 <= $v2 })
+};
+
+declare %private function scanrepo:version-to-number($version as xs:string) as xs:int {
+    let $v := tokenize($version, "\.") ! number(.)
+    return
+        sum(($v[1] * 1000000, $v[2] * 1000, $v[3]))
+};
+
+declare %private function scanrepo:check-version($version1 as xs:string, $version2 as xs:string, $check as function(*)) {
+    $check(scanrepo:version-to-number($version1), scanrepo:version-to-number($version2))
+};
+
 declare function scanrepo:process($apps as element(app)*) {
     for $app in $apps
     group by $name := $app/name
     return
-        let $newest := scanrepo:find-newest($app, ())
+        let $newest := scanrepo:find-newest($app, (), ())
         return
             <app>
                 { $newest/@*, $newest/* }
@@ -29,18 +49,22 @@ declare function scanrepo:process($apps as element(app)*) {
             </app>
 };
 
-declare function scanrepo:find-newest($apps as element()*, $newest as element(app)?) {
+declare function scanrepo:find-newest($apps as element()*, $newest as element()?, $procVersion as xs:string?) {
     if (empty($apps)) then
         $newest
     else
         let $app := head($apps)
         let $newer :=
-            if (empty($newest) or scanrepo:is-newer(($app/version, $app/@version), ($newest/version, $newest/@version))) then
+            if ($procVersion and
+                not(scanrepo:is-newer-or-same($procVersion, $app/requires/@semver-min) and
+                    scanrepo:is-older-or-same($procVersion, $app/requires/@semver-max))) then
+                $newest
+            else if (empty($newest) or scanrepo:is-newer(($app/version, $app/@version), ($newest/version, $newest/@version))) then
                 $app
             else
                 $newest
         return
-            scanrepo:find-newest(tail($apps), $newer)
+            scanrepo:find-newest(tail($apps), $newer, $procVersion)
 };
 
 declare function scanrepo:find-version($apps as element()*, $minVersion as xs:string?, $maxVersion as xs:string?) {
