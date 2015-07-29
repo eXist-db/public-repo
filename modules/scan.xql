@@ -18,7 +18,7 @@ declare function scanrepo:is-older-or-same($version1 as xs:string, $version2 as 
 };
 
 declare %private function scanrepo:version-to-number($version as xs:string) as xs:int {
-    let $v := tokenize($version, "\.") ! number(.)
+    let $v := tokenize($version, "\.") ! number(analyze-string(., "(\d+)")//fn:group[1])
     return
         sum(($v[1] * 1000000, $v[2] * 1000, $v[3]))
 };
@@ -39,7 +39,7 @@ declare function scanrepo:process($apps as element(app)*) {
                 {
                     reverse(
                         for $older in $app[version != $newest/version]
-                        let $n := tokenize($older/version, "\.") ! xs:int(.)
+                        let $n := tokenize($older/version, "\.") ! xs:int(analyze-string(., "(\d+)")//fn:group[1])
                         order by $n[1], $n[2], $n[3]
                         return
                             <version version="{$older/version}">{$older/@path}</version>
