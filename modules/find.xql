@@ -1,21 +1,8 @@
 xquery version "3.0";
 
+import module namespace app="http://exist-db.org/xquery/app" at "app.xql";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xql";
-
-declare function local:find-version($apps as element()*, $procVersion as xs:string, $version as xs:string?, $semVer as xs:string?, $min as xs:string?, $max as xs:string?) {
-    if (empty($apps)) then
-        ()
-    else
-        if ($semVer) then
-            scanrepo:find-version($apps, $semVer, $semVer)/@path
-        else if ($version) then
-            $apps[version = $version]/@path | $apps[@version = $version]/@path
-        else if ($min or $max) then
-            scanrepo:find-version($apps, $min, $max)/@path
-        else
-            scanrepo:find-newest($apps, (), $procVersion)/@path
-};
 
 let $abbrev := request:get-parameter("abbrev", ())
 let $name := request:get-parameter("name", ())
@@ -25,12 +12,13 @@ let $maxVersion := request:get-parameter("semver-max", ())
 let $version := request:get-parameter("version", ())
 let $zip := request:get-parameter("zip", ())
 let $procVersion := request:get-parameter("processor", "2.2.0")
-let $app :=
+let $apps :=
     if ($name) then
         collection($config:app-root || "/public")//app[name = $name]
     else
         collection($config:app-root || "/public")//app[abbrev = $abbrev]
-let $path := local:find-version($app | $app/other/version, $procVersion, $version, $semVer, $minVersion, $maxVersion)
+let $path := app:find-version($apps | $apps/other/version, $procVersion, $version, $semVer, $minVersion, $maxVersion)
+let $app := $path/..
 return
     if ($path) then
         let $xar := util:binary-doc($config:app-root || "/public/" || $path)

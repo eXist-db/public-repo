@@ -29,7 +29,10 @@ declare function app:list-packages($node as node(), $model as map(*), $mode as x
 
 declare function app:view-package($node as node(), $model as map(*), $mode as xs:string?) {
     let $package-id := request:get-parameter('package-id', ())
-    let $package := collection($config:public)//app[abbrev = $package-id]
+    let $procVersion := request:get-parameter("eXist-db-min-version", "2.2.0")
+    let $packages := collection($config:public)//app[abbrev = $package-id]
+    let $path := app:find-version($packages, $procVersion, (), (), (), ())
+    let $package := $packages[@path = $path]
     let $show-details := true()
     return
         app:package-to-list-item($package, $show-details)
@@ -46,7 +49,13 @@ declare function app:package-to-list-item($app as element(app), $show-details as
         else
             $repoURL || "resources/images/package.png"
     let $download-url := concat($repoURL, 'public/', $app/@path)
-    let $info-url := concat($repoURL, 'packages/', $app/abbrev, '.html')
+    let $info-url := 
+        concat($repoURL, 'packages/', $app/abbrev, '.html', 
+            if ($app/requires/@*[not(name() = 'processor')]) then 
+                concat('?eXist-db-min-version=', ($app/requires/@version, $app/requires/@semver-min)[1])
+            else
+                ()
+        )
     return
         <li class="package {$app/type}">
             <div class="packageIconArea">
@@ -82,7 +91,7 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                         if ($app/requires) then
                             <tr>
                                 <td class="requires">Requirement:</td>
-                                <td>eXist-db {$app/requires/@version/string()}</td>
+                                <td>eXist-db { if ($app/requires) then app:requires-to-english($app/requires) else () }</td>
                             </tr>
                         else
                             ()
@@ -161,10 +170,43 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                     <p> 
                         {$app/description/text()}
                         <br/>
-                        Version {$app/version/text()}
+                        Version {$app/version/text()} {
+                            if ($app/requires) then 
+                                concat(' (Requires eXist-db ', app:requires-to-english($app/requires), '.)')
+                            else 
+                                ()
+                            }
                         <br/>
                         Read <a href="{$info-url}">more information</a>, or download <a href="{$download-url}" title="click to download package">{$app/@path/string()}</a>.
                     </p>
             }
         </li>
+};
+
+declare function app:find-version($apps as element()*, $procVersion as xs:string, $version as xs:string?, $semVer as xs:string?, $min as xs:string?, $max as xs:string?) {
+    if (empty($apps)) then
+        ()
+    else
+        if ($semVer) then
+            scanrepo:find-version($apps, $semVer, $semVer)/@path
+        else if ($version) then
+            $apps[version = $version]/@path | $apps[@version = $version]/@path
+        else if ($min or $max) then
+            scanrepo:find-version($apps, $min, $max)/@path
+        else
+            scanrepo:find-newest($apps, (), $procVersion)/@path
+};
+
+declare function app:requires-to-english($requires as element()) {
+    (: we assume @processor="http://exist.db-org/" :)
+    if ($requires/@version) then 
+        concat(' version ', $requires/@version)
+    else if ($requires/@semver) then 
+        concat(' version ', $requires/@semver)
+    else if ($requires/@semver-min) then 
+        concat(' version ', $requires/@semver-min, ' or later')
+    else if ($requires/@semver-max) then 
+        concat(' version ', $requires/@semver-max, ' or earlier')
+    else 
+        ' version 2.2'
 };
