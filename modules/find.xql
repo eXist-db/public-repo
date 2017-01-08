@@ -18,14 +18,13 @@ let $apps :=
     else
         collection($config:app-root || "/public")//app[abbrev = $abbrev]
 let $path := app:find-version($apps | $apps/other/version, $procVersion, $version, $semVer, $minVersion, $maxVersion)
-let $app := $path/..
 return
     if ($path) then
         let $xar := util:binary-doc($config:app-root || "/public/" || $path)
         return
             if ($zip) then
                 let $entry :=
-                    <entry type="binary" method="store" name="/{$app/@path}" strip-prefix="false">{$xar}</entry>
+                    <entry type="binary" method="store" name="/{$path}" strip-prefix="false">{$xar}</entry>
                 let $zip := compression:zip($entry, false())
                 return
                     response:stream-binary($zip, "application/zip", "pkg.zip")

@@ -15,7 +15,13 @@ declare function local:feed-entries() {
                 $repoURL || "public/" || $app/icon[1]
         else
             $repoURL || "resources/images/package.png"
-    let $info-url := concat($repoURL, 'packages/', $app/abbrev, '.html')
+    let $info-url :=
+        concat($repoURL, 'packages/', $app/abbrev, '.html',
+            if ($app/requires/@*[not(name() = 'processor')]) then
+                concat('?eXist-db-min-version=', ($app/requires/@version, $app/requires/@semver-min)[1])
+            else
+                ()
+        )
     let $title := $app/title
     let $version := $app/version
     let $authors := $app/author
