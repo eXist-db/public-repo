@@ -8,7 +8,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 declare option output:method "xml";
 declare option output:media-type "application/xml";
 
-declare variable $list:DEFAULT_VERSION := "2.2.0";
+declare variable $list:DEFAULT_VERSION := "3.0.4";
 
 declare function list:is-newer-or-same($version1 as xs:string, $version2 as xs:string?) {
     empty($version2) or
