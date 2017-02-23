@@ -8,6 +8,12 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 declare option output:method "xml";
 declare option output:media-type "application/xml";
 
+(: The default version number here is assumed when a client does not send a version parameter.
+   It is set to 2.2.0 because this version was the last one known to work with most older packages
+   before packages began to declare their version constraints in their package metadata.
+   So this should stay as 2.2.0 until we (a) no longer have 2.2-era clients or (b) no longer have
+   packages that we care to offer compatibility with 2.2.
+ :)
 declare variable $list:DEFAULT_VERSION := "2.2.0";
 
 declare function list:is-newer-or-same($version1 as xs:string, $version2 as xs:string?) {
