@@ -27,9 +27,9 @@ declare function list:is-older-or-same($version1 as xs:string, $version2 as xs:s
 };
 
 declare function list:version-to-number($version as xs:string) as xs:int {
-    let $v := tokenize($version, "\.") ! number(analyze-string(., "(\d+)")//fn:group[1])
+    let $ana := analyze-string($version, "(\d+)\.(\d+)\.(\d+)-?(.*)")
     return
-        sum(($v[1] * 1000000, $v[2] * 1000, $v[3]))
+        sum(($ana//fn:group[@nr="1"] * 1000000, $ana//fn:group[@nr="2"] * 1000, $ana//fn:group[@nr="3"]))
 };
 
 declare function list:check-version($version1 as xs:string, $version2 as xs:string, $check as function(*)) {
@@ -82,7 +82,7 @@ declare function list:find-version($versions as element()*, $version as xs:strin
 };
 
 let $version := request:get-parameter("version", $list:DEFAULT_VERSION)
-let $version := if (matches($version, "^\d+\.\d+\.\d+$")) then $version else $list:DEFAULT_VERSION
+let $version := if (matches($version, "^\d+\.\d+\.\d+-?.*$")) then $version else $list:DEFAULT_VERSION
 let $apps := doc($config:public || "/apps.xml")/apps
 return
     <apps version="{$version}">
