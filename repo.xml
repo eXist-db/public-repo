@@ -12,6 +12,12 @@
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
     <changelog>
+        <change version="0.6.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Allow processor version to end with a label, for compatibility with eXist 3.1.0+ semver scheme.</li>
+                <li>Fixed links in atom feed by including min-version parameter.</li>
+            </ul>
+        </change>
         <change version="0.5.4">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed error affecting view of packages requiring different processor versions.</li>
