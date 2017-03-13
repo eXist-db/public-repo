@@ -33,27 +33,27 @@
                 <li>New admin section to upload packages and publish them.</li>
             </ul>
         </change>
-        <repo:change xmlns:repo="http://exist-db.org/xquery/repo" version="0.5.1">
+        <change  version="0.5.1">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed auto-upload.xql to consider only the xar type files.</li>
             </ul>
-        </repo:change>
-        <repo:change xmlns:repo="http://exist-db.org/xquery/repo" version="0.5.0">
+        </change>
+        <change  version="0.5.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Added support for automatic updating of apps.xml in case one adds, updates, or deletes a xar file from public folder.</li>
             </ul>
-        </repo:change>
-        <repo:change xmlns:repo="http://exist-db.org/xquery/repo" version="0.4.2">
+        </change>
+        <change  version="0.4.2">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Updated atom feed entries to link to each app's html page</li>
             </ul>
-        </repo:change>
-        <repo:change xmlns:repo="http://exist-db.org/xquery/repo" version="0.4">
+        </change>
+        <change  version="0.4">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Changed homepage display from grid to list, with separate detailed view for each
                     package</li>
                 <li>Added display of change log to atom feed and detailed web view</li>
             </ul>
-        </repo:change>
+        </change>
     </changelog>
 </meta>
