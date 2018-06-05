@@ -163,16 +163,25 @@ declare function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $da
                         <note>{$note/text()}</note>,
                     <changelog>
                     {
-                        for $change in $root/repo:changelog/repo:change
-                        return
-                            <change version="{$change/@version}">
-                            { $change/node() }
-                            </change>
+                        scanrepo:copy-changelog($root/repo:changelog/repo:change)
                     }
                     </changelog>
                 )
                 default return
                     ()
+};
+
+declare function scanrepo:copy-changelog($nodes as node()*) {
+    for $node in $nodes
+    return
+        typeswitch ($node)
+            case element() return
+                element { local-name($node) } {
+                    $node/@*,
+                    scanrepo:copy-changelog($node/node())
+                }
+            default return
+                $node
 };
 
 declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
@@ -185,7 +194,7 @@ declare function scanrepo:extract-metadata($resource as xs:string) {
     return
         <app path="{$resource}" size="{xmldb:size($config:public, $resource)}">
         {
-            compression:unzip(util:binary-doc($xar), util:function(xs:QName("scanrepo:entry-filter"), 3), (),  
+            compression:unzip(util:binary-doc($xar), util:function(xs:QName("scanrepo:entry-filter"), 3), (),
                 util:function(xs:QName("scanrepo:entry-data"), 4), $resource)
         }
         </app>
