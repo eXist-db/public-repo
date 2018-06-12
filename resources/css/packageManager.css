@@ -64,7 +64,7 @@
   position: relative;
 }
 #listWrapper .packageIconArea .appIcon {
-  max-width: 64px;
+  width: 64px;
   max-height: 64px;
 }
 #listWrapper .packageIconArea .appFunctions {
