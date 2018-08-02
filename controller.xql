@@ -13,11 +13,13 @@ if ($exist:path eq "/") then
         <redirect url="index.html"/>
     </dispatch>
 
-else if ($exist:path = "/public/apps.xml") then
+else if ($exist:path = "/public/apps.xml") then (
+    response:set-header('Content-Type', 'application/xml'),
+    
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/list.xql"/>
     </dispatch>
-    
+)
 else if ($exist:resource = "update.xql") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/update.xql"/>
