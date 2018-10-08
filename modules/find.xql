@@ -14,6 +14,7 @@ let $minVersion := request:get-parameter("semver-min", ())
 let $maxVersion := request:get-parameter("semver-max", ())
 let $version := request:get-parameter("version", ())
 let $zip := request:get-parameter("zip", ())
+let $info := request:get-parameter("info", ())
 let $procVersion := request:get-parameter("processor", "2.2.0")
 let $apps :=
     if ($name) then
@@ -29,7 +30,9 @@ return
             else
                 "public/"
         return
-            if ($zip) then
+            if ($info) then
+                <found>{$app}</found>
+            else if ($zip) then
                 response:redirect-to(xs:anyURI($rel-public || $path || ".zip"))
             else 
                 response:redirect-to(xs:anyURI($rel-public || $path))
