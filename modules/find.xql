@@ -23,10 +23,16 @@ let $apps :=
 let $path := app:find-version($apps | $apps/other/version, $procVersion, $version, $semVer, $minVersion, $maxVersion)
 return
     if ($path) then
-        if ($zip) then
-            response:redirect-to(xs:anyURI("public/" || $path || ".zip"))
-        else 
-            response:redirect-to(xs:anyURI("public/" || $path))
+        let $rel-public :=
+            if(contains(request:get-url(), "/modules/")) then
+                "../public/"
+            else
+                "public/"
+        return
+            if ($zip) then
+                response:redirect-to(xs:anyURI($rel-public || $path || ".zip"))
+            else 
+                response:redirect-to(xs:anyURI($rel-public || $path))
     else (
         response:set-status-code(404),
         <p>Package file {$path} not found!</p>
