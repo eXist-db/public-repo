@@ -1,5 +1,8 @@
 xquery version "3.0";
 
+import module namespace request="http://exist-db.org/xquery/request";
+import module namespace response="http://exist-db.org/xquery/response";
+
 import module namespace app="http://exist-db.org/xquery/app" at "app.xql";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xql";
@@ -20,16 +23,10 @@ let $apps :=
 let $path := app:find-version($apps | $apps/other/version, $procVersion, $version, $semVer, $minVersion, $maxVersion)
 return
     if ($path) then
-        let $xar := util:binary-doc($config:app-root || "/public/" || $path)
-        return
-            if ($zip) then
-                let $entry :=
-                    <entry type="binary" method="store" name="/{$path}" strip-prefix="false">{$xar}</entry>
-                let $zip := compression:zip($entry, false())
-                return
-                    response:stream-binary($zip, "application/zip", "pkg.zip")
-            else
-                response:stream-binary($xar, "application/zip", $path)
+        if ($zip) then
+            response:redirect-to(xs:anyURI("public/" || $path || ".zip"))
+        else 
+            response:redirect-to(xs:anyURI("public/" || $path))
     else (
         response:set-status-code(404),
         <p>Package file {$path} not found!</p>

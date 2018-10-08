@@ -76,6 +76,11 @@ else if (ends-with($exist:resource, ".html")) then
         </view>
     </dispatch>
 
+else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".zip")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="../modules/download-xar-zip.xq"/>
+    </dispatch>
+
 else if ($exist:resource = "find" or ends-with($exist:resource, ".zip")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="modules/find.xql"/>
