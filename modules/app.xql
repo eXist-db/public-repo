@@ -21,14 +21,34 @@ declare function app:list-packages($node as node(), $model as map(*), $mode as x
 };
 
 declare function app:view-package($node as node(), $model as map(*), $mode as xs:string?) {
-    let $package-id := request:get-parameter('package-id', ())
+    let $abbrev := request:get-parameter("abbrev", ())
     let $procVersion := request:get-parameter("eXist-db-min-version", "2.2.0")
-    let $packages := collection($config:public)//app[abbrev = $package-id]
-    let $path := app:find-version($packages, $procVersion, (), (), (), ())
-    let $package := $packages[@path = $path]
-    let $show-details := true()
+    let $matching-abbrev := collection($config:public)//abbrev[. eq $abbrev]
+    let $app := $matching-abbrev/parent::app
     return
-        app:package-to-list-item($package, $show-details)
+        (: catch requests for a package using its legacy "abbrev" and redirect
+         : them to a URL using the app's current abbrev, to encourage use of the
+         : current abbrev :)
+        if ($matching-abbrev/@type eq "legacy") then
+            let $current-abbrev := $app/abbrev[not(@type eq "legacy")]
+            let $repoURL := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/")
+            let $required-exist-version := $app/requires[@processor eq "http://exist-db.org"]/(@version, @semver-min)[1]
+            let $info-url :=
+                concat($repoURL, "packages/", $current-abbrev, ".html",
+                    if ($required-exist-version) then
+                        concat("?eXist-db-min-version=", $required-exist-version)
+                    else
+                        ()
+                )
+            return
+                response:redirect-to(xs:anyURI($info-url))
+        (: view current package info :)
+        else
+            let $compatible-xar := app:find-version($app, $procVersion, (), (), (), ())
+            let $package := $app[@path eq $compatible-xar]
+            let $show-details := true()
+            return
+                app:package-to-list-item($package, $show-details)
 };
 
 declare function app:package-to-list-item($app as element(app), $show-details as xs:boolean) {
@@ -41,11 +61,12 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                 $repoURL || "public/" || $app/icon[1]
         else
             $repoURL || "resources/images/package.png"
-    let $download-url := concat($repoURL, 'public/', $app/@path)
-    let $info-url := 
-        concat($repoURL, 'packages/', $app/abbrev, '.html', 
-            if ($app/requires/@*[not(name() = 'processor')]) then 
-                concat('?eXist-db-min-version=', ($app/requires/@version, $app/requires/@semver-min)[1])
+    let $download-url := concat($repoURL, "public/", $app/@path)
+    let $required-exist-version := $app/requires[@processor eq "http://exist-db.org"]/(@version, @semver-min)[1]
+    let $info-url :=
+        concat($repoURL, "packages/", $app/abbrev[not(@type eq "legacy")], ".html",
+            if ($required-exist-version) then
+                concat("?eXist-db-min-version=", $required-exist-version)
             else
                 ()
         )
