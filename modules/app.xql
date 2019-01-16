@@ -52,7 +52,7 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
 };
 
 declare function app:package-to-list-item($app as element(app), $show-details as xs:boolean) {
-    let $repoURL := concat(substring-before(request:get-uri(), 'public-repo/'), 'public-repo/')
+    let $repoURL := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/")
     let $icon :=
         if ($app/icon) then
             if ($app/@status) then
@@ -77,12 +77,12 @@ declare function app:package-to-list-item($app as element(app), $show-details as
             </div>
             {
                 switch ($app/type)
-                    case ('application') return
-                        <img src="{$repoURL || 'resources/images/app.gif'}" class="ribbon" alt="application" title="This is an application"/>
-                    case ('library') return
-                        <img src="{$repoURL || 'resources/images/library2.gif'}" class="ribbon" alt="library" title="This is a library"/>
-                    case ('plugin') return
-                        <img src="{$repoURL || 'resources/images/plugin2.gif'}" class="ribbon" alt="plugin" title="This is a plugin"/>
+                    case ("application") return
+                        <img src="{$repoURL || "resources/images/app.gif"}" class="ribbon" alt="application" title="This is an application"/>
+                    case ("library") return
+                        <img src="{$repoURL || "resources/images/library2.gif"}" class="ribbon" alt="library" title="This is a library"/>
+                    case ("plugin") return
+                        <img src="{$repoURL || "resources/images/plugin2.gif"}" class="ribbon" alt="plugin" title="This is a plugin"/>
                     default return ()
             }
             <h3 style="padding-bottom: 0"><a href="{$info-url}">{$app/title/text()}</a></h3>
@@ -112,7 +112,7 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                         }
                         <tr>
                             <th>Short Title:</th>
-                            <td>{ $app/abbrev/text() }</td>
+                            <td>{ $app/abbrev[not(@type)]/text() }</td>
                         </tr>
                         <tr>
                             <th>Package Name (URI):</th>
@@ -120,7 +120,7 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                         </tr>
                         <tr>
                             <th>Author(s):</th>
-                            <td>{string-join($app/author, ', ')}</td>
+                            <td>{string-join($app/author, ", ")}</td>
                         </tr>
                         <tr>
                             <th>License:</th>
@@ -149,12 +149,12 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                                             order by $version/@version 
                                             return $version
                                         for $version at $n in $versions
-                                        let $download-version-url := concat($repoURL, 'public/', $version/@path)
+                                        let $download-version-url := concat($repoURL, "public/", $version/@path)
                                         return
                                             (
                                             <a href="{$download-version-url}">{$version/@version/string()}</a>
                                             ,
-                                            if ($n lt count($versions)) then ', ' else ()
+                                            if ($n lt count($versions)) then ", " else ()
                                             )
                                     }</td>
                                 </tr>
@@ -185,9 +185,9 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                         {$app/description/text()}
                         <br/>
                         Version {$app/version/text()} {
-                            if ($app/requires) then 
-                                concat(' (Requires eXist-db ', app:requires-to-english($app/requires), '.)')
-                            else 
+                            if ($app/requires) then
+                                concat(" (Requires eXist-db ", app:requires-to-english($app/requires), ".)")
+                            else
                                 ()
                             }
                         <br/>
@@ -213,14 +213,14 @@ declare function app:find-version($apps as element()*, $procVersion as xs:string
 
 declare function app:requires-to-english($requires as element()) {
     (: we assume @processor="http://exist.db-org/" :)
-    if ($requires/@version) then 
-        concat(' version ', $requires/@version)
-    else if ($requires/@semver) then 
-        concat(' version ', $requires/@semver)
-    else if ($requires/@semver-min) then 
-        concat(' version ', $requires/@semver-min, ' or later')
-    else if ($requires/@semver-max) then 
-        concat(' version ', $requires/@semver-max, ' or earlier')
-    else 
-        ' version 2.2'
+    if ($requires/@version) then
+        concat(" version ", $requires/@version)
+    else if ($requires/@semver) then
+        concat(" version ", $requires/@semver)
+    else if ($requires/@semver-min) then
+        concat(" version ", $requires/@semver-min, " or later")
+    else if ($requires/@semver-max) then
+        concat(" version ", $requires/@semver-max, " or earlier")
+    else
+        " version 2.2"
 };

@@ -5,7 +5,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 declare option exist:serialize "method=xml media-type=application/atom+xml";
 
 declare function local:feed-entries() {
-    let $repoURL := concat(substring-before(request:get-url(), 'public-repo/'), 'public-repo/')
+    let $repoURL := concat(substring-before(request:get-url(), "public-repo/"), "public-repo/")
     for $app in collection($config:public)//app
     let $icon :=
         if ($app/icon) then
@@ -15,10 +15,11 @@ declare function local:feed-entries() {
                 $repoURL || "public/" || $app/icon[1]
         else
             $repoURL || "resources/images/package.png"
+    let $required-exist-version := $app/requires[@processor eq "http://exist-db.org"]/(@version, @semver-min)[1]
     let $info-url :=
-        concat($repoURL, 'packages/', $app/abbrev[not(@type eq "legacy")], '.html',
-            if ($app/requires/@*[not(name() = 'processor')]) then
-                concat('?eXist-db-min-version=', ($app/requires/@version, $app/requires/@semver-min)[1])
+        concat($repoURL, "packages/", $app/abbrev[not(@type eq "legacy")], ".html",
+            if ($required-exist-version) then
+                concat("?eXist-db-min-version=", $required-exist-version)
             else
                 ()
         )
@@ -51,26 +52,26 @@ declare function local:feed-entries() {
                     <dt>Title:</dt>
                     <dd>{ $title/string() }</dd>
                     <dt>Author(s):</dt>
-                    <dd>{ if ($authors[1] ne '') then string-join($authors, ', ') else '(No author provided)'}</dd>
+                    <dd>{ if (exists($authors[. ne ""])) then string-join($authors, ", ") else "(No author provided)"}</dd>
                     <dt>Version:</dt>
-                    <dd>{ if ($version ne '') then $version/string() else '(No version information provided)' }</dd>
+                    <dd>{ if ($version ne "") then $version/string() else "(No version information provided)" }</dd>
                     <dt>Description:</dt>
-                    <dd>{ if ($description ne '') then $description/string() else '(No description provided)'}</dd>
+                    <dd>{ if ($description ne "") then $description/string() else "(No description provided)"}</dd>
                     <dt>License:</dt>
-                    <dd>{ if ($license ne '') then $license/string() else '(No license specified)' }</dd>
+                    <dd>{ if ($license ne "") then $license/string() else "(No license specified)" }</dd>
                     <dt>Website:</dt>
-                    <dd>{ if ($website/node()) then <a href="{$website}">{ $website/string() }</a> else '(No website provided)' }</dd>
+                    <dd>{ if ($website/node()) then <a href="{$website}">{ $website/string() }</a> else "(No website provided)" }</dd>
                     <dt>Change Log:</dt>
-                    <dd>{ if ($has-changelog) then <dl>{ $changes }</dl> else '(No change log provided)' }</dd>
+                    <dd>{ if ($has-changelog) then <dl>{ $changes }</dl> else "(No change log provided)" }</dd>
                 </dl>
             </div>
         </div>
     order by $updated
     return
         <entry xmlns="http://www.w3.org/2005/Atom">
-            <title>{$title || ' ' || $version}</title>
+            <title>{$title || " " || $version}</title>
             <link href="{$info-url}" />
-            <id>{'urn:uuid:' || util:uuid($title || '-' || $version)}</id>
+            <id>{"urn:uuid:" || util:uuid($title || "-" || $version)}</id>
             <updated>{$updated}</updated>
             <content type="xhtml">{$content}</content>
             {
@@ -85,11 +86,11 @@ declare function local:feed-entries() {
 };
 
 declare function local:feed() {
-    let $title := 'eXist-db Public Package Repository'
-    let $subtitle := 'Repository for apps and libraries on eXist-db.org.'
+    let $title := "eXist-db Public Package Repository"
+    let $subtitle := "Repository for apps and libraries on eXist-db.org."
     let $self-href := request:get-url()
-    let $id := 'urn:uuid:' || util:uuid('existdb-public-package-repository-feed')
-    let $updated := xmldb:last-modified($config:public, 'apps.xml')
+    let $id := "urn:uuid:" || util:uuid("existdb-public-package-repository-feed")
+    let $updated := xmldb:last-modified($config:public, "apps.xml")
     let $feed-entries := local:feed-entries()
     return
         <feed xmlns="http://www.w3.org/2005/Atom">
