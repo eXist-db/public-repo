@@ -12,13 +12,6 @@ declare function app:publish($node as node(), $model as map(*), $publish as xs:b
         ()
 };
 
-declare function app:title($node as node(), $model as map(*), $mode as xs:string?) {
-    let $package-id := request:get-parameter('package-id', ())
-    let $package := collection($config:public)//app[abbrev = $package-id]
-    return
-        $package/title/string()
-};
-
 declare function app:list-packages($node as node(), $model as map(*), $mode as xs:string?) {
     for $app in collection($config:public)//app
     let $show-details := false()
