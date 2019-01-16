@@ -32,9 +32,14 @@ declare function scanrepo:process($apps as element(app)*) {
     group by $name := $app/name
     return
         let $newest := scanrepo:find-newest($app, (), ())
+        let $abbrevs := distinct-values($app/abbrev)
         return
             <app>
-                { $newest/@*, $newest/* }
+                { 
+                    $newest/@*, 
+                    $newest/*, 
+                    $abbrevs[not(. = $newest/abbrev)] ! element abbrev { attribute type { "legacy" }, . }
+                }
                 <other>
                 {
                     reverse(
