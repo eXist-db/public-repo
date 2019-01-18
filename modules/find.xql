@@ -16,16 +16,16 @@ let $version := request:get-parameter("version", ())
 let $zip := request:get-parameter("zip", ())
 let $info := request:get-parameter("info", ())
 let $procVersion := request:get-parameter("processor", "2.2.0")
-let $apps :=
+let $app :=
     if ($name) then
-        collection($config:app-root || "/public")//app[name = $name]
+        collection($config:app-root || "/public")//app[name eq $name]
     else
-        collection($config:app-root || "/public")//app[abbrev = $abbrev]
-let $path := app:find-version($apps | $apps/other/version, $procVersion, $version, $semVer, $minVersion, $maxVersion)
+        collection($config:app-root || "/public")//app[abbrev eq $abbrev]
+let $compatible-xar := app:find-version($app | $app/other/version, $procVersion, $version, $semVer, $minVersion, $maxVersion)
 return
-    if ($path) then
+    if ($compatible-xar) then
         let $rel-public :=
-            if(contains(request:get-url(), "/modules/")) then
+            if (contains(request:get-url(), "/modules/")) then
                 "../public/"
             else
                 "public/"
@@ -33,10 +33,10 @@ return
             if ($info) then
                 <found>{$app}</found>
             else if ($zip) then
-                response:redirect-to(xs:anyURI($rel-public || $path || ".zip"))
-            else 
-                response:redirect-to(xs:anyURI($rel-public || $path))
+                response:redirect-to(xs:anyURI($rel-public || $compatible-xar || ".zip"))
+            else
+                response:redirect-to(xs:anyURI($rel-public || $compatible-xar))
     else (
         response:set-status-code(404),
-        <p>Package file {$path} not found!</p>
+        <p>Package file {$compatible-xar} not found!</p>
     )
