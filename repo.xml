@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <meta xmlns="http://exist-db.org/xquery/repo">
-    <description>Scripts to maintain eXist's public application repository.</description>
+    <description>A repository for EXPath Packages containing applications and libraries for eXist</description>
     <author>Wolfgang Meier</author>
-    <website>https://github.com/eXist-db/public-xar-repo</website>
+    <website>https://github.com/eXist-db/public-repo</website>
     <status>alpha</status>
     <license>GNU-LGPL</license>
     <copyright>true</copyright>
@@ -12,6 +12,14 @@
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
     <changelog>
+        <change version="0.7.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Feature: Allow lookup of packages by legacy abbreviations, e.g., abbrev=doc.</li>
+                <li>Feature: Improve naming of XAR packages when downloading them via pkg.zip request, e.g., public-repo/pkg.zip?abbrev=doc&amp;zip=yes&amp;processor=2.2.0.</li>
+                <li>Feature: Add a facility for describing found packages, e.g., public-repo/modules/find.xql?abbrev=doc&amp;info=yes.</li>
+                <li>Fixed: Miscellaneous issues with changelog, icon width, focus of login form, loading landing pg without trailing slash.</li>
+            </ul>
+        </change>
         <change version="0.6.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Allow processor version to end with a label, for compatibility with eXist 3.1.0+ semver scheme.</li>
