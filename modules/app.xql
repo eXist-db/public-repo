@@ -44,8 +44,9 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
                 response:redirect-to(xs:anyURI($info-url))
         (: view current package info :)
         else
-            let $compatible-xar := app:find-version($app, $procVersion, (), (), (), ())
-            let $package := $app[@path eq $compatible-xar]
+            let $app-versions := ($app, $app/other/version)
+            let $compatible-xar := app:find-version($app-versions, $procVersion, (), (), (), ())
+            let $package := $app-versions[@path eq $compatible-xar]
             let $show-details := true()
             return
                 app:package-to-list-item($package, $show-details)
