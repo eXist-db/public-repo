@@ -49,7 +49,16 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
             let $package := $app-versions[@path eq $compatible-xar]
             let $show-details := true()
             return
-                app:package-to-list-item($package, $show-details)
+                if (exists($package)) then
+                    app:package-to-list-item($package, $show-details)
+                else
+                    (
+                        response:set-status-code(404),
+                        if (exists($app)) then
+                            <li class="package text-warning">Package {$abbrev} requires a newer version of eXist.</li>
+                        else
+                            <li class="package text-warning">No package {$abbrev} is available.</li>
+                    )
 };
 
 declare function app:package-to-list-item($app as element(app), $show-details as xs:boolean) {
