@@ -21,7 +21,8 @@ let $app :=
         collection($config:app-root || "/public")//app[name eq $name]
     else
         collection($config:app-root || "/public")//app[abbrev eq $abbrev]
-let $compatible-xar := app:find-version($app | $app/other/version, $procVersion, $version, $semVer, $minVersion, $maxVersion)
+let $app-versions := ($app, $app/other/version)
+let $compatible-xar := app:find-version($app-versions, $procVersion, $version, $semVer, $minVersion, $maxVersion)
 return
     if ($compatible-xar) then
         let $rel-public :=
@@ -31,7 +32,7 @@ return
                 "public/"
         return
             if ($info) then
-                <found>{$app}</found>
+                <found>{$compatible-xar}</found>
             else if ($zip) then
                 response:redirect-to(xs:anyURI($rel-public || $compatible-xar || ".zip"))
             else
