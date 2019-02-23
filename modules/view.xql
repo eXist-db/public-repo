@@ -7,7 +7,7 @@ import module namespace app="http://exist-db.org/xquery/app" at "app.xql";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 
-declare option exist:timeout "40000";
+declare option exist:timeout "300000";
 
 declare option output:method "html5";
 declare option output:media-type "text/html";

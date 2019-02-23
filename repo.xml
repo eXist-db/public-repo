@@ -12,6 +12,12 @@
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
     <changelog>
+        <change version="0.7.2">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Fixed: Display of HTML pages when requesting packages compatible with older versions of eXist.</li>
+                <li>Fixed: Increase timeout to 5 minutes when publishing apps to allow for re-scanning of larger repositories.</li>
+            </ul>
+        </change>
         <change version="0.7.1">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed: Issue preventing users from accessing older versions of packages when the newest release depends on a newer version of eXist.</li>

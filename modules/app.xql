@@ -17,7 +17,7 @@ declare function app:list-packages($node as node(), $model as map(*), $mode as x
     let $show-details := false()
     order by lower-case($app/title)
     return
-        app:package-to-list-item($app, $show-details)
+        app:package-to-list-item($app, $app/version, $show-details)
 };
 
 declare function app:view-package($node as node(), $model as map(*), $mode as xs:string?) {
@@ -47,10 +47,11 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
             let $app-versions := ($app, $app/other/version)
             let $compatible-xar := app:find-version($app-versions, $procVersion, (), (), (), ())
             let $package := $app-versions[@path eq $compatible-xar]
+            let $version := ($package/@version, $package/version)[1]
             let $show-details := true()
             return
-                if (exists($package)) then
-                    app:package-to-list-item($package, $show-details)
+                if (exists($app)) then
+                    app:package-to-list-item($app, $version, $show-details)
                 else
                     (
                         response:set-status-code(404),
@@ -61,7 +62,7 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
                     )
 };
 
-declare function app:package-to-list-item($app as element(app), $show-details as xs:boolean) {
+declare function app:package-to-list-item($app as element(app), $version as xs:string, $show-details as xs:boolean) {
     let $repoURL := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/")
     let $icon :=
         if ($app/icon) then
@@ -71,8 +72,10 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                 $repoURL || "public/" || $app/icon[1]
         else
             $repoURL || "resources/images/package.png"
-    let $download-url := concat($repoURL, "public/", $app/@path)
-    let $required-exist-version := $app/requires[@processor eq "http://exist-db.org"]/(@version, @semver-min)[1]
+    let $path := ($app//version[@version eq $version]/@path, $app/@path)[1]
+    let $requires := ($app//version[@version eq $version]/requires, $app/requires)[1]
+    let $download-url := concat($repoURL, "public/", $path)
+    let $required-exist-version := $requires[@processor eq "http://exist-db.org"]/(@version, @semver-min)[1]
     let $info-url :=
         concat($repoURL, "packages/", $app/abbrev[not(@type eq "legacy")], ".html",
             if ($required-exist-version) then
@@ -105,7 +108,7 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                         </tr>
                         <tr>
                             <th>Version:</th>
-                            <td>{ $app/version/text() }</td>
+                            <td>{ $version }</td>
                         </tr>
                         <tr>
                             <td>Size:</td>
@@ -115,7 +118,7 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                         if ($app/requires) then
                             <tr>
                                 <td class="requires">Requirement:</td>
-                                <td>eXist-db { if ($app/requires) then app:requires-to-english($app/requires) else () }</td>
+                                <td>eXist-db { if ($requires) then app:requires-to-english($requires) else () }</td>
                             </tr>
                         else
                             ()
@@ -147,7 +150,7 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                         }
                         <tr>
                             <td>Download:</td>
-                            <td><a href="{$download-url}" title="click to download package">{$app/@path/string()}</a></td>
+                            <td><a href="{$download-url}" title="click to download package">{$path/string()}</a></td>
                         </tr>
                         {
                             if ($app/other/version) then
@@ -194,9 +197,9 @@ declare function app:package-to-list-item($app as element(app), $show-details as
                     <p> 
                         {$app/description/text()}
                         <br/>
-                        Version {$app/version/text()} {
-                            if ($app/requires) then
-                                concat(" (Requires eXist-db ", app:requires-to-english($app/requires), ".)")
+                        Version {$version/string()} {
+                            if ($requires) then
+                                concat(" (Requires eXist-db ", app:requires-to-english($requires), ".)")
                             else
                                 ()
                             }
