@@ -197,7 +197,7 @@ declare function app:package-to-list-item($app as element(app), $version as xs:s
                     <p> 
                         {$app/description/text()}
                         <br/>
-                        Version {$version/string()} {
+                        Version {$version} {
                             if ($requires) then
                                 concat(" (Requires eXist-db ", app:requires-to-english($requires), ".)")
                             else
