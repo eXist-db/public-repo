@@ -2,7 +2,9 @@ xquery version "3.0";
 
 module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo";
 
-import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace config = "http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace crypto = "http://expath.org/ns/crypto";
+import module namespace util = "http://exist-db.org/xquery/util";
 
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
@@ -196,8 +198,13 @@ declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $
 
 declare function scanrepo:extract-metadata($resource as xs:string) {
     let $xar := concat($config:public, "/", $resource)
+    let $hash := crypto:hash(
+        util:binary-doc($uri),
+        "sha256",
+        "hex"
+    )
     return
-        <app path="{$resource}" size="{xmldb:size($config:public, $resource)}">
+        <app path="{$resource}" size="{xmldb:size($config:public, $resource)}" sha256="{$hash}">
         {
             compression:unzip(util:binary-doc($xar), util:function(xs:QName("scanrepo:entry-filter"), 3), (),
                 util:function(xs:QName("scanrepo:entry-data"), 4), $resource)
