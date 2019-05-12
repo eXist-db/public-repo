@@ -199,7 +199,7 @@ declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $
 declare function scanrepo:extract-metadata($resource as xs:string) {
     let $xar := concat($config:public, "/", $resource)
     let $hash := crypto:hash(
-        util:binary-doc($uri),
+        util:binary-doc($xar),
         "sha256",
         "hex"
     )
