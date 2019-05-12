@@ -46,10 +46,21 @@ declare function scanrepo:process($apps as element(app)*) {
                 {
                     reverse(
                         for $older in $app[version != $newest/version]
+                        let $xar := concat($config:public, "/", $older/@path)
+                        let $hash := crypto:hash(
+                            util:binary-doc($xar),
+                            "sha256",
+                            "hex"
+                        )
                         let $n := tokenize($older/version, "\.") ! xs:int(analyze-string(., "(\d+)")//fn:group[1])
                         order by $n[1], $n[2], $n[3]
                         return
-                            <version version="{$older/version}">{$older/@path, $older/requires}</version>
+                            <version version="{$older/version}">{
+                                $older/@path, 
+                                attribute size { xmldb:size($config:public, $older/@path) }, 
+                                attribute sha256 { $hash }, 
+                                $older/requires
+                            }</version>
                     )
                 }
                 </other>
