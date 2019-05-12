@@ -1,6 +1,6 @@
-xquery version "1.0";
+xquery version "3.1";
 
-import module namespace xdb="http://exist-db.org/xquery/xmldb";
+import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 (: The following external variables are set by the repo:deploy function :)
 
@@ -11,11 +11,17 @@ declare variable $dir external;
 (: the target collection into which the app is deployed :)
 declare variable $target external;
 
+(: Handle difference between 4.x.x and 5.x.x releases of eXist :)
+declare variable $local:copy-collection :=
+    let $fnNew := function-lookup(xs:QName("xmldb:copy-collection"), 2)
+    return
+        if (exists($fnNew)) then $fnNew else function-lookup(xs:QName("xmldb:copy"), 2);
+
 declare function local:mkcol-recursive($collection, $components) {
     if (exists($components)) then
         let $newColl := concat($collection, "/", $components[1])
         return (
-            xdb:create-collection($collection, $components[1]),
+            xmldb:create-collection($collection, $components[1]),
             local:mkcol-recursive($newColl, subsequence($components, 2))
         )
     else
@@ -29,8 +35,8 @@ declare function local:mkcol($collection, $path) {
 
 declare function local:copy-current-public-to-temp() {
 local:mkcol("/db/", "temp"),
-if (xdb:collection-available(concat($target, "/public"))) then
-  xdb:copy(concat($target, "/public"), "/db/temp/")
+if (xmldb:collection-available(concat($target, "/public"))) then
+  $local:copy-collection(concat($target, "/public"), "/db/temp/")
 else
   ()
 };

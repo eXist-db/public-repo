@@ -1,9 +1,9 @@
-xquery version "3.0";
+xquery version "3.1";
 
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "modules/scan.xql";
 import module namespace system="http://exist-db.org/xquery/system";
 import module namespace util="http://exist-db.org/xquery/util";
-import module namespace xdb="http://exist-db.org/xquery/xmldb";
+import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 (: The following external variables are set by the repo:deploy function :)
 
@@ -14,11 +14,17 @@ declare variable $dir external;
 (: the target collection into which the app is deployed :)
 declare variable $target external;
 
+(: Handle difference between 4.x.x and 5.x.x releases of eXist :)
+declare variable $local:copy-collection :=
+    let $fnNew := function-lookup(xs:QName("xmldb:copy-collection"), 2)
+    return
+        if (exists($fnNew)) then $fnNew else function-lookup(xs:QName("xmldb:copy"), 2);
+
 declare function local:mkcol-recursive($collection, $components) {
     if (exists($components)) then
         let $newColl := concat($collection, "/", $components[1])
         return (
-            xdb:create-collection($collection, $components[1]),
+            xmldb:create-collection($collection, $components[1]),
             local:mkcol-recursive($newColl, subsequence($components, 2))
         )
     else
@@ -43,15 +49,15 @@ declare function local:get-repo-dir() {
 };
 
 declare function local:copy-previous-public-from-temp-or-create() {
-if (xdb:collection-available("/db/temp/public")) then
-  let $copy-dummy := xdb:copy("/db/temp/public", $target)
-  return xdb:remove("/db/temp/public")
+if (xmldb:collection-available("/db/temp/public")) then
+  let $copy-dummy := $local:copy-collection("/db/temp/public", $target)
+  return xmldb:remove("/db/temp/public")
 else
   local:mkcol($target, "public")
 };
 
 system:as-user("repo", "repo", (
     local:copy-previous-public-from-temp-or-create(),
-    xdb:store-files-from-pattern(concat($target, "/public"), local:get-repo-dir(), "*.xar"),
+    xmldb:store-files-from-pattern(concat($target, "/public"), local:get-repo-dir(), "*.xar"),
     scanrepo:scan()
 ))
