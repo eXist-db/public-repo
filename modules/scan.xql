@@ -2,7 +2,9 @@ xquery version "3.0";
 
 module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo";
 
-import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace config = "http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace crypto = "http://expath.org/ns/crypto";
+import module namespace util = "http://exist-db.org/xquery/util";
 
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
@@ -44,10 +46,21 @@ declare function scanrepo:process($apps as element(app)*) {
                 {
                     reverse(
                         for $older in $app[version != $newest/version]
+                        let $xar := concat($config:public, "/", $older/@path)
+                        let $hash := crypto:hash(
+                            util:binary-doc($xar),
+                            "sha256",
+                            "hex"
+                        )
                         let $n := tokenize($older/version, "\.") ! xs:int(analyze-string(., "(\d+)")//fn:group[1])
                         order by $n[1], $n[2], $n[3]
                         return
-                            <version version="{$older/version}">{$older/@path, $older/requires}</version>
+                            <version version="{$older/version}">{
+                                $older/@path, 
+                                attribute size { xmldb:size($config:public, $older/@path) }, 
+                                attribute sha256 { $hash }, 
+                                $older/requires
+                            }</version>
                     )
                 }
                 </other>
@@ -196,8 +209,13 @@ declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $
 
 declare function scanrepo:extract-metadata($resource as xs:string) {
     let $xar := concat($config:public, "/", $resource)
+    let $hash := crypto:hash(
+        util:binary-doc($xar),
+        "sha256",
+        "hex"
+    )
     return
-        <app path="{$resource}" size="{xmldb:size($config:public, $resource)}">
+        <app path="{$resource}" size="{xmldb:size($config:public, $resource)}" sha256="{$hash}">
         {
             compression:unzip(util:binary-doc($xar), util:function(xs:QName("scanrepo:entry-filter"), 3), (),
                 util:function(xs:QName("scanrepo:entry-data"), 4), $resource)

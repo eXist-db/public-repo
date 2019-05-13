@@ -32,7 +32,9 @@ return
                 "public/"
         return
             if ($info) then
-                <found>{$compatible-xar}</found>
+                let $app := collection($config:app-root || "/public")//(app|version)[@path eq $compatible-xar]
+                return
+                    <found>{$app/@sha256,($app/version,$app/@version)[1] ! attribute version {.},$compatible-xar}</found>
             else if ($zip) then
                 response:redirect-to(xs:anyURI($rel-public || $compatible-xar || ".zip"))
             else

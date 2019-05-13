@@ -13,7 +13,7 @@ declare function local:upload($collection, $path, $data) {
             <files json:array="true">
                <name>{$path}</name>
                <type>{xmldb:get-mime-type($path)}</type>
-               <size>93928</size>
+               <size>{xmldb:size($collection, $path)}</size>
             </files>
        </result>
     return
