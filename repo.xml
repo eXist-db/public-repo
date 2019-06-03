@@ -12,6 +12,13 @@
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
     <changelog>
+        <change version="0.8.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Feature: Added info quertstring parameter for showing SHA256 checksum and version</li>
+                <li>Fixed: calculate size of packages correctly</li>
+                <li>Fixed make compatible with eXist-db 5.x.x</li>
+            </ul>
+        </change>
         <change version="0.7.3">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed: Miscellaneous bugs.</li>
