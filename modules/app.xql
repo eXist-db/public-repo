@@ -24,7 +24,28 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
     let $abbrev := request:get-parameter("abbrev", ())
     let $procVersion := request:get-parameter("eXist-db-min-version", "2.2.0")
     let $matching-abbrev := collection($config:public)//abbrev[. eq $abbrev]
-    let $app := $matching-abbrev/parent::app
+    let $apps := $matching-abbrev/parent::app
+    return
+        (
+            if (count($apps) gt 1) then 
+                <p>More than one package matches the requested convenient short 
+                    name, <code>{$abbrev}</code>. The unique package names that 
+                    match this short name are: 
+                    <ol>
+                        {
+                            for $app in $apps
+                            let $name := $app/name
+                            order by $name
+                            return
+                                <li><code>{$name/string()}</code></li>
+                        }
+                    </ol>
+                    The packages with versions available that are compatible with eXist {$procVersion} or higher are as follows:
+                </p>
+            else 
+                ()
+            ,
+    for $app in $apps
     return
         (: catch requests for a package using its legacy "abbrev" and redirect
          : them to a URL using the app's current abbrev, to encourage use of the
@@ -60,6 +81,7 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
                         else
                             <li class="package text-warning">No package {$abbrev} is available.</li>
                     )
+    )
 };
 
 declare function app:package-to-list-item($app as element(app), $version as xs:string, $show-details as xs:boolean) {
