@@ -45,42 +45,45 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
             else 
                 ()
             ,
-    for $app in $apps
-    return
-        (: catch requests for a package using its legacy "abbrev" and redirect
-         : them to a URL using the app's current abbrev, to encourage use of the
-         : current abbrev :)
-        if ($matching-abbrev/@type eq "legacy") then
-            let $current-abbrev := $app/abbrev[not(@type eq "legacy")]
-            let $repoURL := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/")
-            let $required-exist-version := $app/requires[@processor eq "http://exist-db.org"]/(@version, @semver-min)[1]
-            let $info-url :=
-                concat($repoURL, "packages/", $current-abbrev, ".html",
-                    if ($required-exist-version) then
-                        concat("?eXist-db-min-version=", $required-exist-version)
-                    else
-                        ()
-                )
-            return
-                response:redirect-to(xs:anyURI($info-url))
-        (: view current package info :)
-        else
-            let $app-versions := ($app, $app/other/version)
-            let $compatible-xar := app:find-version($app-versions, $procVersion, (), (), (), ())
-            let $package := $app-versions[@path eq $compatible-xar]
-            let $version := ($package/@version, $package/version)[1]
-            let $show-details := true()
-            return
-                if (exists($app)) then
-                    app:package-to-list-item($app, $version, $show-details)
-                else
-                    (
-                        response:set-status-code(404),
-                        if (exists($app)) then
-                            <li class="package text-warning">Package {$abbrev} requires a newer version of eXist.</li>
+    let $listing := 
+        for $app in $apps
+        return
+            (: catch requests for a package using its legacy "abbrev" and redirect
+             : them to a URL using the app's current abbrev, to encourage use of the
+             : current abbrev :)
+            if ($matching-abbrev/@type eq "legacy") then
+                let $current-abbrev := $app/abbrev[not(@type eq "legacy")]
+                let $repoURL := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/")
+                let $required-exist-version := $app/requires[@processor eq "http://exist-db.org"]/(@version, @semver-min)[1]
+                let $info-url :=
+                    concat($repoURL, "packages/", $current-abbrev, ".html",
+                        if ($required-exist-version) then
+                            concat("?eXist-db-min-version=", $required-exist-version)
                         else
-                            <li class="package text-warning">No package {$abbrev} is available.</li>
+                            ()
                     )
+                return
+                    response:redirect-to(xs:anyURI($info-url))
+            (: view current package info :)
+            else
+                let $app-versions := ($app, $app/other/version)
+                let $compatible-xar := app:find-version($app-versions, $procVersion, (), (), (), ())
+                let $package := $app-versions[@path eq $compatible-xar]
+                let $version := ($package/@version, $package/version)[1]
+                let $show-details := true()
+                return
+                    if (exists($package)) then
+                        app:package-to-list-item($app, $version, $show-details)
+                    else
+                        <li class="package text-warning">The package with convenient short name <code>{$abbrev}</code> and with unique package name <code>{$app/name}</code> is not compatible with eXist {$procVersion} and requires a newer version of eXist.</li>
+    return
+        if (exists($listing)) then
+            $listing
+        else
+            (
+                response:set-status-code(404),
+                <li class="package text-warning">No package {$abbrev} is available.</li>
+            )
     )
 };
 
