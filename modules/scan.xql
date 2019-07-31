@@ -52,7 +52,7 @@ declare function scanrepo:process($apps as element(app)*) {
                             "sha256",
                             "hex"
                         )
-                        let $n := tokenize($older/version, "\.") ! xs:int(analyze-string(., "(\d+)")//fn:group[1])
+                        let $n := tokenize($older/version, "\.") ! xs:int((analyze-string(., "(\d+)")//fn:group)[1])
                         order by $n[1], $n[2], $n[3]
                         return
                             <version version="{$older/version}">{
