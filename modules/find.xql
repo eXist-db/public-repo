@@ -5,7 +5,6 @@ import module namespace response="http://exist-db.org/xquery/response";
 
 import module namespace app="http://exist-db.org/xquery/app" at "app.xql";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
-import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xql";
 
 let $abbrev := request:get-parameter("abbrev", ())
 let $name := request:get-parameter("name", ())
