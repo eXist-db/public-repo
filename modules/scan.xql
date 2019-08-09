@@ -1,9 +1,10 @@
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo";
 
 import module namespace config = "http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace crypto = "http://expath.org/ns/crypto";
+import module namespace semver = "http://exist-db.org/xquery/semver";
 import module namespace util = "http://exist-db.org/xquery/util";
 
 declare namespace repo="http://exist-db.org/xquery/repo";
@@ -11,57 +12,56 @@ declare namespace expath="http://expath.org/ns/pkg";
 
 declare function scanrepo:is-newer-or-same($version1 as xs:string, $version2 as xs:string?) {
     empty($version2) or
-        scanrepo:check-version($version1, $version2, function($v1, $v2) { $v1 >= $v2 })
+        semver:ge($version1, $version2, true())
 };
 
 declare function scanrepo:is-older-or-same($version1 as xs:string, $version2 as xs:string?) {
     empty($version2) or
-        scanrepo:check-version($version1, $version2, function($v1, $v2) { $v1 <= $v2 })
-};
-
-declare %private function scanrepo:version-to-number($version as xs:string) as xs:int {
-    let $ana := analyze-string($version, "(\d+)\.(\d+)\.(\d+)-?(.*)")
-    return
-        sum(($ana//fn:group[@nr="1"] * 1000000, $ana//fn:group[@nr="2"] * 1000, $ana//fn:group[@nr="3"]))
-};
-
-declare %private function scanrepo:check-version($version1 as xs:string, $version2 as xs:string, $check as function(*)) {
-    $check(scanrepo:version-to-number($version1), scanrepo:version-to-number($version2))
+        semver:le($version1, $version2, true())
 };
 
 declare function scanrepo:process($apps as element(app)*) {
     for $app in $apps
+    order by $app/title
     group by $name := $app/name
     return
-        let $newest := scanrepo:find-newest($app, (), ())
+        (: Identify newest version of the package; sort previous versions newest to oldest; use SemVer 2.0 rules, coercing where needed :)
+        let $versions := $app/version
+        let $version-maps := 
+            $versions ! map:merge((
+                map:entry("semver", semver:coerce(.) => semver:serialize()), 
+                map:entry("version", .)
+            ))
+        let $sorted-versions := 
+            for $version in $version-maps
+            order by semver:sort($version?semver) descending
+            return $version?version/..
+        let $newest-version := $sorted-versions => head()
+        let $older-versions := $sorted-versions => tail()
         let $abbrevs := distinct-values($app/abbrev)
         return
             <app>
                 { 
-                    $newest/@*, 
-                    $newest/*, 
-                    $abbrevs[not(. = $newest/abbrev)] ! element abbrev { attribute type { "legacy" }, . }
+                    $newest-version/@*, 
+                    $newest-version/*, 
+                    $abbrevs[not(. = $newest-version/abbrev)] ! element abbrev { attribute type { "legacy" }, . }
                 }
                 <other>
                 {
-                    reverse(
-                        for $older in $app[version != $newest/version]
-                        let $xar := concat($config:public, "/", $older/@path)
-                        let $hash := crypto:hash(
-                            util:binary-doc($xar),
-                            "sha256",
-                            "hex"
-                        )
-                        let $n := tokenize($older/version, "\.") ! xs:int((analyze-string(., "(\d+)")//fn:group)[1])
-                        order by $n[1], $n[2], $n[3]
-                        return
-                            <version version="{$older/version}">{
-                                $older/@path, 
-                                attribute size { xmldb:size($config:public, $older/@path) }, 
-                                attribute sha256 { $hash }, 
-                                $older/requires
-                            }</version>
+                    for $older in $older-versions
+                    let $xar := concat($config:public, "/", $older/@path)
+                    let $hash := crypto:hash(
+                        util:binary-doc($xar),
+                        "sha256",
+                        "hex"
                     )
+                    return
+                        <version version="{$older/version}">{
+                            $older/@path, 
+                            attribute size { xmldb:size($config:public, $older/@path) }, 
+                            attribute sha256 { $hash }, 
+                            $older/requires
+                        }</version>
                 }
                 </other>
             </app>

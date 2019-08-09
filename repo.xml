@@ -12,6 +12,12 @@
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
     <changelog>
+        <change version="1.0.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>New: Full SemVer 2.0 compliance, backward compatible with most previous package version strings</li>
+                <li>Breaking: New dependency on semver.xq library</li>
+            </ul>
+        </change>
         <change version="0.8.4">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed: Handling for semantic versioning strings with prerelease and build metadata fragments containing numbers</li>
