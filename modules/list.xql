@@ -4,6 +4,7 @@ declare namespace list="http://exist-db.org/apps/public-repo/list";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace semver = "http://exist-db.org/xquery/semver";
 
 declare option output:method "xml";
 declare option output:media-type "application/xml";
@@ -18,22 +19,12 @@ declare variable $list:DEFAULT_VERSION := "2.2.0";
 
 declare function list:is-newer-or-same($version1 as xs:string, $version2 as xs:string?) {
     empty($version2) or
-        list:check-version($version1, $version2, function($v1, $v2) { $v1 >= $v2 })
+        semver:ge($version1, $version2, true())
 };
 
 declare function list:is-older-or-same($version1 as xs:string, $version2 as xs:string?) {
     empty($version2) or
-        list:check-version($version1, $version2, function($v1, $v2) { $v1 <= $v2 })
-};
-
-declare function list:version-to-number($version as xs:string) as xs:int {
-    let $ana := analyze-string($version, "(\d+)\.(\d+)\.(\d+)-?(.*)")
-    return
-        sum(($ana//fn:group[@nr="1"] * 1000000, $ana//fn:group[@nr="2"] * 1000, $ana//fn:group[@nr="3"]))
-};
-
-declare function list:check-version($version1 as xs:string, $version2 as xs:string, $check as function(*)) {
-    $check(list:version-to-number($version1), list:version-to-number($version2))
+        semver:le($version1, $version2, true())
 };
 
 declare function list:get-app($app as element(), $version as xs:string) {
