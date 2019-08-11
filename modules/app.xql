@@ -182,10 +182,7 @@ declare function app:package-to-list-item($app as element(app), $version as xs:s
                                 <tr>
                                     <td>Download older versions:</td>
                                     <td>{
-                                        let $versions := 
-                                            for $version in $app/other/version 
-                                            order by $version/@version 
-                                            return $version
+                                        let $versions := reverse($app/other/version)
                                         for $version at $n in $versions
                                         let $download-version-url := concat($repoURL, "public/", $version/@path)
                                         return
