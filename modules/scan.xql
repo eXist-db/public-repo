@@ -32,10 +32,11 @@ declare function scanrepo:process($apps as element(app)*) {
                 map:entry("semver", semver:coerce(.) => semver:serialize()), 
                 map:entry("version", .)
             ))
+        let $sorted-semvers := semver:sort($version-maps?semver) => reverse()
         let $sorted-versions := 
-            for $version in $version-maps
-            order by semver:sort($version?semver) descending
-            return $version?version/..
+            for $semver in $sorted-semvers
+            return
+                $version-maps[?semver eq $semver]?version/..
         let $newest-version := $sorted-versions => head()
         let $older-versions := $sorted-versions => tail()
         let $abbrevs := distinct-values($app/abbrev)
