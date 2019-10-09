@@ -12,6 +12,11 @@
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
     <changelog>
+        <change version="1.0.2">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Fixed: Dependency on semver.xq library actually imposed a new requirement on eXist 4.7.0+</li>
+            </ul>
+        </change>
         <change version="1.0.1">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed: Sorting of app versions</li>
