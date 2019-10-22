@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace response="http://exist-db.org/xquery/response";
@@ -15,6 +15,7 @@ let $version := request:get-parameter("version", ())
 let $zip := request:get-parameter("zip", ())
 let $info := request:get-parameter("info", ())
 let $procVersion := request:get-parameter("processor", "2.2.0")
+let $app-root-absolute-url := request:get-parameter("app-root-absolute-url", ())
 let $app :=
     if ($name) then
         collection($config:app-root || "/public")//app[name eq $name]
@@ -24,20 +25,16 @@ let $app-versions := ($app, $app/other/version)
 let $compatible-xar := app:find-version($app-versions, $procVersion, $version, $semVer, $minVersion, $maxVersion)
 return
     if ($compatible-xar) then
-        let $rel-public :=
-            if (contains(request:get-url(), "/modules/")) then
-                "../public/"
-            else
-                "public/"
+        let $abs-public := $app-root-absolute-url || "/public/"
         return
             if ($info) then
                 let $app := collection($config:app-root || "/public")//(app|version)[@path eq $compatible-xar]
                 return
                     <found>{$app/@sha256,($app/version,$app/@version)[1] ! attribute version {.},$compatible-xar}</found>
             else if ($zip) then
-                response:redirect-to(xs:anyURI($rel-public || $compatible-xar || ".zip"))
+                response:redirect-to(xs:anyURI($abs-public || $compatible-xar || ".zip"))
             else
-                response:redirect-to(xs:anyURI($rel-public || $compatible-xar))
+                response:redirect-to(xs:anyURI($abs-public || $compatible-xar))
     else (
         response:set-status-code(404),
         <p>Package file {$compatible-xar} not found!</p>
