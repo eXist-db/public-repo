@@ -12,6 +12,12 @@
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
     <changelog>
+        <change version="1.0.3">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Fixed: Avoid HTTPS-to-HTTP downgrade when eXist is behind a proxy - <a href="https://github.com/eXist-db/public-repo/pull/48">#48</a></li>
+                <li>Note: The correct and supported path to the public-repo's "find" endpoint is public-repo/find, not public-repo/modules/find.xql. The latter will work, but the fix is specifically to the former.</li>
+            </ul>
+        </change>
         <change version="1.0.2">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed: Dependency on semver.xq library actually imposed a new requirement on eXist 4.7.0+</li>
