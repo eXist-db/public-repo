@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "3.1";
 
 import module namespace login="http://exist-db.org/xquery/login" at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 
@@ -7,6 +7,15 @@ declare variable $exist:resource external;
 declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
+
+declare variable $app-root-absolute-url := 
+    (request:get-header("X-Forwarded-Proto"), request:get-scheme())[1] 
+    || "://"
+    || (request:get-header("X-Forwarded-Server"), request:get-server-name())[1]
+    || request:get-context-path()
+    || $exist:prefix
+    || $exist:controller
+;
 
 login:set-user("org.exist.public-repo.login", (), false()),
 
@@ -89,7 +98,9 @@ else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".zip"
 
 else if ($exist:path eq "/find" or ends-with($exist:resource, ".zip")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="modules/find.xql"/>
+        <forward url="modules/find.xql">
+            <add-parameter name="app-root-absolute-url" value="{$app-root-absolute-url}"/>
+        </forward>
     </dispatch>
 
 else if ($exist:resource eq "feed.xml") then
