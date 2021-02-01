@@ -27,6 +27,12 @@ declare variable $config:app-root :=
 
 declare variable $config:public := concat($config:app-root, "/public");
 
+declare variable $config:metadata-collection := concat($config:app-root, "/meta");
+declare variable $config:apps-doc := 'apps.xml';
+declare variable $config:packages-doc := 'packages.xml';
+declare variable $config:packages-meta := concat($config:metadata-collection, '/', $config:packages-doc);
+declare variable $config:apps-meta := concat($config:metadata-collection, '/', $config:apps-doc);
+
 (:~
  : Returns the repo.xml descriptor for the current application.
  :)

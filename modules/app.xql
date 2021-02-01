@@ -5,13 +5,6 @@ module namespace app="http://exist-db.org/xquery/app";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xql";
 
-declare function app:publish($node as node(), $model as map(*), $publish as xs:boolean?) {
-    if ($publish) then
-        scanrepo:scan()
-    else
-        ()
-};
-
 declare function app:list-packages($node as node(), $model as map(*), $mode as xs:string?) {
     for $app in collection($config:public)//app
     let $show-details := false()
