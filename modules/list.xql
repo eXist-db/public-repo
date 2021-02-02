@@ -74,11 +74,11 @@ declare function list:find-version($versions as element()*, $version as xs:strin
 
 let $version := request:get-parameter("version", $list:DEFAULT_VERSION)
 let $version := if (matches($version, "^\d+\.\d+\.\d+-?.*$")) then $version else $list:DEFAULT_VERSION
-let $apps := doc($config:public || "/apps.xml")/apps
+
 return
     <apps version="{$version}">
     {
-        for $app in $apps/app
+        for $app in doc($config:apps-meta)//app
         return
             list:get-app($app, $version)
     }

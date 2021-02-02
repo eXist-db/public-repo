@@ -250,20 +250,20 @@ declare function scanrepo:scan-all() {
 };
 
 declare function scanrepo:scan() {
-    let $data := doc($config:metdata-collection || "/packages.xml")//app
+    let $data := doc($config:packages-meta)//app
     let $processed := <apps> { scanrepo:process($data) }</apps>
-    let $store := xmldb:store($config:public, "apps.xml", $processed)
+    let $store := xmldb:store($config:metadata-collection, $config:apps-doc, $processed)
 
     return $processed
 };
 
 declare function scanrepo:rebuild-package-meta() as xs:string {
-    xmldb:store($config:metdata-collection, "packages.xml",
+    xmldb:store($config:metadata-collection, $config:packages-doc,
         <packages> { scanrepo:scan-all() }</packages>)
 };
 
 declare function scanrepo:add-package-meta($meta as element(app)) {
-    let $packages := doc($config:metdata-collection || "/packages.xml")/packages
+    let $packages := doc($config:packages-meta)/packages
     let $node-to-update := $packages/app[@path=$meta/@path]
 
     return
@@ -273,8 +273,9 @@ declare function scanrepo:add-package-meta($meta as element(app)) {
 };
 
 declare function scanrepo:publish($xar as xs:string) {
-    $xar
-    => scanrepo:extract-metadata()
-    => scanrepo:add-package-meta()
-    => scanrepo:scan()
+    let $meta := $xar
+        => scanrepo:extract-metadata()
+        => scanrepo:add-package-meta()
+    
+    return scanrepo:scan()
 };

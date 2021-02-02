@@ -6,7 +6,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xql";
 
 declare function app:list-packages($node as node(), $model as map(*), $mode as xs:string?) {
-    for $app in collection($config:public)//app
+    for $app in doc($config:apps-meta)//app
     let $show-details := false()
     order by lower-case($app/title)
     return
@@ -16,7 +16,7 @@ declare function app:list-packages($node as node(), $model as map(*), $mode as x
 declare function app:view-package($node as node(), $model as map(*), $mode as xs:string?) {
     let $abbrev := request:get-parameter("abbrev", ())
     let $procVersion := request:get-parameter("eXist-db-min-version", "2.2.0")
-    let $matching-abbrev := collection($config:public)//abbrev[. eq $abbrev]
+    let $matching-abbrev := doc($config:apps-meta)//abbrev[. eq $abbrev]
     let $apps := $matching-abbrev/parent::app
     return
         (
