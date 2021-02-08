@@ -27,7 +27,7 @@
                 <include name="modules/**"/>
                 <include name="resources/**"/>
                 <include name="templates/**"/>
-                <include name="public/*"/>
+                <include name="meta/*"/>
                 <exclude name="${build}/*"/>
                 <exclude name=".git*"/>
                 <exclude name="*.tmpl"/>

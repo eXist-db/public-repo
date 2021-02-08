@@ -59,5 +59,5 @@ else
 system:as-user("repo", "repo", (
     local:copy-previous-public-from-temp-or-create(),
     xmldb:store-files-from-pattern(concat($target, "/public"), local:get-repo-dir(), "*.xar"),
-    scanrepo:scan()
+    scanrepo:rebuild-package-meta()
 ))

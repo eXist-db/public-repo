@@ -145,47 +145,61 @@ declare %private function scanrepo:compare-versions($installed as xs:string*, $a
         $compare(head($available), head($installed))
 };
 
+declare function scanrepo:handle-icon ($path as xs:string, $data as item()?, $param as item()*) as element(icon) {
+    let $pkgName := substring-before($param, ".xar")
+
+    let $suffix := replace($path, "^.*\.([^\.]+)", "$1")
+    let $name := concat($pkgName, ".", $suffix)
+    let $stored := xmldb:store($config:public, $name, $data)
+
+    return
+        <icon>{ $name }</icon>
+};
+
+declare function scanrepo:handle-expath-package ($root as element(expath:package)) as element()* {
+    <name>{$root/@name/string()}</name>,
+    <title>{$root/expath:title/text()}</title>,
+    <abbrev>{$root/@abbrev/string()}</abbrev>,
+    <version>{$root/@version/string()}</version>,
+    if ($root/expath:dependency[starts-with(@processor, "http://exist-db.org")]) then
+        <requires>{ $root/expath:dependency[starts-with(@processor, "http://exist-db.org")]/@* }</requires>
+    else
+        ()
+};
+
+declare function scanrepo:handle-repo-meta ($root as element(repo:meta)) as element()+ {
+    for $author in $root/repo:author
+    return
+        <author>{$author/text()}</author>
+    ,
+    <description>{$root/repo:description/text()}</description>,
+    <website>{$root/repo:website/text()}</website>,
+    <license>{$root/repo:license/text()}</license>,
+    <type>{$root/repo:type/text()}</type>
+    ,
+    for $note in $root/repo:note
+    return
+        <note>{$note/text()}</note>
+    ,
+    <changelog>
+    {
+        scanrepo:copy-changelog($root/repo:changelog/repo:change)
+    }
+    </changelog>
+};
+
 declare function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()*
 {
-    if (starts-with($path, "icon")) then
-        let $pkgName := substring-before($param, ".xar")
-        let $suffix := replace($path, "^.*\.([^\.]+)", "$1")
-        let $name := concat($pkgName, ".", $suffix)
-        let $stored :=
-            xmldb:store($config:public, $name, $data)
-        return
-            <icon>{ $name }</icon>
+    if (starts-with($path, "icon")) then 
+        scanrepo:handle-icon($path, $data, $param)
     else
         let $root := $data/*
         return
             typeswitch ($root)
-                case element(expath:package) return (
-                    <name>{$root/@name/string()}</name>,
-                    <title>{$root/expath:title/text()}</title>,
-                    <abbrev>{$root/@abbrev/string()}</abbrev>,
-                    <version>{$root/@version/string()}</version>,
-                    if ($root/expath:dependency[starts-with(@processor, "http://exist-db.org")]) then
-                        <requires>{ $root/expath:dependency[starts-with(@processor, "http://exist-db.org")]/@* }</requires>
-                    else
-                        ()
-                )
-                case element(repo:meta) return (
-                    for $author in $root/repo:author
-                    return
-                        <author>{$author/text()}</author>,
-                    <description>{$root/repo:description/text()}</description>,
-                    <website>{$root/repo:website/text()}</website>,
-                    <license>{$root/repo:license/text()}</license>,
-                    <type>{$root/repo:type/text()}</type>,
-                    for $note in $root/repo:note
-                    return
-                        <note>{$note/text()}</note>,
-                    <changelog>
-                    {
-                        scanrepo:copy-changelog($root/repo:changelog/repo:change)
-                    }
-                    </changelog>
-                )
+                case element(expath:package) return
+                    scanrepo:handle-expath-package($root)
+                case element(repo:meta) return
+                    scanrepo:handle-repo-meta($root)
                 default return
                     ()
 };
@@ -203,23 +217,27 @@ declare function scanrepo:copy-changelog($nodes as node()*) {
                 $node
 };
 
-declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
-{
-    starts-with($path, "icon.") or $path = ("repo.xml", "expath-pkg.xml")
+declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean {
+    starts-with($path, "icon.") or 
+    $path = ("repo.xml", "expath-pkg.xml")
 };
 
-declare function scanrepo:extract-metadata($resource as xs:string) {
+declare function scanrepo:extract-metadata ($resource as xs:string) as element(app) {
     let $xar := concat($config:public, "/", $resource)
-    let $hash := crypto:hash(
-        util:binary-doc($xar),
-        "sha256",
-        "hex"
-    )
+    let $data := util:binary-doc($xar)
+
+    let $hash := crypto:hash($data, "sha256", "hex")
+
     return
         <app path="{$resource}" size="{xmldb:size($config:public, $resource)}" sha256="{$hash}">
         {
-            compression:unzip(util:binary-doc($xar), util:function(xs:QName("scanrepo:entry-filter"), 3), (),
-                util:function(xs:QName("scanrepo:entry-data"), 4), $resource)
+            compression:unzip(
+                $data,
+                scanrepo:entry-filter#3, 
+                (),
+                scanrepo:entry-data#4,
+                $resource
+            )
         }
         </app>
 };
@@ -232,8 +250,32 @@ declare function scanrepo:scan-all() {
 };
 
 declare function scanrepo:scan() {
-    let $data := scanrepo:scan-all()
-    let $processed := scanrepo:process($data)
+    let $data := doc($config:packages-meta)//app
+    let $processed := <apps> { scanrepo:process($data) }</apps>
+    let $store := xmldb:store($config:metadata-collection, $config:apps-doc, $processed)
+
+    return $processed
+};
+
+declare function scanrepo:rebuild-package-meta() as xs:string {
+    xmldb:store($config:metadata-collection, $config:packages-doc,
+        <packages> { scanrepo:scan-all() }</packages>)
+};
+
+declare function scanrepo:add-package-meta($meta as element(app)) {
+    let $packages := doc($config:packages-meta)/packages
+    let $node-to-update := $packages/app[@path=$meta/@path]
+
     return
-        xmldb:store($config:public, "apps.xml", <apps> { $processed }</apps>)
+        if (exists($node-to-update))
+        then (update replace $node-to-update with $meta)
+        else (update insert $meta into $packages)
+};
+
+declare function scanrepo:publish($xar as xs:string) {
+    let $meta := $xar
+        => scanrepo:extract-metadata()
+        => scanrepo:add-package-meta()
+    
+    return scanrepo:scan()
 };
