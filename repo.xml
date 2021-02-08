@@ -12,6 +12,11 @@
     <finish>post-install.xql</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
     <changelog>
+        <change version="1.1.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>New: Avoid costly rescanning of all packages when publishing a new package - <a href="https://github.com/eXist-db/public-repo/pull/51">#51</a></li>
+            </ul>
+        </change>
         <change version="1.0.3">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed: Avoid HTTPS-to-HTTP downgrade when eXist is behind a proxy - <a href="https://github.com/eXist-db/public-repo/pull/48">#48</a></li>
