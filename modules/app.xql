@@ -5,8 +5,14 @@ module namespace app="http://exist-db.org/xquery/app";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xql";
 
+declare function app:abs-path-to-apps-xml($node as node(), $model as map(*), $mode as xs:string?) {
+    let $url := request:get-parameter("app-root-absolute-url", ()) || "/public/apps.xml"
+    return
+        <a href="{$url}">{$url}</a>
+};
+
 declare function app:list-packages($node as node(), $model as map(*), $mode as xs:string?) {
-    for $app in doc($config:apps-meta)//app
+    for $app in doc($config:apps-meta)//package-group
     let $show-details := false()
     order by lower-case($app/title)
     return
@@ -17,7 +23,7 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
     let $abbrev := request:get-parameter("abbrev", ())
     let $procVersion := request:get-parameter("eXist-db-min-version", "2.2.0")
     let $matching-abbrev := doc($config:apps-meta)//abbrev[. eq $abbrev]
-    let $apps := $matching-abbrev/parent::app
+    let $apps := $matching-abbrev/parent::package-group
     return
         (
             if (count($apps) gt 1) then 
@@ -80,7 +86,7 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
     )
 };
 
-declare function app:package-to-list-item($app as element(app), $version as xs:string, $show-details as xs:boolean) {
+declare function app:package-to-list-item($app as element(package-group), $version as xs:string, $show-details as xs:boolean) {
     let $repoURL := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/")
     let $icon :=
         if ($app/icon) then

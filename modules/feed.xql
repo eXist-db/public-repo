@@ -6,7 +6,7 @@ declare option exist:serialize "method=xml media-type=application/atom+xml";
 
 declare function local:feed-entries() {
     let $repoURL := concat(substring-before(request:get-url(), "public-repo/"), "public-repo/")
-    for $app in doc($config:apps-meta)//app
+    for $app in doc($config:apps-meta)//package-group
     let $icon :=
         if ($app/icon) then
             if ($app/@status) then

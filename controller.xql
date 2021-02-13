@@ -1,5 +1,6 @@
 xquery version "3.1";
 
+import module namespace config="http://exist-db.org/xquery/apps/config" at "modules/config.xqm";
 import module namespace login="http://exist-db.org/xquery/login" at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 
 declare variable $exist:path external;
@@ -53,7 +54,7 @@ else if ($exist:resource eq "update.xql") then
 else if ($exist:path eq "/admin.html") then
     let $user := request:get-attribute("org.exist.public-repo.login.user")
     return
-        if ($user and (sm:is-dba($user) or "repo" = sm:get-user-groups($user))) then
+        if (exists($user) and sm:get-user-groups($user) = "repo") then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <view>
                     <forward url="{$exist:controller}/modules/view.xql">
@@ -89,6 +90,16 @@ else if (ends-with($exist:resource, ".html")) then
                 <set-header name="Cache-Control" value="no-cache"/>
             </forward>
         </view>
+    </dispatch>
+
+else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".xar")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="../../public-repo-data/packages/{$exist:resource}"/>
+    </dispatch>
+
+else if (contains($exist:path, "/public/") and (ends-with($exist:resource, ".png") or ends-with($exist:resource, ".svg"))) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="../../public-repo-data/icons/{$exist:resource}"/>
     </dispatch>
 
 else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".zip")) then

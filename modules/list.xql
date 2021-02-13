@@ -78,8 +78,8 @@ let $version := if (matches($version, "^\d+\.\d+\.\d+-?.*$")) then $version else
 return
     <apps version="{$version}">
     {
-        for $app in doc($config:apps-meta)//app
+        for $app in doc($config:apps-meta)//package-group
         return
-            list:get-app($app, $version)
+            element app { list:get-app($app, $version) ! (@*, *) }
     }
     </apps>

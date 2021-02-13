@@ -20,7 +20,7 @@ declare function scanrepo:is-older-or-same($version1 as xs:string, $version2 as 
         semver:le($version1, $version2, true())
 };
 
-declare function scanrepo:process($apps as element(app)*) {
+declare function scanrepo:process($apps as element(package)*) {
     for $app in $apps
     order by $app/title
     group by $name := $app/name
@@ -41,7 +41,7 @@ declare function scanrepo:process($apps as element(app)*) {
         let $older-versions := $sorted-versions => tail()
         let $abbrevs := distinct-values($app/abbrev)
         return
-            <app>
+            <package-group>
                 { 
                     $newest-version/@*, 
                     $newest-version/*, 
@@ -65,7 +65,7 @@ declare function scanrepo:process($apps as element(app)*) {
                         }</version>
                 }
                 </other>
-            </app>
+            </package-group>
 };
 
 declare function scanrepo:find-newest($apps as element()*, $newest as element()?, $procVersion as xs:string?) {
@@ -145,18 +145,16 @@ declare %private function scanrepo:compare-versions($installed as xs:string*, $a
         $compare(head($available), head($installed))
 };
 
-declare function scanrepo:handle-icon ($path as xs:string, $data as item()?, $param as item()*) as element(icon) {
+declare function scanrepo:handle-icon($path as xs:string, $data as item()?, $param as item()*) as element(icon) {
     let $pkgName := substring-before($param, ".xar")
-
     let $suffix := replace($path, "^.*\.([^\.]+)", "$1")
     let $name := concat($pkgName, ".", $suffix)
-    let $stored := xmldb:store($config:public, $name, $data)
-
+    let $stored := xmldb:store($config:icons, $name, $data)
     return
         <icon>{ $name }</icon>
 };
 
-declare function scanrepo:handle-expath-package ($root as element(expath:package)) as element()* {
+declare function scanrepo:handle-expath-package($root as element(expath:package)) as element()* {
     <name>{$root/@name/string()}</name>,
     <title>{$root/expath:title/text()}</title>,
     <abbrev>{$root/@abbrev/string()}</abbrev>,
@@ -167,7 +165,7 @@ declare function scanrepo:handle-expath-package ($root as element(expath:package
         ()
 };
 
-declare function scanrepo:handle-repo-meta ($root as element(repo:meta)) as element()+ {
+declare function scanrepo:handle-repo-meta($root as element(repo:meta)) as element()+ {
     for $author in $root/repo:author
     return
         <author>{$author/text()}</author>
@@ -222,14 +220,12 @@ declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $
     $path = ("repo.xml", "expath-pkg.xml")
 };
 
-declare function scanrepo:extract-metadata ($resource as xs:string) as element(app) {
+declare function scanrepo:extract-metadata($resource as xs:string) as element(package) {
     let $xar := concat($config:public, "/", $resource)
     let $data := util:binary-doc($xar)
-
     let $hash := crypto:hash($data, "sha256", "hex")
-
     return
-        <app path="{$resource}" size="{xmldb:size($config:public, $resource)}" sha256="{$hash}">
+        <package path="{$resource}" size="{xmldb:size($config:public, $resource)}" sha256="{$hash}">
         {
             compression:unzip(
                 $data,
@@ -239,7 +235,7 @@ declare function scanrepo:extract-metadata ($resource as xs:string) as element(a
                 $resource
             )
         }
-        </app>
+        </package>
 };
 
 declare function scanrepo:scan-all() {
@@ -250,32 +246,33 @@ declare function scanrepo:scan-all() {
 };
 
 declare function scanrepo:scan() {
-    let $data := doc($config:packages-meta)//app
-    let $processed := <apps> { scanrepo:process($data) }</apps>
+    let $data := doc($config:packages-meta)//package
+    let $processed := <package-groups>{ scanrepo:process($data) }</package-groups>
     let $store := xmldb:store($config:metadata-collection, $config:apps-doc, $processed)
-
-    return $processed
+    return
+        $processed
 };
 
 declare function scanrepo:rebuild-package-meta() as xs:string {
     xmldb:store($config:metadata-collection, $config:packages-doc,
-        <packages> { scanrepo:scan-all() }</packages>)
+        <raw-packages>{ scanrepo:scan-all() }</raw-packages>)
 };
 
-declare function scanrepo:add-package-meta($meta as element(app)) {
-    let $packages := doc($config:packages-meta)/packages
-    let $node-to-update := $packages/app[@path=$meta/@path]
-
+declare function scanrepo:add-package-meta($meta as element(package)) {
+    let $packages := doc($config:packages-meta)/raw-packages
+    let $node-to-update := $packages/package[@path = $meta/@path]
     return
-        if (exists($node-to-update))
-        then (update replace $node-to-update with $meta)
-        else (update insert $meta into $packages)
+        if (exists($node-to-update)) then 
+            update replace $node-to-update with $meta
+        else 
+            update insert $meta into $packages
 };
 
 declare function scanrepo:publish($xar as xs:string) {
-    let $meta := $xar
+    let $meta := 
+        $xar
         => scanrepo:extract-metadata()
         => scanrepo:add-package-meta()
-    
-    return scanrepo:scan()
+    return 
+        scanrepo:scan()
 };

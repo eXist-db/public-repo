@@ -8,10 +8,17 @@
     <copyright>true</copyright>
     <type>application</type>
     <target>public-repo</target>
-    <prepare>pre-install.xql</prepare>
-    <finish>post-install.xql</finish>
+    <prepare>pre-install.xq</prepare>
+    <finish>post-install.xq</finish>
     <permissions xmlns:repo="http://exist-db.org/xquery/repo" password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
     <changelog>
+        <change version="2.0.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>IMPORTANT: You must first run the upgrade script in TODO_INSERT_URL before installing v2!</li>
+                <li>Breaking: Move packages storage outside of public-repo app to fix upgrade procedure, which previously deleted all packages, and simplify future backups and upgrades.</li>
+                <li>Note: Minimum required version of is eXist 5.0.0.</li>
+            </ul>
+        </change>
         <change version="1.1.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>New: Avoid costly rescanning of all packages when publishing a new package - <a href="https://github.com/eXist-db/public-repo/pull/51">#51</a></li>

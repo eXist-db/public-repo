@@ -18,9 +18,9 @@ let $procVersion := request:get-parameter("processor", "2.2.0")
 let $app-root-absolute-url := request:get-parameter("app-root-absolute-url", ())
 let $app :=
     if ($name) then
-        doc($config:apps-meta)//app[name eq $name]
+        doc($config:apps-meta)//package-group[name eq $name]
     else
-        doc($config:apps-meta)//app[abbrev eq $abbrev]
+        doc($config:apps-meta)//package-group[abbrev eq $abbrev]
 let $app-versions := ($app, $app/other/version)
 let $compatible-xar := app:find-version($app-versions, $procVersion, $version, $semVer, $minVersion, $maxVersion)
 return
@@ -28,7 +28,7 @@ return
         let $abs-public := $app-root-absolute-url || "/public/"
         return
             if ($info) then
-                let $app := doc($config:apps-meta)//(app|version)[@path eq $compatible-xar]
+                let $app := doc($config:apps-meta)//(package-group|version)[@path eq $compatible-xar]
                 return
                     <found>{$app/@sha256,($app/version,$app/@version)[1] ! attribute version {.},$compatible-xar}</found>
             else if ($zip) then

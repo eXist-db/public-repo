@@ -25,13 +25,15 @@ declare variable $config:app-root :=
         substring-before($modulePath, "/modules")
 ;
 
-declare variable $config:public := concat($config:app-root, "/public");
+(: binaries and metadata are stored in the /db/apps/public-repo-data collection :)
+declare variable $config:public := concat($config:app-root, "-data/packages");
+declare variable $config:icons := concat($config:app-root, "-data/icons");
+declare variable $config:metadata-collection := concat($config:app-root, "-data/metadata");
 
-declare variable $config:metadata-collection := concat($config:app-root, "/meta");
-declare variable $config:apps-doc := 'apps.xml';
-declare variable $config:packages-doc := 'packages.xml';
-declare variable $config:packages-meta := concat($config:metadata-collection, '/', $config:packages-doc);
-declare variable $config:apps-meta := concat($config:metadata-collection, '/', $config:apps-doc);
+declare variable $config:apps-doc := "package-groups.xml";
+declare variable $config:apps-meta := concat($config:metadata-collection, "/", $config:apps-doc);
+declare variable $config:packages-doc := "raw-packages.xml";
+declare variable $config:packages-meta := concat($config:metadata-collection, "/", $config:packages-doc);
 
 (:~
  : Returns the repo.xml descriptor for the current application.
