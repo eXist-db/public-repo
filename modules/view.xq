@@ -3,7 +3,7 @@ xquery version "3.0";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace site="http://exist-db.org/apps/site-utils";
 import module namespace templates="http://exist-db.org/xquery/templates";
-import module namespace app="http://exist-db.org/xquery/app" at "app.xql";
+import module namespace app="http://exist-db.org/xquery/app" at "app.xqm";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 

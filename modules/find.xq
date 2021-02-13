@@ -3,7 +3,7 @@ xquery version "3.1";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace response="http://exist-db.org/xquery/response";
 
-import module namespace app="http://exist-db.org/xquery/app" at "app.xql";
+import module namespace app="http://exist-db.org/xquery/app" at "app.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 
 let $abbrev := request:get-parameter("abbrev", ())

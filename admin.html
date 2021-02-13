@@ -46,7 +46,7 @@
     $(function () {
         'use strict';
         $('#fileupload').fileupload({
-            url: "modules/upload.xql",
+            url: "modules/upload.xq",
             dataType: 'json',
             done: function (e, data) {
                 $.each(data.result.files, function (index, file) {

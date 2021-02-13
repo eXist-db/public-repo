@@ -1,7 +1,7 @@
 xquery version "3.1";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "modules/config.xqm";
-import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "modules/scan.xql";
+import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "modules/scan.xqm";
 
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 declare namespace system="http://exist-db.org/xquery/system";

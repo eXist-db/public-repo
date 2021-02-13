@@ -3,7 +3,7 @@ xquery version "3.0";
 module namespace app="http://exist-db.org/xquery/app";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
-import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xql";
+import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
 
 declare function app:abs-path-to-apps-xml($node as node(), $model as map(*), $mode as xs:string?) {
     let $url := request:get-parameter("app-root-absolute-url", ()) || "/public/apps.xml"

@@ -2,7 +2,7 @@ xquery version "3.1";
 
 (: rebuild metadata for all packages :)
 
-import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xql";
+import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xq";
 
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 

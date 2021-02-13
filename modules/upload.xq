@@ -1,7 +1,7 @@
 xquery version "3.0";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
-import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xql";
+import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
 
 declare namespace json="http://www.json.org";
 
