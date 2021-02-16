@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 import module namespace compression="http://exist-db.org/xquery/compression";
 import module namespace response="http://exist-db.org/xquery/response";

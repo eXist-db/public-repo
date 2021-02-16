@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 declare namespace list="http://exist-db.org/apps/public-repo/list";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
