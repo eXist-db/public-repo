@@ -14,4 +14,3 @@ return
     let $zip := compression:zip($entry, false())
     return
         response:stream-binary($zip, "application/zip")
-
