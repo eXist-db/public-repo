@@ -51,11 +51,10 @@ declare function scanrepo:process($apps as element(package)*) {
                 {
                     for $older in $older-versions
                     let $xar := concat($config:public, "/", $older/@path)
-                    let $hash := crypto:hash(
-                        util:binary-doc($xar),
-                        "sha256",
-                        "hex"
-                    )
+                    let $hash := 
+                        util:binary-doc($xar)
+                        => util:binary-doc-content-digest("SHA-256")
+                        => string()
                     return
                         <version version="{$older/version}">{
                             $older/@path, 
@@ -223,7 +222,10 @@ declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $
 declare function scanrepo:extract-metadata($resource as xs:string) as element(package) {
     let $xar := concat($config:public, "/", $resource)
     let $data := util:binary-doc($xar)
-    let $hash := crypto:hash($data, "sha256", "hex")
+    let $hash := 
+        $data
+        => util:binary-doc-content-digest("SHA-256")
+        => string()
     return
         <package path="{$resource}" size="{xmldb:size($config:public, $resource)}" sha256="{$hash}">
         {
