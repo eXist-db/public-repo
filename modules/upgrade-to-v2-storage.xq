@@ -9,6 +9,9 @@ xquery version "3.1";
 import module namespace semver = "http://exist-db.org/xquery/semver";
 
 declare namespace pkg="http://expath.org/ns/pkg";
+declare namespace repo="http://exist-db.org/xquery/repo";
+declare namespace sm="http://exist-db.org/xquery/securitymanager";
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare function local:chgrp-repo($path) {
     if (sm:get-permissions($path)/*/@group = "repo") then
@@ -59,25 +62,7 @@ declare function local:upgrade-to-public-repo-2-storage() as element()+ {
             }
         )
     else
-        (),
-        
-    (: move public-repo-1.1.0 metadata into new collections and names :)
-    if (xmldb:collection-available("/db/apps/public-repo/meta")) then
-        (
-            xmldb:store("/db/apps/public-repo-data/metadata", "packages-raw.xml", element packages-raw { doc("/db/apps/public-repo/meta/packages.xml")/packages/app ! element package { ./@*, ./* } }) ! element packages-raw { . },
-            xmldb:store("/db/apps/public-repo-data/metadata", "package-groups.xml", element package-groups { doc("/db/apps/public-repo/meta/apps.xml")/apps/app ! element package-group { ./@*, ./* } } )  ! element package-group { . } ,
-            for $doc in ("/db/apps/public-repo-data/metadata/packages-raw.xml", "/db/apps/public-repo-data/metadata/package-groups.xml")
-            return
-                local:chgrp-repo($doc) 
-        )
-    else
-        (),
-        
-    (: uninstall :)
-    (:
-    :)
-    repo:undeploy("http://exist-db.org/apps/public-repo") ! element undeploy-status { . },
-    repo:remove("http://exist-db.org/apps/public-repo") ! element remove-status { . }
+        ()
 };
 
 if (repo:list() = "http://exist-db.org/apps/public-repo") then

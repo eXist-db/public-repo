@@ -1,207 +1,53 @@
 xquery version "3.1";
 
+(:~
+ : Functions to extract metadata from packages and populate, update, or rebuild package metadata files
+ :)
+
 module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo";
 
-import module namespace config = "http://exist-db.org/xquery/apps/config" at "config.xqm";
-import module namespace crypto = "http://expath.org/ns/crypto";
-import module namespace semver = "http://exist-db.org/xquery/semver";
-import module namespace util = "http://exist-db.org/xquery/util";
+import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace semver="http://exist-db.org/xquery/semver";
 
+declare namespace compression="http://exist-db.org/xquery/compression";
 declare namespace repo="http://exist-db.org/xquery/repo";
+declare namespace util="http://exist-db.org/xquery/util";
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+
 declare namespace expath="http://expath.org/ns/pkg";
 
-declare function scanrepo:is-newer-or-same($version1 as xs:string, $version2 as xs:string?) {
-    empty($version2) or
-        semver:ge($version1, $version2, true())
-};
-
-declare function scanrepo:is-older-or-same($version1 as xs:string, $version2 as xs:string?) {
-    empty($version2) or
-        semver:le($version1, $version2, true())
-};
-
-declare function scanrepo:process($apps as element(package)*) {
-    for $app in $apps
-    order by $app/title
-    group by $name := $app/name
-    return
-        (: Identify newest version of the package; sort previous versions newest to oldest; use SemVer 2.0 rules, coercing where needed :)
-        let $versions := $app/version
-        let $version-maps := 
-            $versions ! map:merge((
-                map:entry("semver", semver:coerce(.) => semver:serialize()), 
-                map:entry("version", .)
-            ))
-        let $sorted-semvers := semver:sort($version-maps?semver) => reverse()
-        let $sorted-versions := 
-            for $semver in $sorted-semvers
-            return
-                $version-maps[?semver eq $semver]?version/..
-        let $newest-version := $sorted-versions => head()
-        let $older-versions := $sorted-versions => tail()
-        let $abbrevs := distinct-values($app/abbrev)
-        return
-            <package-group>
-                { 
-                    $newest-version/@*, 
-                    $newest-version/*, 
-                    $abbrevs[not(. = $newest-version/abbrev)] ! element abbrev { attribute type { "legacy" }, . }
-                }
-                <other>
-                {
-                    for $older in $older-versions
-                    let $xar := concat($config:public, "/", $older/@path)
-                    let $hash := 
-                        util:binary-doc($xar)
-                        => util:binary-doc-content-digest("SHA-256")
-                        => string()
-                    return
-                        <version version="{$older/version}">{
-                            $older/@path, 
-                            attribute size { xmldb:size($config:public, $older/@path) }, 
-                            attribute sha256 { $hash }, 
-                            $older/requires
-                        }</version>
-                }
-                </other>
-            </package-group>
-};
-
-declare function scanrepo:find-newest($apps as element()*, $newest as element()?, $procVersion as xs:string?) {
-    if (empty($apps)) then
-        $newest
-    else
-        let $app := head($apps)
-        let $newer :=
-            if ($procVersion and
-                not(scanrepo:is-newer-or-same($procVersion, $app/requires/@semver-min) and
-                    scanrepo:is-older-or-same($procVersion, $app/requires/@semver-max))) then
-                $newest
-            else if (empty($newest) or scanrepo:is-newer(($app/version, $app/@version), ($newest/version, $newest/@version))) then
-                $app
-            else
-                $newest
-        return
-            scanrepo:find-newest(tail($apps), $newer, $procVersion)
-};
-
-declare function scanrepo:find-version($apps as element()*, $minVersion as xs:string?, $maxVersion as xs:string?) {
-    let $minVersion := if ($minVersion) then $minVersion else "0"
-    let $maxVersion := if ($maxVersion) then $maxVersion else "9999"
-    return
-        scanrepo:find-version($apps, $minVersion, $maxVersion, ())
-};
-
-declare %private function scanrepo:find-version($apps as element()*, $minVersion as xs:string, $maxVersion as xs:string, $newest as element()?) {
-    if (empty($apps)) then
-        $newest
-    else
-        let $app := head($apps)
-        let $appVersion := $app/version | $app/@version
-        let $newer :=
-            if (
-                (empty($newest) or scanrepo:is-newer($appVersion, ($newest/version, $newest/@version))) and
-                scanrepo:is-newer($appVersion, $minVersion) and
-                scanrepo:is-older($appVersion, $maxVersion)
-            ) then
-                $app
-            else
-                $newest
-        return
-            scanrepo:find-version(tail($apps), $minVersion, $maxVersion, $newer)
-};
-
-declare %private function scanrepo:is-newer($available as xs:string, $installed as xs:string) as xs:boolean {
-    let $verInstalled := tokenize($installed, "\.")
-    let $verAvailable := tokenize($available, "\.")
-    return
-        scanrepo:compare-versions($verInstalled, $verAvailable, function($version1, $version2) {
-            number($version1) >= number($version2)
-        })
-};
-
-declare %private function scanrepo:is-older($available as xs:string, $installed as xs:string) as xs:boolean {
-    let $verInstalled := tokenize($installed, "\.")
-    let $verAvailable := tokenize($available, "\.")
-    return
-        scanrepo:compare-versions($verInstalled, $verAvailable, function($version1, $version2) {
-            number($version1) <= number($version2)
-        })
-};
-
-declare %private function scanrepo:compare-versions($installed as xs:string*, $available as xs:string*,
-    $compare as function(*)) as xs:boolean {
-    if (empty($installed)) then
-        exists($available)
-    else if (empty($available)) then
-        false()
-    else if (head($available) = head($installed)) then
-        if (count($available) = 1 and count($installed) = 1) then
-            true()
-        else
-            scanrepo:compare-versions(tail($installed), tail($available), $compare)
-    else
-        $compare(head($available), head($installed))
-};
-
-declare function scanrepo:handle-icon($path as xs:string, $data as item()?, $param as item()*) as element(icon) {
+(:~
+ : Helper function to store a package's icon and transform its metadata into the format needed for raw-metadata
+ :)
+declare 
+    %private
+function scanrepo:handle-icon($path as xs:string, $data as item()?, $param as item()*) as element(icon) {
     let $pkgName := substring-before($param, ".xar")
     let $suffix := replace($path, "^.*\.([^\.]+)", "$1")
     let $name := concat($pkgName, ".", $suffix)
-    let $stored := xmldb:store($config:icons, $name, $data)
+    let $stored := xmldb:store($config:icons-col, $name, $data)
     return
-        <icon>{ $name }</icon>
+        element icon { $name }
 };
 
-declare function scanrepo:handle-expath-package($root as element(expath:package)) as element()* {
-    <name>{$root/@name/string()}</name>,
-    <title>{$root/expath:title/text()}</title>,
-    <abbrev>{$root/@abbrev/string()}</abbrev>,
-    <version>{$root/@version/string()}</version>,
-    if ($root/expath:dependency[starts-with(@processor, "http://exist-db.org")]) then
-        <requires>{ $root/expath:dependency[starts-with(@processor, "http://exist-db.org")]/@* }</requires>
-    else
-        ()
+(:~
+ : Helper function to transform expath-pkg.xml metadata into the format needed for raw-metadata
+ :)
+declare 
+    %private
+function scanrepo:handle-expath-pkg-metadata($root as element(expath:package)) as element()* {
+    $root/(@name, expath:title, @abbrev, @version) ! 
+        element { local-name(.) } { ./string() },
+    $root/expath:dependency[@processor eq $config:exist-processor-name] ! 
+        element requires { ./@* }
 };
 
-declare function scanrepo:handle-repo-meta($root as element(repo:meta)) as element()+ {
-    for $author in $root/repo:author
-    return
-        <author>{$author/text()}</author>
-    ,
-    <description>{$root/repo:description/text()}</description>,
-    <website>{$root/repo:website/text()}</website>,
-    <license>{$root/repo:license/text()}</license>,
-    <type>{$root/repo:type/text()}</type>
-    ,
-    for $note in $root/repo:note
-    return
-        <note>{$note/text()}</note>
-    ,
-    <changelog>
-    {
-        scanrepo:copy-changelog($root/repo:changelog/repo:change)
-    }
-    </changelog>
-};
-
-declare function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()*
-{
-    if (starts-with($path, "icon")) then 
-        scanrepo:handle-icon($path, $data, $param)
-    else
-        let $root := $data/*
-        return
-            typeswitch ($root)
-                case element(expath:package) return
-                    scanrepo:handle-expath-package($root)
-                case element(repo:meta) return
-                    scanrepo:handle-repo-meta($root)
-                default return
-                    ()
-};
-
-declare function scanrepo:copy-changelog($nodes as node()*) {
+(:~
+ : Helper function to transform repo.xml's changelog metadata into the format needed for raw-metadata
+ :)
+declare 
+    %private 
+function scanrepo:copy-changelog($nodes as node()*) {
     for $node in $nodes
     return
         typeswitch ($node)
@@ -214,67 +60,173 @@ declare function scanrepo:copy-changelog($nodes as node()*) {
                 $node
 };
 
-declare function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean {
-    starts-with($path, "icon.") or 
-    $path = ("repo.xml", "expath-pkg.xml")
+(:~
+ : Helper function to transform repo.xml metadata into the format needed for raw-metadata
+ :)
+declare 
+    %private
+function scanrepo:handle-repo-metadata($root as element(repo:meta)) as element()+ {
+    $root/(repo:author, repo:description, repo:website, repo:license, repo:type, repo:note) ! 
+        element { local-name(.) } { ./string() },
+    element changelog { scanrepo:copy-changelog($root/repo:changelog/repo:change) }
 };
 
-declare function scanrepo:extract-metadata($resource as xs:string) as element(package) {
-    let $xar := concat($config:public, "/", $resource)
-    let $data := util:binary-doc($xar)
-    let $hash := 
-        $data
-        => util:binary-doc-content-digest("SHA-256")
-        => string()
+(:~
+ : Helper function to handle transformation of icon and package metadata for extraction from the xar
+ :)
+declare 
+    %private
+function scanrepo:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()*
+{
+    if (starts-with($path, "icon")) then 
+        scanrepo:handle-icon($path, $data, $param)
+    else
+        let $root := $data/*
+        return
+            typeswitch ($root)
+                case element(expath:package) return
+                    scanrepo:handle-expath-pkg-metadata($root)
+                case element(repo:meta) return
+                    scanrepo:handle-repo-metadata($root)
+                default return
+                    ()
+};
+
+(:~
+ : Helper function to select assets from a package for extraction from the xar
+ :)
+declare 
+    %private 
+function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean {
+    starts-with($path, "icon.") or $path = ("repo.xml", "expath-pkg.xml")
+};
+
+(:~
+ : Take a group of packages with the same package name (a URI) and generate a package-group
+ :)
+declare 
+(:    %private:)
+function scanrepo:generate-package-group($packages as element(package)*) {
+    if (count(distinct-values($packages/name)) gt 1) then
+        error(QName("scanrepo", "group-error"), "Supplied packages do not have the same name")
+    else
+        (: Identify newest version of the package; sort previous versions newest to oldest; use SemVer 2.0 rules, coercing where needed :)
+        let $versions := $packages/version
+        let $version-maps := 
+            $versions ! map:merge((
+                map:entry("semver", semver:coerce(.) => semver:serialize()), 
+                map:entry("version", .)
+            ))
+        let $sorted-semvers := semver:sort($version-maps?semver) => reverse()
+        let $sorted-packages := 
+            for $semver in $sorted-semvers
+            return
+                $version-maps[?semver eq $semver]?version/..
+        let $newest-package := $sorted-packages => head()
+        let $legacy-abbrevs := distinct-values($packages/abbrev)[not(. = $newest-package/abbrev)]
+        return
+            element package-group {
+                $newest-package/(title, name, abbrev), 
+                $legacy-abbrevs ! element abbrev { attribute type { "legacy" }, . },
+                element packages { $sorted-packages }
+            }
+};
+
+
+(:~
+ : Update a package group, creating it if necessary
+ :)
+declare function scanrepo:update-package-group($raw-package-name as xs:string) {
+    let $raw-packages := doc($config:raw-packages-doc)/raw-packages
+    let $raw-packages-to-group := $raw-packages/package[name = $raw-package-name]
+    let $package-groups := doc($config:package-groups-doc)/package-groups
+    let $current-package-group := $package-groups/package-group[name eq $raw-package-name]
     return
-        <package path="{$resource}" size="{xmldb:size($config:public, $resource)}" sha256="{$hash}">
-        {
-            compression:unzip(
-                $data,
-                scanrepo:entry-filter#3, 
-                (),
-                scanrepo:entry-data#4,
-                $resource
-            )
-        }
-        </package>
-};
-
-declare function scanrepo:scan-all() {
-    for $resource in xmldb:get-child-resources($config:public)
-    where ends-with($resource, ".xar")
-    return
-        scanrepo:extract-metadata($resource)
-};
-
-declare function scanrepo:scan() {
-    let $data := doc($config:packages-meta)//package
-    let $processed := <package-groups>{ scanrepo:process($data) }</package-groups>
-    let $store := xmldb:store($config:metadata-collection, $config:apps-doc, $processed)
-    return
-        $processed
-};
-
-declare function scanrepo:rebuild-package-meta() as xs:string {
-    xmldb:store($config:metadata-collection, $config:packages-doc,
-        <raw-packages>{ scanrepo:scan-all() }</raw-packages>)
-};
-
-declare function scanrepo:add-package-meta($meta as element(package)) {
-    let $packages := doc($config:packages-meta)/raw-packages
-    let $node-to-update := $packages/package[@path = $meta/@path]
-    return
-        if (exists($node-to-update)) then 
-            update replace $node-to-update with $meta
+        if (exists($current-package-group)) then 
+            update replace $current-package-group with scanrepo:generate-package-group($raw-packages-to-group) 
         else 
-            update insert $meta into $packages
+            update insert scanrepo:generate-package-group($raw-packages-to-group) into $package-groups
 };
 
-declare function scanrepo:publish($xar as xs:string) {
-    let $meta := 
-        $xar
-        => scanrepo:extract-metadata()
-        => scanrepo:add-package-meta()
-    return 
-        scanrepo:scan()
+(:~
+ : Add a package's metadata to raw-packages
+ :)
+declare function scanrepo:add-raw-package($raw-package as element(package)) {
+    let $raw-packages := doc($config:raw-packages-doc)/raw-packages
+    let $current-raw-package := $raw-packages/package[@path = $raw-package/@path]
+    return
+        if (exists($current-raw-package)) then 
+            update replace $current-raw-package with $raw-package
+        else 
+            update insert $raw-package into $raw-packages
+};
+
+(:~
+ : Extract a stored package's raw-package metadata
+ :)
+declare function scanrepo:extract-raw-package($xar-filename as xs:string) as element(package) {
+    let $xar-path := $config:packages-col || "/" || $xar-filename
+    let $xar-binary := util:binary-doc($xar-path)
+    let $package-metadata :=
+        compression:unzip(
+            $xar-binary,
+            scanrepo:entry-filter#3, 
+            (),
+            scanrepo:entry-data#4,
+            $xar-filename
+        )
+    return
+        element package {
+            attribute path { $xar-filename },
+            attribute size { xmldb:size($config:packages-col, $xar-filename) },
+            attribute sha256 { util:binary-doc-content-digest($xar-path, "SHA-256") => string() },
+            $package-metadata
+        }
+};
+
+(:~
+ : Publish a stored package by adding it to the raw-packages and package-groups metadata
+ :)
+declare function scanrepo:publish-package($xar-filename as xs:string) {
+    let $package := scanrepo:extract-raw-package($xar-filename)
+    return
+        (
+            scanrepo:add-raw-package($package),
+            scanrepo:update-package-group($package/name)
+        )
+};
+
+(:~
+ : Rebuild the package-groups metadata by merging raw-packages metadata into package-groups
+ :)
+declare function scanrepo:rebuild-package-groups() {
+    let $groups :=
+        for $package in doc($config:raw-packages-doc)//package
+        group by $name := $package/name
+        return
+            scanrepo:generate-package-group($package)
+    let $package-groups := 
+        element package-groups { 
+            for $group in $groups
+            order by $group/abbrev[not(@type = "legacy")]
+            return
+                $group
+        }
+    return
+        xmldb:store($config:metadata-col, $config:package-groups-doc-name, $package-groups)
+};
+
+(:~
+ : Rebuild the raw-packages metadata from all stored packages
+ :)
+declare function scanrepo:rebuild-raw-packages() as xs:string {
+    let $raw-packages := 
+        element raw-packages { 
+            for $package-xar in xmldb:get-child-resources($config:packages-col)[ends-with(., ".xar")]
+            order by $package-xar
+            return
+                scanrepo:extract-raw-package($package-xar)
+        }
+    return
+        xmldb:store($config:metadata-col, $config:raw-packages-doc-name, $raw-packages)
 };
