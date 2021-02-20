@@ -39,7 +39,7 @@ else if ($exist:path eq "/public/apps.xml") then
 else if ($exist:path eq "/admin.html") then
     let $user := request:get-attribute("org.exist.public-repo.login.user")
     return
-        if (exists($user) and sm:get-user-groups($user) = "repo") then
+        if (exists($user) and sm:get-user-groups($user) = config:repo-permissions()?group) then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <view>
                     <forward url="{$exist:controller}/modules/view.xq">
