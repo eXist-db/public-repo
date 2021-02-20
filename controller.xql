@@ -10,10 +10,7 @@ declare variable $exist:prefix external;
 declare variable $exist:root external;
 
 declare variable $app-root-absolute-url := 
-    (request:get-header("X-Forwarded-Proto"), request:get-scheme())[1] 
-    || "://"
-    || (request:get-header("X-Forwarded-Server"), request:get-server-name())[1]
-    || request:get-context-path()
+    request:get-context-path()
     || $exist:prefix
     || $exist:controller
 ;
