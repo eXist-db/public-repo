@@ -28,23 +28,11 @@ else if ($exist:path eq "/") then
         <redirect url="index.html"/>
     </dispatch>
 
-else if ($exist:path eq "/public/apps.xml") then (
-    response:set-header('Content-Type', 'application/xml'),
+else if ($exist:path eq "/public/apps.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/list.xq"/>
     </dispatch>
-)
-else if ($exist:resource eq "update.xql") then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/modules/update.xq"/>
-        <view>
-            <forward url="{$exist:controller}/index.html"/>
-            <forward url="{$exist:controller}/modules/view.xq">
-                <set-header name="Cache-Control" value="no-cache"/>
-            </forward>
-        </view>
-    </dispatch>
-    
+
 (:  Protected resource: user is required to log in with valid credentials.
     If the login fails or no credentials were provided, the request is redirected
     to the login.html page. :)
@@ -103,7 +91,7 @@ else if (contains($exist:path, "/public/") and (ends-with($exist:resource, ".png
         </forward>
     </dispatch>
 
-else if ($exist:path eq "/find" or ends-with($exist:resource, ".zip")) then
+else if ($exist:path eq "/find") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="modules/find.xq">
             <add-parameter name="app-root-absolute-url" value="{$app-root-absolute-url}"/>
@@ -124,16 +112,9 @@ else if (contains($exist:path, "/$shared/")) then
 
 else if (contains($exist:path, "/resources/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/resources/{substring-after($exist:path, '/resources/')}">
-            <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
-        </forward>
+        <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
     </dispatch>
     
-else if (ends-with($exist:path, ".xml")) then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <set-header name="Cache-Control" value="no-cache"/>
-    </dispatch>
-
 else
     (: everything else is passed through :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

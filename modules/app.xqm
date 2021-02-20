@@ -146,9 +146,9 @@ declare function app:package-group-to-list-item($package-group as element(packag
                     case ("application") return
                         <img src="{$repoURL || "resources/images/app.gif"}" class="ribbon" alt="application" title="This is an application"/>
                     case ("library") return
-                        <img src="{$repoURL || "resources/images/library2.gif"}" class="ribbon" alt="library" title="This is a library"/>
+                        <img src="{$repoURL || "resources/images/library.gif"}" class="ribbon" alt="library" title="This is a library"/>
                     case ("plugin") return
-                        <img src="{$repoURL || "resources/images/plugin2.gif"}" class="ribbon" alt="plugin" title="This is a plugin"/>
+                        <img src="{$repoURL || "resources/images/plugin.gif"}" class="ribbon" alt="plugin" title="This is a plugin"/>
                     default return ()
             }
             <h3 style="padding-bottom: 0"><a href="{$info-url}">{$package-group/title/string()}</a></h3>
