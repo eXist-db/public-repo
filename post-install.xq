@@ -14,27 +14,22 @@ declare namespace sm="http://exist-db.org/xquery/securitymanager";
 declare namespace system="http://exist-db.org/xquery/system";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
-declare namespace repo="http://exist-db.org/xquery/repo";
-
-(: Until https://github.com/eXist-db/exist/issues/3734 is fixed, we hard code the default user and group :)
-
-declare variable $local:owner-user := 
-    (: config:repo-descriptor()/repo:permissions/@user :)
-    "repo";
-declare variable $local:owner-group := 
-    (: config:repo-descriptor()/repo:permissions/@group :)
-    "repo";
+(: Until https://github.com/eXist-db/exist/issues/3734 is fixed, we hard code the default group name :)
+declare variable $repo-group := 
+    (: config:repo-permissions()?group :)
+    "repo"
+;
 
 (:~
  : Set user and group to be owner by values in repo.xml
  :)
-declare function local:chgrp-repo($resource as xs:string) {
-    if (sm:get-permissions(xs:anyURI($resource))/sm:permission/@group = $local:owner-group) then
+declare function local:set-data-collection-permissions($resource as xs:string) {
+    if (sm:get-permissions(xs:anyURI($resource))/sm:permission/@group = $repo-group) then
         ()
     else
         (
-            sm:chown($resource, $local:owner-user),
-            sm:chgrp($resource, $local:owner-group)
+            sm:chgrp($resource, $repo-group),
+            sm:chmod(xs:anyURI($resource), "rwxrwxr-x")
         )
 };
 
@@ -42,18 +37,14 @@ declare function local:chgrp-repo($resource as xs:string) {
 
 for $col in ($config:app-data-col, xmldb:get-child-collections($config:app-data-col) ! ($config:app-data-col || "/" || .))
 return
-    local:chgrp-repo($col),
+    local:set-data-collection-permissions($col),
 
 (: Build package metadata if missing :)
 
 if (doc-available($config:raw-packages-doc) and doc-available($config:package-groups-doc)) then
     ()
 else
-    system:as-user(
-        $local:owner-user, 
-        $local:owner-group, 
-        (
-            scanrepo:rebuild-raw-packages(), 
-            scanrepo:rebuild-package-groups()
-        )
+    (
+        scanrepo:rebuild-all-package-metadata(),
+        ($config:raw-packages-doc, $config:package-groups-doc) ! local:set-data-collection-permissions(.)
     )

@@ -199,7 +199,7 @@ declare function scanrepo:publish-package($xar-filename as xs:string) {
 (:~
  : Rebuild the package-groups metadata by merging raw-packages metadata into package-groups
  :)
-declare function scanrepo:rebuild-package-groups() {
+declare function scanrepo:rebuild-package-groups() as xs:string {
     let $groups :=
         for $package in doc($config:raw-packages-doc)//package
         group by $name := $package/name
@@ -229,4 +229,12 @@ declare function scanrepo:rebuild-raw-packages() as xs:string {
         }
     return
         xmldb:store($config:metadata-col, $config:raw-packages-doc-name, $raw-packages)
+};
+
+(:~
+ : Rebuild all package metadata
+ :)
+declare function scanrepo:rebuild-all-package-metadata() as xs:string+ {
+    scanrepo:rebuild-raw-packages(),
+    scanrepo:rebuild-package-groups()
 };

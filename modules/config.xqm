@@ -65,6 +65,17 @@ declare function config:repo-descriptor() as element(repo:meta) {
 };
 
 (:~
+ : Returns the user and group from the repo.xml descriptor.
+ :)
+declare function config:repo-permissions() as map(*) { 
+    config:repo-descriptor()/repo:permissions ! 
+        map { 
+            "user": ./@user/string(), 
+            "group": ./@group/string() 
+        }
+};
+
+(:~
  : Returns the expath-pkg.xml descriptor for the current application.
  :)
 declare function config:expath-descriptor() as element(expath:package) {
