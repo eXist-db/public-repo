@@ -8,6 +8,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace sm="http://exist-db.org/xquery/securitymanager";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
@@ -32,15 +33,25 @@ declare function local:upload-and-publish($xar-filename as xs:string, $xar-binar
 
 let $xar-filename := request:get-uploaded-file-name("files[]")
 let $xar-binary := request:get-uploaded-file-data("files[]")
+let $user := request:get-attribute("org.exist.public-repo.login.user")
+let $required-group := config:repo-permissions()?group
 return
-    try {
-        local:upload-and-publish($xar-filename, $xar-binary)
-    } catch * {
-        map {
-            "result": 
-                map { 
-                    "name": $xar-filename,
-                    "error": $err:description
-                }
+    if (exists($user) and sm:get-user-groups($user) = $required-group) then
+        try {
+            local:upload-and-publish($xar-filename, $xar-binary)
+        } catch * {
+            map {
+                "result": 
+                    map { 
+                        "name": $xar-filename,
+                        "error": $err:description
+                    }
+            }
         }
-    }
+    else
+        (
+            response:set-status-code(401),
+            map {
+                "error": "User must be a member of the " || $required-group || " group."
+            }
+        )

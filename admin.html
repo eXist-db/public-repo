@@ -50,7 +50,7 @@
     $(function () {
         'use strict';
         $('#fileupload').fileupload({
-            url: "modules/upload.xq",
+            url: "put-package",
             dataType: 'json',
             done: function (e, data) {
                 $.each(data.result.files, function (index, file) {

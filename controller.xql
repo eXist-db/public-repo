@@ -3,6 +3,8 @@ xquery version "3.1";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "modules/config.xqm";
 import module namespace login="http://exist-db.org/xquery/login" at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
 
+declare namespace sm="http://exist-db.org/xquery/securitymanager";
+
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
@@ -56,6 +58,12 @@ else if ($exist:path eq "/admin.html") then
                     </forward>
                 </view>
             </dispatch>
+
+(:  Protected resource :)
+else if ($exist:path eq "/put-package") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/put-package.xq"/>
+    </dispatch>
 
 else if (ends-with($exist:resource, ".html") and starts-with($exist:path, "/packages")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
