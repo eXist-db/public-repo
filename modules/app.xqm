@@ -7,15 +7,22 @@ xquery version "3.1";
 module namespace app="http://exist-db.org/xquery/app";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
 import module namespace versions="http://exist-db.org/apps/public-repo/versions" at "versions.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
 
-declare function app:abs-path-to-apps-xml($node as node(), $model as map(*), $mode as xs:string?) {
-    let $url := request:get-parameter("app-root-absolute-url", ()) || "/public/apps.xml"
-    return
-        <a href="{$url}">{$url}</a>
+(:~
+ : Rebuild the package-groups metadata
+ :)
+declare function app:rebuild-package-groups-metadata($node as node(), $model as map(*), $rebuild-package-groups-metadata as xs:boolean?) {
+    if ($rebuild-package-groups-metadata) then
+        let $_ := scanrepo:rebuild-package-groups()
+        return
+            <p class="success">The package-groups metadata has been rebuilt.</p>
+    else
+        ()
 };
 
 (:~
@@ -237,7 +244,7 @@ declare function app:package-group-to-list-item($package-group as element(packag
                                             let $requires := $package/requires
                                             return
                                                 <li>
-                                                    <a href="{$download-version-url}">{ $package/version }</a>
+                                                    <a href="{$download-version-url}">{ $package/version/string() }</a>
                                                     {
                                                         " (Note: Requires eXist-db "
                                                         || app:requires-to-english($requires)
@@ -280,7 +287,7 @@ declare function app:package-group-to-list-item($package-group as element(packag
                     <p> 
                         {$newest-package/description/string()}
                         <br/>
-                        Version {$newest-package/version} {
+                        Version {$newest-package/version/string()} {
                             if ($requires) then
                                 concat(" (Requires eXist-db ", app:requires-to-english($requires), ".)")
                             else
