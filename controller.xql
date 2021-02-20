@@ -89,21 +89,18 @@ else if (ends-with($exist:resource, ".html")) then
         </view>
     </dispatch>
 
-(: TODO figure out how to turn the absolute path $config:app-data-parent-col 
- : into the relative path needed for the forward directive - joewiz :)
-else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".xar")) then
+else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".xar") or ends-with($exist:resource, ".zip")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="../../{$config:app-data-col-name}/{$config:packages-col-name}/{$exist:resource}"/>
+        <forward url="{$exist:controller}/modules/get-package.xq">
+            <add-parameter name="filename" value="{$exist:resource}"/>
+        </forward>
     </dispatch>
 
 else if (contains($exist:path, "/public/") and (ends-with($exist:resource, ".png") or ends-with($exist:resource, ".svg"))) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="../../{$config:app-data-col-name}/{$config:icons-col-name}/{$exist:resource}"/>
-    </dispatch>
-
-else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".zip")) then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="../modules/download-xar-zip.xq"/>
+        <forward url="{$exist:controller}/modules/get-icon.xq">
+            <add-parameter name="filename" value="{$exist:resource}"/>
+        </forward>
     </dispatch>
 
 else if ($exist:path eq "/find" or ends-with($exist:resource, ".zip")) then
