@@ -15,13 +15,13 @@ declare namespace response="http://exist-db.org/xquery/response";
 
 let $abbrev := request:get-parameter("abbrev", ())
 let $name := request:get-parameter("name", ())
-let $semVer := request:get-parameter("semver", ())
-let $minVersion := request:get-parameter("semver-min", ())
-let $maxVersion := request:get-parameter("semver-max", ())
+let $exist-version-semver := request:get-parameter("processor", $config:default-exist-version)
 let $version := request:get-parameter("version", ())
+let $semver := request:get-parameter("semver", ())
+let $semver-min := request:get-parameter("semver-min", ())
+let $semver-max := request:get-parameter("semver-max", ())
 let $zip := request:get-parameter("zip", ())
 let $info := request:get-parameter("info", ())
-let $procVersion := request:get-parameter("processor", $config:default-exist-version)
 let $app-root-absolute-url := request:get-parameter("app-root-absolute-url", ())
 
 let $package-group :=
@@ -30,25 +30,26 @@ let $package-group :=
     else
         doc($config:package-groups-doc)//package-group[abbrev eq $abbrev]
 
-let $compatible-package := versions:find-compatible-packages($package-group//package, $procVersion, $version, $semVer, $minVersion, $maxVersion)
+let $newest-compatible-package := versions:find-newest-compatible-package($package-group//package, $exist-version-semver, $version, $semver, $semver-min, $semver-max)
 
 return
-    if ($compatible-package) then
+    if ($newest-compatible-package) then
         (: TODO shouldn't we get $abs-public from $config? - joewiz :)
         let $abs-public := $app-root-absolute-url || "/public/"
-        let $xar-filename := $compatible-package/@path
+        let $xar-filename := $newest-compatible-package/@path
         return
             if ($info) then
                 element found {
-                    $compatible-package/@sha256, 
-                    $compatible-package/version ! attribute version {.},
-                    $compatible-package/@path
+                    $newest-compatible-package/@sha256, 
+                    $newest-compatible-package/version ! attribute version {.},
+                    $newest-compatible-package/@path
                 }
             else if ($zip) then
                 response:redirect-to(xs:anyURI($abs-public || $xar-filename || ".zip"))
             else
                 response:redirect-to(xs:anyURI($abs-public || $xar-filename))
-    else (
-        response:set-status-code(404),
-        <p>Package file not found!</p>
-    )
+    else 
+        (
+            response:set-status-code(404),
+            <p>Package file not found!</p>
+        )

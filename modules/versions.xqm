@@ -8,7 +8,6 @@ module namespace versions="http://exist-db.org/apps/public-repo/versions";
 
 import module namespace semver="http://exist-db.org/xquery/semver";
 
-
 (:~
  : Find all packages compatible with a specific version of eXist (or higher)
  :)
@@ -20,26 +19,26 @@ declare function versions:find-compatible-packages(
 };
 
 (:~
- : Find all packages compatible with a specific version of eXist (or higher) and other version number criteria
+ : Find all packages compatible with a version of eXist meeting various version criteria
  :
- : TODO: find packages with version, semVer, or min/max attributes to test those conditions - joewiz
+ : TODO: find packages with version, semver, or min/max-version attributes to test those conditions - joewiz
  :)
 declare function versions:find-compatible-packages(
     $packages as element(package)+,
     $exist-version-semver as xs:string, 
     $version as xs:string?, 
-    $semVer as xs:string?, 
-    $min as xs:string?, 
-    $max as xs:string?
+    $semver as xs:string?, 
+    $semver-min as xs:string?, 
+    $semver-max as xs:string?
 ) as element(package)* {
     for $package in $packages
     return
-        if ($semVer) then
-            versions:find-version($packages, $semVer, $semVer)
+        if ($semver) then
+            versions:find-version($packages, $semver, $semver)
         else if ($version) then
             $packages[version = $version]
-        else if ($min or $max) then
-            versions:find-version($packages, $min, $max)
+        else if ($semver-min and $semver-max) then
+            versions:find-version($packages, $semver-min, $semver-max)
         else if 
             (
                 $exist-version-semver and
@@ -49,6 +48,31 @@ declare function versions:find-compatible-packages(
             $package
         else
             ()
+};
+
+(:~
+ : Find the newest version of packages compatible with a specific version of eXist (or higher)
+ :)
+declare function versions:find-newest-compatible-package(
+    $packages as element(package)+, 
+    $exist-version-semver as xs:string
+) as element(package)? {
+    versions:find-newest-compatible-package($packages, $exist-version-semver, (), (), (), ())
+};
+
+(:~
+ : Find the newest version of packages compatible with a version of eXist meeting various version criteria
+ :)
+declare function versions:find-newest-compatible-package(
+    $packages as element(package)+,
+    $exist-version-semver as xs:string, 
+    $version as xs:string?, 
+    $semver as xs:string?, 
+    $min-version as xs:string?, 
+    $max-version as xs:string?
+) as element(package)? {
+    versions:find-compatible-packages($packages, $exist-version-semver, $version, $semver, $min-version, $max-version)
+    => head()
 };
 
 declare 
