@@ -8,10 +8,120 @@ module namespace app="http://exist-db.org/xquery/app";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
+import module namespace templates="http://exist-db.org/xquery/templates";
 import module namespace versions="http://exist-db.org/apps/public-repo/versions" at "versions.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+
+(:~
+ : Load the package groups document for the admin page's package-groups section
+ :)
+declare %templates:wrap function app:load-package-groups($node as node(), $model as map(*)) {
+    map { 
+        "package-groups": 
+            for $package-group in doc($config:package-groups-doc)//package-group 
+            order by $package-group/abbrev[not(@type)]
+            return
+                $package-group,
+        "dates-published": 
+            for $put in collection($config:logs-col)//event[type eq "put-package"]
+            group by $package-name := $put/package-name/string()
+            return
+                map {
+                    "package-name": $package-name,
+                    "versions": $put ! map { "version": ./package-version/string(), "date-published": ./dateTime cast as xs:dateTime }
+                }
+    }
+};
+
+(:~
+ : Load the package title for the admin page's package-groups section
+ :)
+declare function app:package-group-title($node as node(), $model as map(*)) {
+    $model?package-group/title/string()
+};
+
+(:~
+ : Load the package title for the admin page's package-groups section
+ :)
+declare function app:package-group-abbrev($node as node(), $model as map(*)) {
+    $model?package-group/abbrev/string()
+};
+
+(:~
+ : Load the package title for the admin page's package-groups section
+ :)
+declare function app:package-group-name($node as node(), $model as map(*)) {
+    $model?package-group/name/string()
+};
+
+(:~
+ : Load the packages for each package-group
+ :)
+declare %templates:wrap function app:load-packages($node as node(), $model as map(*)) {
+    map { "packages": $model?package-group//package }
+};
+
+
+(:~
+ : Load the package version
+ :)
+declare function app:package-version($node as node(), $model as map(*)) {
+    $model?package/version
+};
+
+(:~
+ : Load the package version
+ :)
+declare function app:package-requires($node as node(), $model as map(*)) {
+    let $requires := $model?package/requires[@processor eq "http://exist-db.org"]
+    return
+        ($requires/@* except $requires/@processor) ! (./name() || ": " || ./string())
+};
+
+(:~
+ : Load the package version
+ :)
+declare function app:package-date-published($node as node(), $model as map(*)) {
+    let $date-published := $model?dates-published[?package-name eq $model?package/name]?versions[?version eq $model?package/version]?date-published => head()
+    return
+        if (exists($date-published)) then
+            if (xs:date($date-published) = current-date()) then
+                format-dateTime($date-published, "Today [H00]:[m00]:[s00]")
+            else
+                format-dateTime($date-published, "[M00]/[D00]/[Y0000] [H00]:[m00]:[s00]")
+        else
+            "- (Predates logging)"
+};
+
+(:~
+ : Load the get-package logs for the admin section's table
+ :)
+declare %templates:wrap function app:load-get-package-logs-for-admin-table($node as node(), $model as map(*), $top-n as xs:integer) {
+    let $package-logs := 
+        for $event in collection($config:logs-col)//event[type eq "get-package"]
+        group by $package-name := $event/package-name/string()
+        let $count := count($event)
+        order by $count descending
+        return
+            map {
+                "package-name": $package-name,
+                "count": $count
+            }
+    return
+        map { "package-logs": 
+            subsequence($package-logs, 1, $top-n)
+        }
+};
+
+(:~
+ : Load the package title for the admin section's table
+ :)
+declare function app:get-package-stats($node as node(), $model as map(*)) {
+    $model?package-log?package-name || " (" || $model?package-log?count || ")"
+};
 
 (:~
  : Rebuild the package-groups metadata
@@ -316,3 +426,27 @@ declare function app:requires-to-english($requires as element()) {
     else
         " version " || $config:default-exist-version
 };
+
+(:~
+ : Utility function for app:mkcol
+ :)
+declare 
+    %private
+function app:mkcol-recursive($collection as xs:string, $components as xs:string*) {
+    if (exists($components)) then
+        let $newColl := concat($collection, "/", $components[1])
+        return (
+            xmldb:create-collection($collection, $components[1]),
+            app:mkcol-recursive($newColl, subsequence($components, 2))
+        )
+    else
+        ()
+};
+
+(:~
+ : Recursively create a collection hierarchy
+ :)
+declare function app:mkcol($collection as xs:string, $path as xs:string) {
+    app:mkcol-recursive($collection, tokenize($path, "/"))
+};
+

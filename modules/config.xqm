@@ -9,8 +9,8 @@ module namespace config="http://exist-db.org/xquery/apps/config";
 
 declare namespace system="http://exist-db.org/xquery/system";
 
-declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
+declare namespace repo="http://exist-db.org/xquery/repo";
 
 (: Determine the application root collection from the current module load path :)
 
@@ -38,17 +38,23 @@ declare variable $config:app-data-col-name := "public-repo-data";
 declare variable $config:packages-col-name := "packages";
 declare variable $config:icons-col-name := "icons";
 declare variable $config:metadata-col-name := "metadata";
+declare variable $config:logs-col-name := "logs";
 
 declare variable $config:app-data-col := $config:app-data-parent-col || "/" || $config:app-data-col-name;
 declare variable $config:packages-col := $config:app-data-col || "/" || $config:packages-col-name;
 declare variable $config:icons-col := $config:app-data-col || "/" || $config:icons-col-name;
 declare variable $config:metadata-col := $config:app-data-col || "/" || $config:metadata-col-name;
+declare variable $config:logs-col := $config:app-data-col || "/" || $config:logs-col-name;
+declare function config:log-subcol($date as xs:date) { format-date($date, "[Y]/[M01]") };
+declare function config:log-col($date as xs:date) { $config:logs-col || "/" || config:log-subcol($date) };
 
 declare variable $config:package-groups-doc-name := "package-groups.xml";
 declare variable $config:raw-packages-doc-name := "raw-packages.xml";
+declare function config:log-doc-name($date as xs:date) { "public-repo-log-" || format-date($date, "[Y]-[M01]-[D01]") || ".xml" };
 
 declare variable $config:package-groups-doc := $config:metadata-col || "/" || $config:package-groups-doc-name;
 declare variable $config:raw-packages-doc := $config:metadata-col || "/" || $config:raw-packages-doc-name;
+declare function config:log-doc($date as xs:date) { config:log-col($date) || "/" || config:log-doc-name($date) };
 
 (: The default version number here is assumed when a client does not send a version parameter.
    It is set to 2.2.0 because this version was the last one known to work with most older packages

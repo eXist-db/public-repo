@@ -12,12 +12,39 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 (: The following external variables are set by the repo:deploy function :)
 
-(: file path pointing to the exist installation directory :)
+(: File path pointing to the exist installation directory :)
 declare variable $home external;
-(: path to the directory containing the unpacked .xar package :)
+(: Path to the directory containing the unpacked .xar package :)
 declare variable $dir external;
-(: the target collection into which the app is deployed :)
+(: The target collection into which the app is deployed :)
 declare variable $target external;
+
+(: Helper function to recursively create a collection hierarchy :)
+declare function local:mkcol-recursive($collection as xs:string, $components as xs:string*) {
+    if (exists($components)) then
+        let $newColl := concat($collection, "/", $components[1])
+        return (
+            xmldb:create-collection($collection, $components[1]),
+            local:mkcol-recursive($newColl, subsequence($components, 2))
+        )
+    else
+        ()
+};
+
+(: Create a collection hierarchy :)
+declare function local:mkcol($collection as xs:string, $path as xs:string) {
+    local:mkcol-recursive($collection, tokenize($path, "/"))
+};
+
+(: Configuration file for the logs collection :)
+declare variable $logs-xconf := 
+    <collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <index>
+            <range>
+                <create qname="type" type="xs:string"/>
+            </range>
+        </index>
+    </collection>;
 
 (: Read the collection names from modules/config.xqm :)
 
@@ -34,12 +61,20 @@ let $app-data-col := $config-module-variables?app-data-col
 let $icons-col-name := $config-module-variables?icons-col-name
 let $metadata-col-name := $config-module-variables?metadata-col-name
 let $packages-col-name := $config-module-variables?packages-col-name
+let $logs-col-name := $config-module-variables?logs-col-name
+let $logs-col := $config-module-variables?logs-col
 return
     (
         (: Create the data collection hierarchy :)
         
         xmldb:create-collection($app-data-parent-col, $app-data-col-name),
-        for $col-name in ($icons-col-name, $metadata-col-name, $packages-col-name)
+        for $col-name in ($icons-col-name, $metadata-col-name, $packages-col-name, $logs-col-name)
         return
-            xmldb:create-collection($app-data-col, $col-name)
+            xmldb:create-collection($app-data-col, $col-name),
+
+        (: Create log indexes :)
+        (: Store the collection configuration :)
+        local:mkcol("/db/system/config", $config-module-variables?logs-col),
+        xmldb:store("/db/system/config" || $config-module-variables?logs-col, "collection.xconf", $logs-xconf),
+        xmldb:reindex($config-module-variables?logs-col)
     )

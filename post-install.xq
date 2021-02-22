@@ -14,9 +14,22 @@ declare namespace sm="http://exist-db.org/xquery/securitymanager";
 declare namespace system="http://exist-db.org/xquery/system";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
+(: The following external variables are set by the repo:deploy function :)
+
+(: file path pointing to the exist installation directory :)
+declare variable $home external;
+(: path to the directory containing the unpacked .xar package :)
+declare variable $dir external;
+(: the target collection into which the app is deployed :)
+declare variable $target external;
+
 (: Until https://github.com/eXist-db/exist/issues/3734 is fixed, we hard code the default group name :)
 declare variable $repo-group := 
     (: config:repo-permissions()?group :)
+    "repo"
+;
+declare variable $repo-user := 
+    (: config:repo-permissions()?user :)
     "repo"
 ;
 
@@ -28,6 +41,7 @@ declare function local:set-data-collection-permissions($resource as xs:string) {
         ()
     else
         (
+            sm:chown($resource, $repo-user),
             sm:chgrp($resource, $repo-group),
             sm:chmod(xs:anyURI($resource), "rwxrwxr-x")
         )
@@ -47,4 +61,7 @@ else
     (
         scanrepo:rebuild-all-package-metadata(),
         ($config:raw-packages-doc, $config:package-groups-doc) ! local:set-data-collection-permissions(.)
-    )
+    ),
+    
+(: execute get-package.xq as repo group, so that it can write to logs :)
+sm:chmod(xs:anyURI($target || "/modules/get-package.xq"), "rwsrwxr-x")
