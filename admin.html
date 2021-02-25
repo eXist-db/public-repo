@@ -1,15 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" class="templates:surround?with=templates/page.html&amp;at=container-body">
+<div xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/page.html" data-template-at="container-body">
     <div class="row">
         <div class="col-md-12">
-            <h1>Package Upload</h1>
-            <p>Upload xar packages to the public repository. New packages will not appear in the list of
-            available packages immediately. Instead you will have to trigger an update afterwards, using
-            the "publish" button below. This way you can upload multiple packages before publishing them.</p>
+            <h1>Admin</h1>
+            <p>View administrative information about packages and upload new ones.</p>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-8">
+            <div>
+                <h2>Statistics</h2>
+                <h3>Top 5 packages</h3>
+                <ol data-template="app:load-get-package-logs-for-admin-table" data-template-top-n="5">
+                    <li data-template="templates:each" data-template-from="package-logs" data-template-to="package-log">
+                        <span data-template="app:get-package-stats"/>
+                    </li>
+                </ol>
+            </div>
+            <div data-template="app:load-package-groups">
+                <h2>All package groups</h2>
+                <div data-template="templates:each" data-template-from="package-groups" data-template-to="package-group">
+                    <h3><span data-template="app:package-group-abbrev"/></h3>
+                    <dl>
+                        <dt>Abbrev</dt>
+                        <dd><span data-template="app:package-group-abbrev"/></dd>
+                        <dt>Name</dt>
+                        <dd><span data-template="app:package-group-name"/></dd>
+                        <dt>Title</dt>
+                        <dd><span data-template="app:package-group-title"/></dd>
+                    </dl>
+                    <table data-template="app:load-packages" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Version</th>
+                                <th>eXist Requirement</th>
+                                <th>Date Published</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-template="templates:each" data-template-from="packages" data-template-to="package">
+                                <td><span data-template="app:package-version"/></td>
+                                <td><span data-template="app:package-requires"/></td>
+                                <td><span data-template="app:package-date-published"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <p>
+                <a href="index.html" class="btn btn-primary">
+                    <i class="glyphicon glyphicon-share"/> Return to list 
+                </a>
+            </p>
+            <p>
+                <a href="?rebuild-package-groups-metadata=true" class="btn btn-default">
+                    <i class="glyphicon glyphicon-repeat"/> Rebuild package-groups metadata 
+                </a>
+            </p>
+            <a href="index.html?logout=true" class="btn btn-default">
+                <i class="glyphicon glyphicon-log-out"/> Log out</a>
+            <h2>Upload Packages</h2>
+            <p>Upload xar packages to the public repository. New packages will appear in the list of
+                available packages immediately upon upload.</p>
+            <p data-template="app:rebuild-package-groups-metadata"/>
+                        
             <span class="btn btn-success fileinput-button">
                 <i class="glyphicon glyphicon-plus"/>
                 <span>Select files...</span>
@@ -28,16 +84,6 @@
                 <tbody id="files"/>
             </table>
         </div>
-        <div class="col-md-6">
-            <p>
-                <a href="index.html" class="btn btn-primary">
-                    <i class="glyphicon glyphicon-share"/> Return to list 
-                </a>
-            </p>
-            <p>Publishing will take a while to process apps.</p>
-            <a href="index.html?logout=true" class="btn btn-default">
-                <i class="glyphicon glyphicon-log-out"/> Log out</a>
-        </div>
     </div>
     <script type="text/javascript" src="resources/scripts/jquery.ui.widget.js"/>
     <script type="text/javascript" src="resources/scripts/jquery.iframe-transport.js"/>
@@ -46,7 +92,7 @@
     $(function () {
         'use strict';
         $('#fileupload').fileupload({
-            url: "modules/upload.xql",
+            url: "put-package",
             dataType: 'json',
             done: function (e, data) {
                 $.each(data.result.files, function (index, file) {

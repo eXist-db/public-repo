@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div class="templates:surround?with=templates/page.html&amp;at=container-body">
+<div data-template="templates:surround" data-template-with="templates/page.html" data-template-at="container-body">
     <div class="row">
         <div class="col-md-12">
             <h1>Public Application Repository</h1>
@@ -10,7 +10,7 @@
                     Package Manager app.</li>
                 <li>Install the package directly from the Dashboard's Package Manager app. (By default the
                     Package Manager is configured to access the eXist-db public application repository feed,
-                    at <a href="http://demo.exist-db.org/exist/apps/public-repo/public/apps.xml">http://demo.exist-db.org/exist/apps/public-repo/public/apps.xml</a>. To check or
+                    at <a href="https://exist-db.org/exist/apps/public-repo/public/apps.xml">https://exist-db.org/exist/apps/public-repo/public/apps.xml</a>. To check or
                     edit the repository URL your Package Manager is using, go to your Dashboard, click on
                     the gear icon beneath the eXist-db icon, and you will see a field, "Public Repository
                     URL.")</li>
@@ -24,7 +24,7 @@
         <div id="listWrapper" class="col-md-8">
             <h2>Packages</h2>
             <ul class="packages">
-                <li class="app:list-packages"/>
+                <li data-template="app:list-packages"/>
             </ul>
         </div>
         <div class="col-md-4">

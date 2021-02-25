@@ -1,15 +1,19 @@
+xquery version "3.1";
+
 (:~
- : A set of helper functions to access the application context from
- : within a module.
+ : Configuration options for the application and a set of helper functions to access 
+ : the application context.
  :)
+
 module namespace config="http://exist-db.org/xquery/apps/config";
 
-declare namespace repo="http://exist-db.org/xquery/repo";
-declare namespace expath="http://expath.org/ns/pkg";
+declare namespace system="http://exist-db.org/xquery/system";
 
-(: 
-    Determine the application root collection from the current module load path.
-:)
+declare namespace expath="http://expath.org/ns/pkg";
+declare namespace repo="http://exist-db.org/xquery/repo";
+
+(: Determine the application root collection from the current module load path :)
+
 declare variable $config:app-root := 
     let $rawPath := system:get-module-load-path()
     let $modulePath :=
@@ -17,6 +21,8 @@ declare variable $config:app-root :=
         if (starts-with($rawPath, "xmldb:exist://")) then
             if (starts-with($rawPath, "xmldb:exist://embedded-eXist-server")) then
                 substring($rawPath, 36)
+            else if (starts-with($rawPath, "xmldb:exist://null")) then
+                substring($rawPath, 19)
             else
                 substring($rawPath, 15)
         else
@@ -25,19 +31,56 @@ declare variable $config:app-root :=
         substring-before($modulePath, "/modules")
 ;
 
-declare variable $config:public := concat($config:app-root, "/public");
+(: Default collection and resource names for binary assets and extracted package metadata :)
 
-declare variable $config:metadata-collection := concat($config:app-root, "/meta");
-declare variable $config:apps-doc := 'apps.xml';
-declare variable $config:packages-doc := 'packages.xml';
-declare variable $config:packages-meta := concat($config:metadata-collection, '/', $config:packages-doc);
-declare variable $config:apps-meta := concat($config:metadata-collection, '/', $config:apps-doc);
+declare variable $config:app-data-parent-col := "/db/apps";
+declare variable $config:app-data-col-name := "public-repo-data";
+declare variable $config:packages-col-name := "packages";
+declare variable $config:icons-col-name := "icons";
+declare variable $config:metadata-col-name := "metadata";
+declare variable $config:logs-col-name := "logs";
+
+declare variable $config:app-data-col := $config:app-data-parent-col || "/" || $config:app-data-col-name;
+declare variable $config:packages-col := $config:app-data-col || "/" || $config:packages-col-name;
+declare variable $config:icons-col := $config:app-data-col || "/" || $config:icons-col-name;
+declare variable $config:metadata-col := $config:app-data-col || "/" || $config:metadata-col-name;
+declare variable $config:logs-col := $config:app-data-col || "/" || $config:logs-col-name;
+declare function config:log-subcol($date as xs:date) { format-date($date, "[Y]/[M01]") };
+declare function config:log-col($date as xs:date) { $config:logs-col || "/" || config:log-subcol($date) };
+
+declare variable $config:package-groups-doc-name := "package-groups.xml";
+declare variable $config:raw-packages-doc-name := "raw-packages.xml";
+declare function config:log-doc-name($date as xs:date) { "public-repo-log-" || format-date($date, "[Y]-[M01]-[D01]") || ".xml" };
+
+declare variable $config:package-groups-doc := $config:metadata-col || "/" || $config:package-groups-doc-name;
+declare variable $config:raw-packages-doc := $config:metadata-col || "/" || $config:raw-packages-doc-name;
+declare function config:log-doc($date as xs:date) { config:log-col($date) || "/" || config:log-doc-name($date) };
+
+(: The default version number here is assumed when a client does not send a version parameter.
+   It is set to 2.2.0 because this version was the last one known to work with most older packages
+   before packages began to declare their version constraints in their package metadata.
+   So this should stay as 2.2.0 until we (a) no longer have 2.2-era clients or (b) no longer have
+   packages that we care to offer compatibility with 2.2.
+ :)
+declare variable $config:default-exist-version := "2.2.0";
+declare variable $config:exist-processor-name := "http://exist-db.org";
 
 (:~
  : Returns the repo.xml descriptor for the current application.
  :)
 declare function config:repo-descriptor() as element(repo:meta) {
     doc(concat($config:app-root, "/repo.xml"))/repo:meta
+};
+
+(:~
+ : Returns the user and group from the repo.xml descriptor.
+ :)
+declare function config:repo-permissions() as map(*) { 
+    config:repo-descriptor()/repo:permissions ! 
+        map { 
+            "user": ./@user/string(), 
+            "group": ./@group/string() 
+        }
 };
 
 (:~

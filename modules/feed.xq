@@ -1,47 +1,68 @@
-xquery version "3.0";
+xquery version "3.1";
+
+(:~
+ : Generate an Atom feed of packages, with an entry for the newest version of each package
+ :)
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 
-declare option exist:serialize "method=xml media-type=application/atom+xml";
+declare namespace request="http://exist-db.org/xquery/request";
+declare namespace util="http://exist-db.org/xquery/util";
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+
+declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+
+declare option output:method "xml";
+declare option output:media-type "application/atom+xml";
+
+declare function local:add-xhtml-ns($nodes) {
+    for $node in $nodes
+    return
+        if ($node instance of element()) then
+            element { QName("http://www.w3.org/1999/xhtml", local-name($node)) } { local:add-xhtml-ns($node/node()) }
+        else 
+            $node
+};
 
 declare function local:feed-entries() {
     let $repoURL := concat(substring-before(request:get-url(), "public-repo/"), "public-repo/")
-    for $app in doc($config:apps-meta)//app
+    for $package-group in doc($config:package-groups-doc)//package-group
+    let $newest-package := head($package-group//package)
     let $icon :=
-        if ($app/icon) then
-            if ($app/@status) then
-                $app/icon[1]
+        if ($newest-package/icon) then
+            if ($newest-package/@status) then
+                $newest-package/icon[1]
             else
-                $repoURL || "public/" || $app/icon[1]
+                $repoURL || "public/" || $newest-package/icon[1]
         else
             $repoURL || "resources/images/package.png"
-    let $required-exist-version := $app/requires[@processor eq "http://exist-db.org"]/(@version, @semver-min)[1]
+    let $required-exist-version := $newest-package/requires[@processor eq $config:exist-processor-name]/(@version, @semver-min)[1]
     let $info-url :=
-        concat($repoURL, "packages/", $app/abbrev[not(@type eq "legacy")], ".html",
+        concat($repoURL, "packages/", $newest-package/abbrev[not(@type eq "legacy")], ".html",
             if ($required-exist-version) then
                 concat("?eXist-db-min-version=", $required-exist-version)
             else
                 ()
         )
-    let $title := $app/title
-    let $version := $app/version
-    let $authors := $app/author
-    let $description := $app/description
-    let $license := $app/license
-    let $website := $app/website
-    let $has-changelog := $app/changelog/*
+    let $title := $newest-package/title
+    let $version := $newest-package/version
+    let $authors := $newest-package/author
+    let $description := $newest-package/description
+    let $license := $newest-package/license
+    let $website := $newest-package/website
+    let $has-changelog := $newest-package/changelog/*
     let $changes := 
         if ($has-changelog) then
-            for $change in $app/changelog/change
+            for $change in $newest-package/changelog/change
             let $version := $change/@version
-            let $comment := $change/node()
+            let $comment := local:add-xhtml-ns($change/node())
             return
                 (
                 <dt xmlns="http://www.w3.org/1999/xhtml">Version { $version/string() }</dt>,
                 <dd xmlns="http://www.w3.org/1999/xhtml">{ $comment }</dd>
                 )
         else ()
-    let $updated := xmldb:last-modified($config:public, $app/@path)
+    let $updated := xmldb:last-modified($config:packages-col, $newest-package/@path)
     let $content := 
         <div xmlns="http://www.w3.org/1999/xhtml">
             <div class="icon">
@@ -90,7 +111,7 @@ declare function local:feed() {
     let $subtitle := "Repository for apps and libraries on eXist-db.org."
     let $self-href := request:get-url()
     let $id := "urn:uuid:" || util:uuid("existdb-public-package-repository-feed")
-    let $updated := xmldb:last-modified($config:public, "apps.xml")
+    let $updated := xmldb:last-modified($config:packages-col, "apps.xml")
     let $feed-entries := local:feed-entries()
     return
         <feed xmlns="http://www.w3.org/2005/Atom">
