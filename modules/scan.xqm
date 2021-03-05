@@ -223,7 +223,7 @@ declare function scanrepo:rebuild-raw-packages() as xs:string {
     let $raw-packages := 
         element raw-packages { 
             for $package-xar in xmldb:get-child-resources($config:packages-col)[ends-with(., ".xar")]
-            order by $package-xar
+            order by $package-xar collation "http://www.w3.org/2013/collation/UCA?numeric=yes"
             return
                 scanrepo:extract-raw-package($package-xar)
         }

@@ -76,7 +76,7 @@ declare function app:package-version($node as node(), $model as map(*)) {
  : Load the package version
  :)
 declare function app:package-requires($node as node(), $model as map(*)) {
-    let $requires := $model?package/requires[@processor eq "http://exist-db.org"]
+    let $requires := $model?package/requires[@processor eq $config:exist-processor-name]
     return
         ($requires/@* except $requires/@processor) ! (./name() || ": " || ./string())
 };
@@ -332,11 +332,11 @@ declare function app:package-group-to-list-item($package-group as element(packag
                                     <td>
                                         <ul>{
                                             (: show links to older versions of the package that are compatible with the requested version of eXist :)
-                                            for $package in reverse($older-packages)
+                                            for $package in $older-packages
                                             let $download-version-url := concat($repoURL, "public/", $package/@path)
                                             return
                                                 <li>
-                                                    <a href="{$download-version-url}">{$package/version/string()}</a>
+                                                    <a href="{$download-version-url}">{$package/@path/string()}</a>
                                                 </li>,
                                                 
                                             (: show links to any other version of the package that is compatible with the requested version of eXist, 
@@ -383,7 +383,7 @@ declare function app:package-group-to-list-item($package-group as element(packag
                                 for $change in $newest-package/changelog/change
                                 let $version := $change/@version/string()
                                 let $comment := $change/node()
-                                order by $version descending
+                                order by $version descending collation "http://www.w3.org/2013/collation/UCA?numeric=yes"
                                 return
                                     <tr>
                                         <td>{$version}</td>
