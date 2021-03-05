@@ -43,6 +43,7 @@ declare function local:upgrade-to-public-repo-2-storage() as element()+ {
         (
             element packages {
                 for $package in xmldb:get-child-resources("/db/apps/public-repo/public")[ends-with(., ".xar")]
+                order by $package collation "http://www.w3.org/2013/collation/UCA?numeric=yes"
                 return
                     xmldb:copy-resource("/db/apps/public-repo/public", $package, "/db/apps/public-repo-data/packages", $package, true()) !
                     (
@@ -52,6 +53,7 @@ declare function local:upgrade-to-public-repo-2-storage() as element()+ {
             },
             element icons {
                 for $icon in xmldb:get-child-resources("/db/apps/public-repo/public")[not(matches(., "\.(xar|xml)$"))]
+                order by $icon collation "http://www.w3.org/2013/collation/UCA?numeric=yes"
                 return
                     xmldb:copy-resource("/db/apps/public-repo/public", $icon, "/db/apps/public-repo-data/icons", $icon, true())
                     ! 
