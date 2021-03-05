@@ -76,7 +76,7 @@ declare function app:package-version($node as node(), $model as map(*)) {
  : Load the package version
  :)
 declare function app:package-requires($node as node(), $model as map(*)) {
-    let $requires := $model?package/requires[@processor eq "http://exist-db.org"]
+    let $requires := $model?package/requires[@processor eq $config:exist-processor-name]
     return
         ($requires/@* except $requires/@processor) ! (./name() || ": " || ./string())
 };
