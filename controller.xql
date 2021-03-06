@@ -99,6 +99,17 @@ else if (contains($exist:path, "/public/") and (ends-with($exist:resource, ".png
         </forward>
     </dispatch>
 
+(: Explicitly handle legacy client requests for modules/find.xql, redirecting it to the find endpoint.
+ : Clients that hardcode modules/find.xql include: 
+ : - atom-editor-support v1.0.1 and earlier (fixed in https://github.com/eXist-db/atom-editor-support/releases/tag/v1.1.0) --> and thus all versions of existdb-langserver up to and including v1.5.3 and earlier (fixed in https://github.com/wolfgangmm/existdb-langserver/pull/24, not yet released).
+ : - existdb-packageservice v1.3.9 and earlier (fixed in https://github.com/eXist-db/existdb-packageservice/releases/tag/v1.3.10) --> and thus all versions of eXist up to and including v5.2.0.
+ : - shared-resources v0.8.4 and earlier (fixed in https://github.com/eXist-db/shared-resources/releases/tag/v0.8.5) --> and thus all versions of eXist up to and including v4.7.0.
+ :)
+else if ($exist:path eq "/modules/find.xql") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="../find?{request:get-query-string()}"/>
+    </dispatch>
+
 else if ($exist:path eq "/find") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="modules/find.xq">
