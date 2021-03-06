@@ -253,7 +253,7 @@ declare function app:package-group-to-list-item($package-group as element(packag
     let $download-url := concat($repoURL, "public/", $path)
     let $required-exist-version := $requires[@processor eq $config:exist-processor-name]/(@version, @semver-min)[1]
     let $info-url :=
-        concat($repoURL, "packages/", $package-group/abbrev[not(@type eq "legacy")], ".html",
+        concat($repoURL, "packages/", $package-group/abbrev[not(@type eq "legacy")],
             if ($required-exist-version) then
                 concat("?eXist-db-min-version=", $required-exist-version)
             else
