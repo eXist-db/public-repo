@@ -10,6 +10,7 @@ xquery version "3.1";
 
 import module namespace app="http://exist-db.org/xquery/app" at "app.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace log="http://exist-db.org/xquery/app/log" at "log.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
@@ -18,26 +19,29 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare function local:log-get-package-event($filename as xs:string) as empty-sequence() {
     let $package := doc($config:raw-packages-doc)//package[@path eq $filename]
-    let $today := current-date()
-    let $log-doc := config:log-doc($today)
-    let $event := 
+
+    let $event :=
         element event {
             element dateTime { current-dateTime() },
             element type { "get-package" },
             element package-name { $package/name/string() },
             element package-version { $package/version/string() }
         }
-    let $update-log :=
-        if (doc-available($log-doc)) then 
-            update insert $event into doc($log-doc)/public-repo-log
-        else
-            ( 
-                app:mkcol($config:logs-col, config:log-subcol($today)),
-                xmldb:store(config:log-col($today), config:log-doc-name($today), element public-repo-log { $event } )
-            )
+
     return
-        ()
+        log:event($event)
 };
+
+declare function local:log-package-not-found-event($filename as xs:string) as empty-sequence() {
+    log:event(
+        element event {
+            element dateTime { current-dateTime() },
+            element type { "not-found" },
+            element file-name { $filename }
+        }
+    )
+};
+
 
 let $filename := request:get-parameter("filename", ())
 let $xar-filename :=
@@ -46,11 +50,14 @@ let $xar-filename :=
         replace($filename, ".zip$", "")
     else
         $filename
+
 let $path := $config:packages-col || "/" || $xar-filename
+
 return
     if (util:binary-doc-available($path)) then
         let $xar := util:binary-doc($config:packages-col || "/" || $xar-filename)
-        let $log := local:log-get-package-event($filename)
+        let $log := local:log-get-package-event($xar-filename)
+
         return
             response:stream-binary($xar, "application/zip")
     else

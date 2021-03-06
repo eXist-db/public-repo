@@ -432,27 +432,3 @@ declare function app:requires-to-english($requires as element()) {
     else
         " version " || $config:default-exist-version
 };
-
-(:~
- : Utility function for app:mkcol
- :)
-declare 
-    %private
-function app:mkcol-recursive($collection as xs:string, $components as xs:string*) {
-    if (exists($components)) then
-        let $newColl := concat($collection, "/", $components[1])
-        return (
-            xmldb:create-collection($collection, $components[1]),
-            app:mkcol-recursive($newColl, subsequence($components, 2))
-        )
-    else
-        ()
-};
-
-(:~
- : Recursively create a collection hierarchy
- :)
-declare function app:mkcol($collection as xs:string, $path as xs:string) {
-    app:mkcol-recursive($collection, tokenize($path, "/"))
-};
-

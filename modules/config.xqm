@@ -17,7 +17,6 @@ declare variable $config:login-domain := "org.exist.public-repo.login";
 declare variable $config:base-url := "/exist/apps/public-repo/";
 
 (: Determine the application root collection from the current module load path :)
-
 declare variable $config:app-root := 
     let $rawPath := system:get-module-load-path()
     let $modulePath :=
@@ -49,16 +48,12 @@ declare variable $config:packages-col := $config:app-data-col || "/" || $config:
 declare variable $config:icons-col := $config:app-data-col || "/" || $config:icons-col-name;
 declare variable $config:metadata-col := $config:app-data-col || "/" || $config:metadata-col-name;
 declare variable $config:logs-col := $config:app-data-col || "/" || $config:logs-col-name;
-declare function config:log-subcol($date as xs:date) { format-date($date, "[Y]/[M01]") };
-declare function config:log-col($date as xs:date) { $config:logs-col || "/" || config:log-subcol($date) };
+
 
 declare variable $config:package-groups-doc-name := "package-groups.xml";
 declare variable $config:raw-packages-doc-name := "raw-packages.xml";
-declare function config:log-doc-name($date as xs:date) { "public-repo-log-" || format-date($date, "[Y]-[M01]-[D01]") || ".xml" };
-
 declare variable $config:package-groups-doc := $config:metadata-col || "/" || $config:package-groups-doc-name;
 declare variable $config:raw-packages-doc := $config:metadata-col || "/" || $config:raw-packages-doc-name;
-declare function config:log-doc($date as xs:date) { config:log-col($date) || "/" || config:log-doc-name($date) };
 
 (: The default version number here is assumed when a client does not send a version parameter.
    It is set to 2.2.0 because this version was the last one known to work with most older packages
