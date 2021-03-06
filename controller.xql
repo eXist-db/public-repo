@@ -74,7 +74,7 @@ else if ($exist:path eq "/put-package") then
         <forward url="{$exist:controller}/modules/put-package.xq"/>
     </dispatch>
 
-else if (ends-with($exist:resource, ".html") and starts-with($exist:path, "/packages")) then
+else if (starts-with($exist:path, "/packages") and ends-with($exist:resource, ".html")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/packages.html"/>
         <view>
@@ -84,14 +84,14 @@ else if (ends-with($exist:resource, ".html") and starts-with($exist:path, "/pack
         </view>
     </dispatch>
     
-else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".xar") or ends-with($exist:resource, ".zip")) then
+else if (starts-with($exist:path, "/public/") and ends-with($exist:resource, ".xar") or ends-with($exist:resource, ".zip")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/get-package.xq">
             <add-parameter name="filename" value="{$exist:resource}"/>
         </forward>
     </dispatch>
 
-else if (contains($exist:path, "/public/") and (ends-with($exist:resource, ".png") or ends-with($exist:resource, ".svg"))) then
+else if (starts-with($exist:path, "/public/") and (ends-with($exist:resource, ".png") or ends-with($exist:resource, ".svg"))) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/get-icon.xq">
             <add-parameter name="filename" value="{$exist:resource}"/>
@@ -116,7 +116,7 @@ else if ($exist:path eq "/find") then
         </forward>
     </dispatch>
 
-else if ($exist:resource eq "feed.xml") then
+else if ($exist:path eq "/feed.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/feed.xq"/>
     </dispatch>
