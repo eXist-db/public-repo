@@ -42,9 +42,9 @@ else if ($exist:path eq "/index.html") then
         </view>
     </dispatch>
 
-else if ($exist:path eq "/public/apps.xml") then
+else if ($exist:path eq "/feed.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/modules/list.xq"/>
+        <forward url="{$exist:controller}/modules/feed.xq"/>
     </dispatch>
 
 (:  Protected resource: user is required to log in with valid credentials.
@@ -87,6 +87,11 @@ else if (starts-with($exist:path, "/packages") and ends-with($exist:resource, ".
         </view>
     </dispatch>
     
+else if ($exist:path eq "/public/apps.xml") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/list.xq"/>
+    </dispatch>
+
 else if (starts-with($exist:path, "/public/") and ends-with($exist:resource, ".xar") or ends-with($exist:resource, ".zip")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/get-package.xq">
@@ -101,6 +106,13 @@ else if (starts-with($exist:path, "/public/") and (ends-with($exist:resource, ".
         </forward>
     </dispatch>
 
+else if ($exist:path eq "/find") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/find.xq">
+            <add-parameter name="app-root-absolute-url" value="{$app-root-absolute-url}"/>
+        </forward>
+    </dispatch>
+
 (: Explicitly handle legacy client requests for modules/find.xql, redirecting it to the find endpoint.
  : Clients that hardcode modules/find.xql include: 
  : - atom-editor-support v1.0.1 and earlier (fixed in https://github.com/eXist-db/atom-editor-support/releases/tag/v1.1.0) --> and thus all versions of existdb-langserver up to and including v1.5.3 and earlier (fixed in https://github.com/wolfgangmm/existdb-langserver/pull/24, not yet released).
@@ -110,18 +122,6 @@ else if (starts-with($exist:path, "/public/") and (ends-with($exist:resource, ".
 else if ($exist:path eq "/modules/find.xql") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <redirect url="{$app-root-absolute-url}/find?{request:get-query-string()}"/>
-    </dispatch>
-
-else if ($exist:path eq "/find") then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/modules/find.xq">
-            <add-parameter name="app-root-absolute-url" value="{$app-root-absolute-url}"/>
-        </forward>
-    </dispatch>
-
-else if ($exist:path eq "/feed.xml") then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/modules/feed.xq"/>
     </dispatch>
 
 (: Resolve templates/*.html's requests for resources in the shared-resources package :)
