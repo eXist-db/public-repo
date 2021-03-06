@@ -15,6 +15,12 @@ declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
+declare
+    %templates:wrap
+function app:base-url ($node as node(), $model as map(*)) {
+    attribute href { $config:base-url }
+}; 
+
 (:~
  : Load the package groups document for the admin page's package-groups section
  :)

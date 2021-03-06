@@ -12,6 +12,10 @@ declare namespace system="http://exist-db.org/xquery/system";
 declare namespace expath="http://expath.org/ns/pkg";
 declare namespace repo="http://exist-db.org/xquery/repo";
 
+
+declare variable $config:login-domain := "org.exist.public-repo.login";
+declare variable $config:base-url := "/exist/apps/public-repo/";
+
 (: Determine the application root collection from the current module load path :)
 
 declare variable $config:app-root := 
