@@ -30,6 +30,15 @@ else if ($exist:path eq "/") then
         <redirect url="{$app-root-absolute-url}/index.html"/>
     </dispatch>
 
+else if ($exist:path eq "/index.html") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <view>
+            <forward url="{$exist:controller}/modules/view.xq">
+                <set-header name="Cache-Control" value="no-cache"/>
+            </forward>
+        </view>
+    </dispatch>
+
 else if ($exist:path eq "/public/apps.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/list.xq"/>
@@ -75,16 +84,6 @@ else if (ends-with($exist:resource, ".html") and starts-with($exist:path, "/pack
         </view>
     </dispatch>
     
-else if (ends-with($exist:resource, ".html")) then
-    (: the html page is run through view.xq to expand templates :)
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <view>
-            <forward url="{$exist:controller}/modules/view.xq">
-                <set-header name="Cache-Control" value="no-cache"/>
-            </forward>
-        </view>
-    </dispatch>
-
 else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".xar") or ends-with($exist:resource, ".zip")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/get-package.xq">
