@@ -27,8 +27,8 @@ if ($exist:path eq "") then
         <redirect url="{$app-root-absolute-url}/"/>
     </dispatch>
 
+(: Forward root path to index.html :)
 else if ($exist:path eq "/") then
-    (: forward root path to index.xql :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <redirect url="{$app-root-absolute-url}/index.html"/>
     </dispatch>
@@ -124,6 +124,7 @@ else if ($exist:path eq "/feed.xml") then
         <forward url="{$exist:controller}/modules/feed.xq"/>
     </dispatch>
 
+(: Resolve templates/*.html's requests for resources in the shared-resources package :)
 else if (contains($exist:path, "/$shared/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="/shared-resources/{substring-after($exist:path, '/$shared/')}">
