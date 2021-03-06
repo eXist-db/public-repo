@@ -21,13 +21,13 @@ login:set-user("org.exist.public-repo.login", (), false()),
 
 if ($exist:path eq "") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{request:get-uri()}/"/>
+        <redirect url="{$app-root-absolute-url}/"/>
     </dispatch>
 
 else if ($exist:path eq "/") then
     (: forward root path to index.xql :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="index.html"/>
+        <redirect url="{$app-root-absolute-url}/index.html"/>
     </dispatch>
 
 else if ($exist:path eq "/public/apps.xml") then
@@ -51,7 +51,7 @@ else if ($exist:path eq "/admin.html") then
             </dispatch>
         else
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="login.html"/>
+                <forward url="{$exist:controller}/login.html"/>
                 <view>
                     <forward url="{$exist:controller}/modules/view.xq">
                         <set-header name="Cache-Control" value="no-cache"/>
@@ -67,9 +67,9 @@ else if ($exist:path eq "/put-package") then
 
 else if (ends-with($exist:resource, ".html") and starts-with($exist:path, "/packages")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{concat($exist:controller, '/packages.html')}"/>
+        <forward url="{$exist:controller}/packages.html"/>
         <view>
-            <forward url="{concat($exist:controller, '/modules/view.xq')}">
+            <forward url="{$exist:controller}/modules/view.xq">
                 <add-parameter name="abbrev" value="{substring-before($exist:resource, '.html')}"/>
             </forward>
         </view>
@@ -79,7 +79,7 @@ else if (ends-with($exist:resource, ".html")) then
     (: the html page is run through view.xq to expand templates :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <view>
-            <forward url="modules/view.xq">
+            <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
             </forward>
         </view>
@@ -107,19 +107,19 @@ else if (contains($exist:path, "/public/") and (ends-with($exist:resource, ".png
  :)
 else if ($exist:path eq "/modules/find.xql") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="../find?{request:get-query-string()}"/>
+        <redirect url="{$app-root-absolute-url}/find?{request:get-query-string()}"/>
     </dispatch>
 
 else if ($exist:path eq "/find") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="modules/find.xq">
+        <forward url="{$exist:controller}/modules/find.xq">
             <add-parameter name="app-root-absolute-url" value="{$app-root-absolute-url}"/>
         </forward>
     </dispatch>
 
 else if ($exist:resource eq "feed.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="modules/feed.xq"/>
+        <forward url="{$exist:controller}/modules/feed.xq"/>
     </dispatch>
 
 else if (contains($exist:path, "/$shared/")) then
