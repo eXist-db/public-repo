@@ -7,22 +7,22 @@ xquery version "3.1";
  : all events for the 1st of January 2020 are listed in 
  : /db/apps/public-repo-data/logs/2020/01/public-repo-log-2020-01-01.xml.
  :
- : It contain something like
-<public-repo-log>
-    <event>
-        <dateTime>2020-01-01T16:12:10.063+01:00</dateTime>
-        <type>put-package</type>
-        <package-name>http://exist-db.org/apps/public-repo</package-name>
-        <package-version>2.0.0</package-version>
-    </event>
-    <event>
-        <dateTime>2020-01-01T17:29:00.063+01:00</dateTime>
-        <type>get-package</type>
-        <package-name>http://exist-db.org/apps/public-repo</package-name>
-        <package-version>2.0.0</package-version>
-    </event>
-    ...
-</public-repo-log>
+ : It contains something like:
+    <public-repo-log>
+        <event>
+            <dateTime>2020-01-01T16:12:10.063+01:00</dateTime>
+            <type>put-package</type>
+            <package-name>http://exist-db.org/apps/public-repo</package-name>
+            <package-version>2.0.0</package-version>
+        </event>
+        <event>
+            <dateTime>2020-01-01T17:29:00.063+01:00</dateTime>
+            <type>get-package</type>
+            <package-name>http://exist-db.org/apps/public-repo</package-name>
+            <package-version>2.0.0</package-version>
+        </event>
+        ...
+    </public-repo-log>
  :)
 module namespace log="http://exist-db.org/xquery/app/log";
 
