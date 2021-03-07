@@ -15,10 +15,18 @@ declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
+
+(:~
+ : Set the base-elements href attribute to a URL that will be used to resolve relative paths
+ : since $base-url is set in the controller and cannot have a trailing slash it will be appended here
+ :
+ : @param $base-url this must be set by the controller for any request that will render a HTML page
+ : @returns attribute(href) relative paths will be resolved with its value 
+ :)
 declare
     %templates:wrap
-function app:base-url ($node as node(), $model as map(*)) {
-    attribute href { $config:base-url }
+function app:base-url ($node as node(), $model as map(*), $base-url as xs:string) as attribute(href) {
+    attribute href { $base-url || "/" }
 }; 
 
 (:~

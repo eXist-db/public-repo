@@ -29,27 +29,36 @@ login:set-user($config:login-domain, (), false()),
 (: public routes :)
 if ($exist:path eq "") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{request:get-uri()}/"/>
+        <redirect url="{$app-root-absolute-url}/"/>
     </dispatch>
 
+(: landing page with package listing :)
 else if (request:get-method() eq "GET" and $exist:path eq "/") then
-    (: forward root path to index.xql :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/{$exist:controller}/index.html"/>
+        <forward url="{$exist:controller}/index.html"/>
         <view>
-            <forward url="/{$exist:controller}/modules/view.xq">
+            <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
             </forward>
         </view>
     </dispatch>
+(: legacy request to /index.html redirects permanently to / :)
+else if (request:get-method() eq "GET" and $exist:path eq "/index.html") then
+(
+    response:set-status-code(301),
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{$app-root-absolute-url}/"/>
+    </dispatch>
+)
 
 (: legacy route :)
 else if (request:get-method() eq "GET" and $exist:path eq "/public/apps.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/{$exist:controller}/modules/list.xq"/>
+        <forward url="{$exist:controller}/modules/list.xq"/>
     </dispatch>
 
-(: package detail with html :)
+(: package detail with html redirects to new pattern without the extension :)
 else if (request:get-method() eq "GET" and ends-with($exist:resource, ".html") and starts-with($exist:path, "/packages")) then
 (
     response:set-status-code(301),
@@ -60,10 +69,11 @@ else if (request:get-method() eq "GET" and ends-with($exist:resource, ".html") a
 (: package detail without html :)
 else if (request:get-method() eq "GET" and starts-with($exist:path, "/packages")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/{$exist:controller}/packages.html"/>
+        <forward url="{$exist:controller}/packages.html"/>
         <view>
-            <forward url="/{$exist:controller}/modules/view.xq">
+            <forward url="{$exist:controller}/modules/view.xq">
                 <add-parameter name="abbrev" value="{$exist:resource}"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
             </forward>
         </view>
     </dispatch>
@@ -122,14 +132,20 @@ else if ($exist:path eq "/modules/find.xql") then (
 )
 else if (request:get-method() eq "GET" and $exist:path eq "/find") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/{$exist:controller}/modules/find.xq">
+        <forward url="{$exist:controller}/modules/find.xq">
             <add-parameter name="app-root-absolute-url" value="{$app-root-absolute-url}"/>
         </forward>
     </dispatch>
 
-else if (request:get-method() eq "GET" and $exist:resource eq "feed.xml" or $exist:resource eq "feed" ) then
+else if (
+    request:get-method() eq "GET" and 
+    (
+        $exist:resource eq "feed.xml" or 
+        $exist:resource eq "feed"
+    )
+    ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/{$exist:controller}/modules/feed.xq"/>
+        <forward url="{$exist:controller}/modules/feed.xq"/>
     </dispatch>
 
 else if (request:get-method() eq "GET" and contains($exist:path, "/$shared/")) then
@@ -152,6 +168,7 @@ else if (not(local:is-authorized-user()) and
         <view>
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
             </forward>
         </view>
     </dispatch>
@@ -166,9 +183,19 @@ else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin") the
         <view>
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
             </forward>
         </view>
     </dispatch>
+
+(: legacy request to /admin.html redirects permanently to /admin :)
+else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin.html") then
+(
+    response:set-status-code(301),
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{$app-root-absolute-url}/admin"/>
+    </dispatch>
+)
 
 else if (request:get-method() eq "POST" and $exist:path eq "/publish") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
