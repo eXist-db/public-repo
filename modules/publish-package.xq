@@ -48,10 +48,8 @@ declare function local:upload-and-publish($xar-filename as xs:string, $xar-binar
 
 let $xar-filename := request:get-uploaded-file-name("files[]")
 let $xar-binary := request:get-uploaded-file-data("files[]")
-
 let $user := request:get-attribute($config:login-domain || ".user")
 let $required-group := config:repo-permissions()?group
-
 return
     if (exists($user) and sm:get-user-groups($user) = $required-group) then
         try {

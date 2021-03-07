@@ -26,9 +26,7 @@ xquery version "3.1";
  :)
 module namespace log="http://exist-db.org/xquery/app/log";
 
-
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
-
 
 (:~
  : Append entries to the structured application event log
@@ -43,7 +41,6 @@ declare function log:event($event as element(event)) as empty-sequence() {
     let $log-document-path :=
         ($config:logs-col, $log-collection, $log-document-name) 
         => string-join("/") 
-    
     let $_ :=
         if (doc-available($log-document-path)) then 
             update insert $event into doc($log-document-path)/public-repo-log
@@ -54,7 +51,6 @@ declare function log:event($event as element(event)) as empty-sequence() {
                 $log-document-name, 
                 element public-repo-log { $event })
         )
-
     return
         ()
 };
