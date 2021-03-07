@@ -24,15 +24,14 @@
         <zip destfile="${build}/${project.name}-${project.version}${git.commit}.xar">
             <fileset dir=".">
                 <include name="*.*"/>
+                <exclude name=".*"/>
                 <include name="modules/**"/>
                 <include name="resources/**"/>
                 <include name="templates/**"/>
                 <include name="meta/*"/>
                 <exclude name="${build}/*"/>
-                <exclude name=".git*"/>
                 <exclude name="*.tmpl"/>
                 <exclude name="*.properties"/>
-                <exclude name=".project"/>
                 <exclude name="public/*"/>
             </fileset>
         </zip>
