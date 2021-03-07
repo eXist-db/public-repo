@@ -6,8 +6,9 @@ xquery version "3.1";
 
 module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo";
 
-import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace semver="http://exist-db.org/xquery/semver";
+
+import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 
 declare namespace compression="http://exist-db.org/xquery/compression";
 declare namespace repo="http://exist-db.org/xquery/repo";

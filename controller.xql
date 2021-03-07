@@ -1,7 +1,8 @@
 xquery version "3.1";
 
-import module namespace config="http://exist-db.org/xquery/apps/config" at "modules/config.xqm";
 import module namespace login="http://exist-db.org/xquery/login" at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+
+import module namespace config="http://exist-db.org/xquery/apps/config" at "modules/config.xqm";
 
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
