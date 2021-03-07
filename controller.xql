@@ -95,7 +95,7 @@ else if
         )
     ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/{$exist:controller}/modules/get-package.xq">
+        <forward url="{$exist:controller}/modules/get-package.xq">
             <add-parameter name="filename" value="{$exist:resource}"/>
         </forward>
     </dispatch>
@@ -111,7 +111,7 @@ else if
         )
     ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/{$exist:controller}/modules/get-icon.xq">
+        <forward url="{$exist:controller}/modules/get-icon.xq">
             <add-parameter name="filename" value="{$exist:resource}"/>
         </forward>
     </dispatch>
@@ -165,7 +165,7 @@ else if
         $exist:path = ("/admin", "/publish")
     ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="login.html"/>
+        <forward url="{$exist:controller}/login.html"/>
         <view>
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
@@ -177,7 +177,7 @@ else if
 (: Allow authenticated users into admin page :)
 else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="admin.html"/>
+        <forward url="{$exist:controller}/admin.html"/>
         <view>
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
