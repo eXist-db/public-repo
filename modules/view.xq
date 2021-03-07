@@ -4,7 +4,6 @@ import module namespace app="http://exist-db.org/xquery/app" at "app.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace templates="http://exist-db.org/xquery/templates";
 
-declare namespace site="http://exist-db.org/apps/site-utils";
 
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 

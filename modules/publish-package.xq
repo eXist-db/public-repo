@@ -4,7 +4,6 @@ xquery version "3.1";
  : Receives uploaded packages and immediately publishes them to the package repository
  :)
 
-import module namespace app="http://exist-db.org/xquery/app" at "app.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace log="http://exist-db.org/xquery/app/log" at "log.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";

@@ -8,14 +8,12 @@ xquery version "3.1";
  : - /exist/apps/public-repo/public/eXide-1.0.0.xar.zip
  :)
 
-import module namespace app="http://exist-db.org/xquery/app" at "app.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace log="http://exist-db.org/xquery/app/log" at "log.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
 declare namespace util="http://exist-db.org/xquery/util";
-declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare function local:log-get-package-event($filename as xs:string) as empty-sequence() {
     let $package := doc($config:raw-packages-doc)//package[@path eq $filename]
