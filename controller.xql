@@ -199,7 +199,7 @@ else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin.html"
 
 else if (request:get-method() eq "POST" and $exist:path eq "/publish") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/modules/put-package.xq"/>
+        <forward url="{$exist:controller}/modules/publish-package.xq"/>
     </dispatch>
 
 (: everything else is a NOT-FOUND error  :)
