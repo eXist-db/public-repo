@@ -2,3 +2,7 @@ build/*
 expath-pkg.xml
 .existdb.json
 .DS_Store
+
+# IDE settings
+.vscode
+.idea

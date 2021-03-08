@@ -6,9 +6,10 @@ xquery version "3.1";
  : The format of the results preserves compatibility with the package-repo v1.x API
  :)
 
+import module namespace semver="http://exist-db.org/xquery/semver";
+
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
-import module namespace semver="http://exist-db.org/xquery/semver";
 import module namespace versions="http://exist-db.org/apps/public-repo/versions" at "versions.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";

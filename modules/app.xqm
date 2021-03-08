@@ -6,14 +6,29 @@ xquery version "3.1";
 
 module namespace app="http://exist-db.org/xquery/app";
 
+import module namespace templates="http://exist-db.org/xquery/templates";
+
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
-import module namespace templates="http://exist-db.org/xquery/templates";
 import module namespace versions="http://exist-db.org/apps/public-repo/versions" at "versions.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+
+
+(:~
+ : Set the base-elements href attribute to a URL that will be used to resolve relative paths
+ : since $base-url is set in the controller and cannot have a trailing slash it will be appended here
+ :
+ : @param $base-url this must be set by the controller for any request that will render a HTML page
+ : @returns attribute(href) relative paths will be resolved with its value 
+ :)
+declare
+    %templates:wrap
+function app:base-url ($node as node(), $model as map(*), $base-url as xs:string) as attribute(href) {
+    attribute href { $base-url || "/" }
+}; 
 
 (:~
  : Load the package groups document for the admin page's package-groups section
@@ -247,7 +262,7 @@ declare function app:package-group-to-list-item($package-group as element(packag
     let $download-url := concat($repoURL, "public/", $path)
     let $required-exist-version := $requires[@processor eq $config:exist-processor-name]/(@version, @semver-min)[1]
     let $info-url :=
-        concat($repoURL, "packages/", $package-group/abbrev[not(@type eq "legacy")], ".html",
+        concat($repoURL, "packages/", $package-group/abbrev[not(@type eq "legacy")],
             if ($required-exist-version) then
                 concat("?eXist-db-min-version=", $required-exist-version)
             else
@@ -426,27 +441,3 @@ declare function app:requires-to-english($requires as element()) {
     else
         " version " || $config:default-exist-version
 };
-
-(:~
- : Utility function for app:mkcol
- :)
-declare 
-    %private
-function app:mkcol-recursive($collection as xs:string, $components as xs:string*) {
-    if (exists($components)) then
-        let $newColl := concat($collection, "/", $components[1])
-        return (
-            xmldb:create-collection($collection, $components[1]),
-            app:mkcol-recursive($newColl, subsequence($components, 2))
-        )
-    else
-        ()
-};
-
-(:~
- : Recursively create a collection hierarchy
- :)
-declare function app:mkcol($collection as xs:string, $path as xs:string) {
-    app:mkcol-recursive($collection, tokenize($path, "/"))
-};
-

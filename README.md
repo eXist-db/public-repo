@@ -11,4 +11,4 @@ The application:
 - Exposes an Atom feed with all package updates
 - Allows administrators to log in, upload new packages, and refresh the package metadata
 
-By default, eXist-db's Dashboard > Package Manager is configured to access the eXist-db Public Application Repository at https://demo.exist-db.org/exist/apps/public-repo/index.html.
+By default, eXist-db's Dashboard > Package Manager is configured to access the eXist-db Public Application Repository at https://exist-db.org/exist/apps/public-repo.

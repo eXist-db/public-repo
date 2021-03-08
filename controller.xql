@@ -1,7 +1,8 @@
 xquery version "3.1";
 
-import module namespace config="http://exist-db.org/xquery/apps/config" at "modules/config.xqm";
 import module namespace login="http://exist-db.org/xquery/login" at "resource:org/exist/xquery/modules/persistentlogin/login.xql";
+
+import module namespace config="http://exist-db.org/xquery/apps/config" at "modules/config.xqm";
 
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
 
@@ -17,82 +18,98 @@ declare variable $app-root-absolute-url :=
     || $exist:controller
 ;
 
-login:set-user("org.exist.public-repo.login", (), false()),
+declare function local:is-authorized-user() as xs:boolean {
+    let $user := request:get-attribute($config:login-domain || ".user")
+    return 
+        (
+            exists($user) and 
+            sm:get-user-groups($user) = config:repo-permissions()?group
+        )
+};
 
-if ($exist:path eq "") then
+login:set-user($config:login-domain, (), false()),
+
+(: 
+ : =============
+ : Public routes 
+ : =============
+ :)
+
+if (request:get-method() eq "GET" and $exist:path eq "") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{request:get-uri()}/"/>
+        <redirect url="{$app-root-absolute-url}/"/>
     </dispatch>
 
-else if ($exist:path eq "/") then
-    (: forward root path to index.xql :)
+(: Landing page with package listing :)
+else if (request:get-method() eq "GET" and $exist:path eq "/") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="index.html"/>
+        <forward url="{$exist:controller}/index.html"/>
+        <view>
+            <forward url="{$exist:controller}/modules/view.xq">
+                <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+            </forward>
+        </view>
     </dispatch>
 
-else if ($exist:path eq "/public/apps.xml") then
+(: Redirect request for legacy "/index.html" page to "/" :)
+else if (request:get-method() eq "GET" and $exist:path eq "/index.html") then
+    (: TODO make the redirect issue a 301 :)
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{$app-root-absolute-url}/"/>
+    </dispatch>
+
+(: List apps for packageservice. See https://github.com/eXist-db/existdb-packageservice/blob/master/modules/packages.xqm#L285-L286. :)
+else if (request:get-method() eq "GET" and $exist:path eq "/public/apps.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/list.xq"/>
     </dispatch>
 
-(:  Protected resource: user is required to log in with valid credentials.
-    If the login fails or no credentials were provided, the request is redirected
-    to the login.html page. :)
-else if ($exist:path eq "/admin.html") then
-    let $user := request:get-attribute("org.exist.public-repo.login.user")
-    return
-        if (exists($user) and sm:get-user-groups($user) = config:repo-permissions()?group) then
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <view>
-                    <forward url="{$exist:controller}/modules/view.xq">
-                        <set-header name="Cache-Control" value="no-cache"/>
-                    </forward>
-                </view>
-            </dispatch>
-        else
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="login.html"/>
-                <view>
-                    <forward url="{$exist:controller}/modules/view.xq">
-                        <set-header name="Cache-Control" value="no-cache"/>
-                    </forward>
-                </view>
-            </dispatch>
-
-(:  Protected resource :)
-else if ($exist:path eq "/put-package") then
+(: Redirect request for package detail with legacy ".html" extension to new canonical pattern without the extension :)
+else if (request:get-method() eq "GET" and starts-with($exist:path, "/packages") and ends-with($exist:resource, ".html")) then
+    (: TODO make the redirect issue a 301 :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/modules/put-package.xq"/>
+        <redirect url="{$app-root-absolute-url}/packages/{substring-before($exist:resource, ".html")}?{request:get-query-string()}"/>
     </dispatch>
 
-else if (ends-with($exist:resource, ".html") and starts-with($exist:path, "/packages")) then
+(: Serve package detail - without the legacy ".html" extension :)
+else if (request:get-method() eq "GET" and starts-with($exist:path, "/packages")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{concat($exist:controller, '/packages.html')}"/>
+        <forward url="{$exist:controller}/packages.html"/>
         <view>
-            <forward url="{concat($exist:controller, '/modules/view.xq')}">
-                <add-parameter name="abbrev" value="{substring-before($exist:resource, '.html')}"/>
-            </forward>
-        </view>
-    </dispatch>
-    
-else if (ends-with($exist:resource, ".html")) then
-    (: the html page is run through view.xq to expand templates :)
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <view>
-            <forward url="modules/view.xq">
-                <set-header name="Cache-Control" value="no-cache"/>
+            <forward url="{$exist:controller}/modules/view.xq">
+                <add-parameter name="abbrev" value="{$exist:resource}"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
             </forward>
         </view>
     </dispatch>
 
-else if (contains($exist:path, "/public/") and ends-with($exist:resource, ".xar") or ends-with($exist:resource, ".zip")) then
+(: Serve requests for packages as ".xar" or ".zip" :)
+else if 
+    (
+        request:get-method() eq "GET" and
+        starts-with($exist:path, "/public/") and
+        (
+            ends-with($exist:resource, ".xar") or
+            ends-with($exist:resource, ".zip")
+        )
+    ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/get-package.xq">
             <add-parameter name="filename" value="{$exist:resource}"/>
         </forward>
     </dispatch>
 
-else if (contains($exist:path, "/public/") and (ends-with($exist:resource, ".png") or ends-with($exist:resource, ".svg"))) then
+(: Serve requests for icons in the supported formats :)
+else if 
+    (
+        request:get-method() eq "GET" and
+        starts-with($exist:path, "/public/") and
+        (
+            ends-with($exist:resource, ".png") or
+            ends-with($exist:resource, ".svg")
+        )
+    ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/get-icon.xq">
             <add-parameter name="filename" value="{$exist:resource}"/>
@@ -105,37 +122,92 @@ else if (contains($exist:path, "/public/") and (ends-with($exist:resource, ".png
  : - existdb-packageservice v1.3.9 and earlier (fixed in https://github.com/eXist-db/existdb-packageservice/releases/tag/v1.3.10) --> and thus all versions of eXist up to and including v5.2.0.
  : - shared-resources v0.8.4 and earlier (fixed in https://github.com/eXist-db/shared-resources/releases/tag/v0.8.5) --> and thus all versions of eXist up to and including v4.7.0.
  :)
-else if ($exist:path eq "/modules/find.xql") then
+else if (request:get-method() eq "GET" and $exist:path eq "/modules/find.xql") then 
+    (: TODO make the redirect issue a 301 :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="../find?{request:get-query-string()}"/>
+        <redirect url="{$app-root-absolute-url}/find?{request:get-query-string()}"/>
     </dispatch>
 
-else if ($exist:path eq "/find") then
+else if (request:get-method() eq "GET" and $exist:path eq "/find") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="modules/find.xq">
+        <forward url="{$exist:controller}/modules/find.xq">
             <add-parameter name="app-root-absolute-url" value="{$app-root-absolute-url}"/>
         </forward>
     </dispatch>
 
-else if ($exist:resource eq "feed.xml") then
+else if (request:get-method() eq "GET" and $exist:path eq "/feed.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="modules/feed.xq"/>
+        <forward url="{$exist:controller}/modules/feed.xq"/>
     </dispatch>
 
-else if (contains($exist:path, "/$shared/")) then
+else if (request:get-method() eq "GET" and contains($exist:path, "/$shared/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="/shared-resources/{substring-after($exist:path, '/$shared/')}">
             <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
         </forward>
     </dispatch>
 
-else if (contains($exist:path, "/resources/")) then
+else if (request:get-method() eq "GET" and contains($exist:path, "/resources/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
     </dispatch>
-    
-else
-    (: everything else is passed through :)
+
+(: 
+ : ================
+ : Protected routes 
+ : ================ 
+ :)
+
+(: User is required to be logged in and member of a specific group. Redirect unauthorized requests to the login page. :)
+else if 
+    (
+        not(local:is-authorized-user()) and 
+        $exist:path = ("/admin", "/publish")
+    ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <cache-control cache="yes"/>
+        <forward url="{$exist:controller}/login.html"/>
+        <view>
+            <forward url="{$exist:controller}/modules/view.xq">
+                <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+            </forward>
+        </view>
     </dispatch>
+
+(: Allow authenticated users into admin page :)
+else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/admin.html"/>
+        <view>
+            <forward url="{$exist:controller}/modules/view.xq">
+                <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+            </forward>
+        </view>
+    </dispatch>
+
+(: Redirect requests for legacy "/admin.html" page to "/admin" :)
+else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin.html") then
+    (: TODO make the redirect issue a 301 :)
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{$app-root-absolute-url}/admin"/>
+    </dispatch>
+
+(: Accept package uploads at the "/publish" endpoint :)
+else if (request:get-method() eq "POST" and $exist:path eq "/publish") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/publish-package.xq"/>
+    </dispatch>
+
+(: 
+ : ==============
+ : Fallback route 
+ : ============== 
+ :)
+
+(: Respond with a 404 Not Found error  :)
+else
+    (
+        response:set-status-code(404),
+        <data>Not found</data>
+    )
