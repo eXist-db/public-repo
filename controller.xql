@@ -43,7 +43,7 @@ if (request:get-method() eq "GET" and $exist:path eq "") then
 (: Landing page with package listing :)
 else if (request:get-method() eq "GET" and $exist:path eq "/") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/index.html"/>
+        <forward url="{$exist:controller}/templates/index.html"/>
         <view>
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
@@ -75,7 +75,7 @@ else if (request:get-method() eq "GET" and starts-with($exist:path, "/packages")
 (: Serve package detail - without the legacy ".html" extension :)
 else if (request:get-method() eq "GET" and starts-with($exist:path, "/packages")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/packages.html"/>
+        <forward url="{$exist:controller}/templates/packages.html"/>
         <view>
             <forward url="{$exist:controller}/modules/view.xq">
                 <add-parameter name="abbrev" value="{$exist:resource}"/>
@@ -165,7 +165,7 @@ else if
         $exist:path = ("/admin", "/publish")
     ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/login.html"/>
+        <forward url="{$exist:controller}/templates/login.html"/>
         <view>
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
@@ -177,7 +177,7 @@ else if
 (: Allow authenticated users into admin page :)
 else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/admin.html"/>
+        <forward url="{$exist:controller}/templates/admin.html"/>
         <view>
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
