@@ -71,13 +71,14 @@ declare function config:repo-descriptor() as element(repo:meta) {
 };
 
 (:~
- : Returns the user and group from the repo.xml descriptor.
+ : Returns the permissions information from the repo.xml descriptor.
  :)
 declare function config:repo-permissions() as map(*) { 
     config:repo-descriptor()/repo:permissions ! 
         map { 
             "user": ./@user/string(), 
-            "group": ./@group/string() 
+            "group": ./@group/string(),
+            "mode": ./@mode/string()
         }
 };
 
