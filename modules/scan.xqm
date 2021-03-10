@@ -18,6 +18,18 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare namespace expath="http://expath.org/ns/pkg";
 
 (:~
+ : Helper function to store resources and set permissions for access by repo group
+ :)
+declare function scanrepo:store($collection-uri as xs:string, $resource-name as xs:string, $contents as item()?) as xs:string {
+    xmldb:store($collection-uri, $resource-name, $contents) !
+        (
+            sm:chgrp(., config:repo-permissions()?group),
+            sm:chmod(., config:repo-permissions()?mode),
+            .
+        )
+};
+
+(:~
  : Helper function to store a package's icon and transform its metadata into the format needed for raw-metadata
  :)
 declare 
@@ -26,7 +38,7 @@ function scanrepo:handle-icon($path as xs:string, $data as item()?, $param as it
     let $pkgName := substring-before($param, ".xar")
     let $suffix := replace($path, "^.*\.([^\.]+)", "$1")
     let $name := concat($pkgName, ".", $suffix)
-    let $stored := xmldb:store($config:icons-col, $name, $data)
+    let $stored := scanrepo:store($config:icons-col, $name, $data)
     return
         element icon { $name }
 };
@@ -214,7 +226,7 @@ declare function scanrepo:rebuild-package-groups() as xs:string {
                 $group
         }
     return
-        xmldb:store($config:metadata-col, $config:package-groups-doc-name, $package-groups)
+        scanrepo:store($config:metadata-col, $config:package-groups-doc-name, $package-groups)
 };
 
 (:~
@@ -229,7 +241,7 @@ declare function scanrepo:rebuild-raw-packages() as xs:string {
                 scanrepo:extract-raw-package($package-xar)
         }
     return
-        xmldb:store($config:metadata-col, $config:raw-packages-doc-name, $raw-packages)
+        scanrepo:store($config:metadata-col, $config:raw-packages-doc-name, $raw-packages)
 };
 
 (:~
