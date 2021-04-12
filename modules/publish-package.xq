@@ -31,7 +31,7 @@ declare function local:log-put-package-event($filename as xs:string) as empty-se
         log:event($event)
 };
 
-declare function local:upload-and-publish($xar-filename as xs:string, $xar-binary as xs:base64Binary) {
+declare function local:upload-and-publish($xar-filename as xs:string, $xar-binary as xs:base64Binary) as map(*) {
     let $path := scanrepo:store($config:packages-col, $xar-filename, $xar-binary)
     let $publish := scanrepo:publish-package($xar-filename)
     return
@@ -48,7 +48,12 @@ declare function local:upload-and-publish($xar-filename as xs:string, $xar-binar
 
 let $xar-filename := request:get-uploaded-file-name("files[]")
 let $xar-binary := request:get-uploaded-file-data("files[]")
-let $user := request:get-attribute($config:login-domain || ".user")
+let $user :=
+    (
+        request:get-attribute($config:login-domain || ".user"),
+        sm:id()//sm:username/string()
+    )[1]
+
 let $required-group := config:repo-permissions()?group
 return
     if (exists($user) and sm:get-user-groups($user) = $required-group) then
