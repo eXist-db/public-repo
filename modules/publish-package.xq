@@ -32,7 +32,7 @@ declare function local:log-put-package-event($filename as xs:string) as empty-se
 };
 
 declare function local:upload-and-publish($xar-filename as xs:string, $xar-binary as xs:base64Binary) {
-    let $path := xmldb:store($config:packages-col, $xar-filename, $xar-binary)
+    let $path := scanrepo:store($config:packages-col, $xar-filename, $xar-binary)
     let $publish := scanrepo:publish-package($xar-filename)
     return
         map { 

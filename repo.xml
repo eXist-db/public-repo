@@ -8,9 +8,9 @@
     <copyright>true</copyright>
     <type>application</type>
     <target>public-repo</target>
-    <prepare>pre-install.xq</prepare>
+    <prepare/>
     <finish>post-install.xq</finish>
-    <permissions password="repo" user="repo" group="repo" mode="rw-rw-r--"/>
+    <permissions password="repo" user="repo" group="repo" mode="rwxrwxr-x"/>
     <changelog>
         <change version="2.0.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">

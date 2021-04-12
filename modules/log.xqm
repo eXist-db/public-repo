@@ -27,6 +27,7 @@ xquery version "3.1";
 module namespace log="http://exist-db.org/xquery/app/log";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
 
 (:~
  : Append entries to the structured application event log
@@ -36,21 +37,21 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
  :)
 declare function log:event($event as element(event)) as empty-sequence() {
     let $today := current-date()
-    let $log-collection := log:collection($today)
+    let $log-collection-name := log:collection($today)
+    let $log-collection := $config:logs-col || "/" || $log-collection-name
     let $log-document-name := log:document-name($today)
-    let $log-document-path :=
-        ($config:logs-col, $log-collection, $log-document-name) 
-        => string-join("/") 
-    let $_ :=
-        if (doc-available($log-document-path)) then 
-            update insert $event into doc($log-document-path)/public-repo-log
-        else ( 
-            log:mkcol($config:logs-col, $log-collection),
-            xmldb:store(
-                $config:logs-col || "/" || $log-collection,
-                $log-document-name, 
-                element public-repo-log { $event })
-        )
+    let $log-document := $log-collection || "/" || $log-document-name
+    let $store-log :=
+        if (doc-available($log-document)) then 
+            update insert $event into doc($log-document)/public-repo-log
+        else 
+            ( 
+                if (xmldb:collection-available($log-collection)) then
+                    ()
+                else
+                    log:mkcol($config:logs-col, $log-collection-name),
+                scanrepo:store($log-collection, $log-document-name, element public-repo-log { $event })
+            )
     return
         ()
 };
@@ -76,7 +77,11 @@ function log:mkcol-recursive($collection as xs:string, $components as xs:string*
     if (exists($components)) then
         let $newColl := concat($collection, "/", $components[1])
         return (
-            xmldb:create-collection($collection, $components[1]),
+            xmldb:create-collection($collection, $components[1]) ! 
+                (
+                    sm:chgrp(xs:anyURI(.), config:repo-permissions()?mode),
+                    .
+                ),
             log:mkcol-recursive($newColl, subsequence($components, 2))
         )
     else
