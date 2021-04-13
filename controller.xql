@@ -19,7 +19,11 @@ declare variable $app-root-absolute-url :=
 ;
 
 declare function local:is-authorized-user() as xs:boolean {
-    let $user := request:get-attribute($config:login-domain || ".user")
+    let $user := (
+        request:get-attribute($config:login-domain || ".user"),
+        sm:id()//sm:username/string()
+    )[1]
+
     return 
         (
             exists($user) and 
