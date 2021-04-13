@@ -12,6 +12,16 @@
     <finish>post-install.xq</finish>
     <permissions password="repo" user="repo" group="repo" mode="rwxr-xr-x"/>
     <changelog>
+        <change version="2.1.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>New: Minimum required version of eXist is 5.3.0.</li>
+                <li>New: Drop ".html" from all routes (redirect old-style links).</li>
+                <li>New: Simplify templates, add base URL to each page.</li>
+                <li>New: Allow publishing packages by any member of the repo group.</li>
+                <li>Fixed: Sorting of package versions.</li>
+                <li>Fixed: Allow publishing packages via curl again.</li>
+            </ul>
+        </change>
         <change version="2.0.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>IMPORTANT: You must first run the upgrade script in https://github.com/eXist-db/public-repo/blob/master/modules/upgrade-to-v2-storage.xq before installing v2!</li>
