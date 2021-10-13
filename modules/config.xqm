@@ -76,7 +76,7 @@ declare function config:repo-descriptor() as element(repo:meta) {
 declare function config:repo-permissions() as map(*) { 
     config:repo-descriptor()/repo:permissions ! 
         map { 
-            "user": ./@user/string(), 
+            "owner": ./@user/string(), 
             "group": ./@group/string(),
             "mode": ./@mode/string()
         }

@@ -30,7 +30,7 @@ function dbu:ensure-collection($path as xs:string) as xs:string {
  : will throw an error if the current user does not have the appropriate rights
  :
  : @param $path xs:string
- : @param $permissions map(xs:string, xs:string) user, group, mode
+ : @param $permissions map(xs:string, xs:string) with "owner", "group", "mode"
  : @returns the path that was entered
  :)
 declare
@@ -60,18 +60,15 @@ function dbu:set-repo-permissions ($resource-or-collection as xs:string) as xs:s
  : will throw an error, if the current user does not have the appropriate rights
  :
  : @param $resource-or-collection xs:string
- : @param $permissions map(xs:string, xs:string) with "user", "group", "mode"
+ : @param $permissions map(xs:string, xs:string) with "owner", "group", "mode"
  : @returns the path that was entered
  :)
 declare 
 function dbu:set-permissions ($resource-or-collection as xs:string, $permissions as map(*)) as xs:string {
-    let $set := (
-        sm:chown($resource-or-collection, $permissions?owner),
-        sm:chgrp($resource-or-collection, $permissions?group),
-        sm:chmod(xs:anyURI($resource-or-collection), $permissions?mode)
-    )
-
-    return $resource-or-collection
+    sm:chown($resource-or-collection, $permissions?owner),
+    sm:chgrp($resource-or-collection, $permissions?group),
+    sm:chmod(xs:anyURI($resource-or-collection), $permissions?mode),
+    $resource-or-collection
 };
 
 declare 

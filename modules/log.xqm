@@ -27,7 +27,13 @@ xquery version "3.1";
 module namespace log="http://exist-db.org/xquery/app/log";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
-import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
+import module namespace dbu="http://exist-db.org/xquery/utility/db" at "db-utility.xqm";
+
+declare variable $log:base-collection := $config:logs-col;
+declare variable $log:file-permission := map:merge((
+    $dbu:default-permissions,
+    map { "mode": "rw-rw-r--" }
+));
 
 (:~
  : Append entries to the structured application event log
@@ -37,53 +43,37 @@ import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at 
  :)
 declare function log:event($event as element(event)) as empty-sequence() {
     let $today := current-date()
-    let $log-collection-name := log:collection($today)
-    let $log-collection := $config:logs-col || "/" || $log-collection-name
+    let $log-collection := log:collection($today)
     let $log-document-name := log:document-name($today)
-    let $log-document := $log-collection || "/" || $log-document-name
-    let $store-log :=
-        if (doc-available($log-document)) then 
-            update insert $event into doc($log-document)/public-repo-log
-        else 
-            ( 
-                if (xmldb:collection-available($log-collection)) then
-                    ()
-                else
-                    log:mkcol($config:logs-col, $log-collection-name),
-                scanrepo:store($log-collection, $log-document-name, element public-repo-log { $event })
-            )
+    
     return
-        ()
+        if (doc-available($log-collection || "/" || $log-document-name))
+        then log:append-log($log-collection, $log-document-name, $event)
+        else log:create-log($log-collection, $log-document-name, $event)
 };
 
-declare %private function log:collection($date as xs:date) {
-    format-date($date, "[Y]/[M01]")
+declare %private
+function log:append-log ($log-collection as xs:string, $log-document-name as xs:string, $event as element(event)) as empty-sequence() {
+    let $node := doc($log-collection || "/" || $log-document-name)/public-repo-log
+    let $update := update insert $event into $node
+    return ()
 };
 
-declare %private function log:document-name($date as xs:date) {
+declare %private
+function log:create-log ($log-collection as xs:string, $log-document-name as xs:string, $event as element(event)) as empty-sequence() {
+    dbu:ensure-collection($log-collection)
+    => xmldb:store($log-document-name, element public-repo-log { $event })
+    => dbu:set-permissions($log:file-permission)
+    => log:return-empty()
+};
+
+declare %private
+function log:return-empty ($item as item()*) as empty-sequence() {}; 
+
+declare %private function log:collection($date as xs:date) as xs:string {
+    $log:base-collection || "/" || format-date($date, "[Y]/[M01]")
+};
+
+declare %private function log:document-name($date as xs:date) as xs:string {
     "public-repo-log-" || format-date($date, "[Y]-[M01]-[D01]") || ".xml"
-};
-
-(:~
- : Recursively create a collection hierarchy
- :)
-declare %private function log:mkcol($collection as xs:string, $path as xs:string) {
-    log:mkcol-recursive($collection, tokenize($path, "/"))
-};
-
-declare 
-    %private
-function log:mkcol-recursive($collection as xs:string, $components as xs:string*) {
-    if (exists($components)) then
-        let $newColl := concat($collection, "/", $components[1])
-        return (
-            xmldb:create-collection($collection, $components[1]) ! 
-                (
-                    sm:chgrp(xs:anyURI(.), config:repo-permissions()?mode),
-                    .
-                ),
-            log:mkcol-recursive($newColl, subsequence($components, 2))
-        )
-    else
-        ()
 };
