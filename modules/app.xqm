@@ -6,11 +6,11 @@ xquery version "3.1";
 
 module namespace app="http://exist-db.org/xquery/app";
 
-import module namespace templates="http://exist-db.org/xquery/templates";
-
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
 import module namespace versions="http://exist-db.org/apps/public-repo/versions" at "versions.xqm";
+
+import module namespace templates="http://exist-db.org/xquery/html-templating";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
@@ -26,7 +26,7 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
  :)
 declare
     %templates:wrap
-function app:base-url ($node as node(), $model as map(*), $base-url as xs:string) as attribute(href) {
+function app:base-url($node as node(), $model as map(*), $base-url as xs:string) as attribute(href) {
     attribute href { $base-url || "/" }
 }; 
 
