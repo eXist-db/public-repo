@@ -60,7 +60,7 @@ xmldb:reindex($config:logs-col),
 if (doc-available($config:raw-packages-doc) and doc-available($config:package-groups-doc)) then
     ()
 else
-    scanrepo:rebuild-all-package-metadata(),
+    scanrepo:rebuild-all-package-metadata() ! sm:chown(., config:repo-permissions()?owner),
     
 (: Ensure get-package.xq is run as "repo:repo", so that logs will always be writable :)
 sm:chmod(xs:anyURI($target || "/modules/get-package.xq"), "rwsr-sr-x")
