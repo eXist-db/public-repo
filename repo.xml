@@ -15,11 +15,14 @@
         <change version="2.1.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>New: Minimum required version of eXist is 5.3.0.</li>
-                <li>New: Drop ".html" from all routes (redirect old-style links).</li>
-                <li>New: Simplify templates, add base URL to each page.</li>
                 <li>New: Allow publishing packages by any member of the repo group.</li>
-                <li>Fixed: Sorting of package versions.</li>
+                <li>New: Simplify templates, add base URL to each page.</li>
+                <li>New: Drop ".html" from all routes (redirect old-style links).</li>
+                <li>New: Templates are rendered by HTML-templating library (>= 1.0.2)</li>
+                <li>Fixed: Allow retrieval of packages over HTTPS.</li>
                 <li>Fixed: Allow publishing packages via curl again.</li>
+                <li>Fixed: Sorting of package versions.</li>
+                <li>Fixed: Permissions of log files and metadata.</li>
             </ul>
         </change>
         <change version="2.0.0">
