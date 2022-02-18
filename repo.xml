@@ -12,6 +12,19 @@
     <finish>post-install.xq</finish>
     <permissions password="repo" user="repo" group="repo" mode="rwxr-xr-x"/>
     <changelog>
+        <change version="2.1.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>New: Minimum required version of eXist is 5.3.0. - <a href="https://github.com/eXist-db/public-repo/pull/67">#67</a></li>
+                <li>New: Allow publishing packages by any member of the repo group. - <a href="https://github.com/eXist-db/public-repo/pull/67">#67</a></li>
+                <li>New: Simplify templates, add base URL to each page. - <a href="https://github.com/eXist-db/public-repo/pull/66">#66</a></li>
+                <li>New: Drop ".html" from all routes (redirect old-style links). - <a href="https://github.com/eXist-db/public-repo/pull/62">#62</a></li>
+                <li>New: Templates are rendered by HTML-templating library (>= 1.0.2) - <a href="https://github.com/eXist-db/public-repo/pull/56">#56</a></li>
+                <li>Fixed: Allow retrieval of packages over HTTPS. - <a href="https://github.com/eXist-db/public-repo/issue/74">#74</a></li>
+                <li>Fixed: Allow publishing packages via curl again. - <a href="https://github.com/eXist-db/public-repo/pull/69">#69</a></li>
+                <li>Fixed: Sorting of package versions. - <a href="https://github.com/eXist-db/public-repo/pull/57">#57</a></li>
+                <li>Fixed: Permissions of log files and metadata. - <a href="https://github.com/eXist-db/public-repo/pull/73">#73</a>, <a href="https://github.com/eXist-db/public-repo/pull/75">#75</a></li>
+            </ul>
+        </change>
         <change version="2.0.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>IMPORTANT: You must first run the upgrade script in https://github.com/eXist-db/public-repo/blob/master/modules/upgrade-to-v2-storage.xq before installing v2!</li>
