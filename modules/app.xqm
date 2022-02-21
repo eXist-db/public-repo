@@ -211,7 +211,7 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
                             ()
                     )
                 return
-                    response:redirect-to(xs:anyURI($info-url))
+                    app:redirect-to($info-url)
             (: view current package info :)
             else
                 let $packages := $package-group//package
@@ -440,4 +440,13 @@ declare function app:requires-to-english($requires as element()) {
         concat(" version ", $requires/@semver-max, " or earlier")
     else
         " version " || $config:default-exist-version
+};
+
+(:~
+ : helper function to work around a bug in response:redirect-to#1
+ : see https://github.com/eXist-db/exist/issues/4249
+ :)
+declare function app:redirect-to ($location as xs:string) {
+    response:set-status-code(302),
+    response:set-header("Location", $location)
 };

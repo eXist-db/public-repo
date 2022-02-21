@@ -43,14 +43,10 @@ return
                     $newest-compatible-package/version ! attribute version {.},
                     $newest-compatible-package/@path
                 }
-            else if ($zip) then (
-                response:set-status-code(302),
-                response:set-header("Location", $abs-public || $xar-filename || ".zip")
-            )
-            else (
-                response:set-status-code(302),
-                response:set-header("Location", $abs-public || $xar-filename)
-            )
+            else if ($zip) then
+                app:redirect-to($abs-public || $xar-filename || ".zip")
+            else
+                app:redirect-to($abs-public || $xar-filename)
     else 
         (
             response:set-status-code(404),
