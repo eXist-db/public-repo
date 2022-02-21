@@ -150,18 +150,3 @@ function versions:is-older($available as xs:string, $installed as xs:string) as 
         )
 };
 
-declare 
-    %private 
-function versions:compare-versions($installed as xs:string*, $available as xs:string*, $compare as function(*)) as xs:boolean {
-    if (empty($installed)) then
-        exists($available)
-    else if (empty($available)) then
-        false()
-    else if (head($available) = head($installed)) then
-        if (count($available) = 1 and count($installed) = 1) then
-            true()
-        else
-            versions:compare-versions(tail($installed), tail($available), $compare)
-    else
-        $compare(head($available), head($installed))
-};
