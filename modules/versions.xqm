@@ -31,23 +31,26 @@ declare function versions:find-compatible-packages(
     $semver-min as xs:string?, 
     $semver-max as xs:string?
 ) as element(package)* {
-    for $package in $packages
-    return
-        if ($semver) then
-            versions:find-version($packages, $semver, $semver)
-        else if ($version) then
-            $packages[version = $version]
-        else if ($semver-min and $semver-max) then
-            versions:find-version($packages, $semver-min, $semver-max)
-        else if 
-            (
-                $exist-version-semver and
-                versions:is-newer-or-same($exist-version-semver, $package/requires/@semver-min) and
-                versions:is-older-or-same($exist-version-semver, $package/requires/@semver-max)
-            ) then
-            $package
-        else
-            ()
+    if ($semver) then
+        versions:find-version($packages, $semver, $semver)
+    else if ($version) then
+        $packages[version = $version]
+    else if ($semver-min and $semver-max) then
+        versions:find-version($packages, $semver-min, $semver-max)
+    else if (exists($exist-version-semver)) then
+        for $package in $packages
+        return
+            if 
+                (
+                    $exist-version-semver and
+                    versions:is-newer-or-same($exist-version-semver, $package/requires/@semver-min) and
+                    versions:is-older-or-same($exist-version-semver, $package/requires/@semver-max)
+                ) then
+                $package
+            else
+                ()
+    else
+        ()
 };
 
 (:~
