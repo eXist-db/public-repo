@@ -6,6 +6,7 @@ xquery version "3.1";
  : The info parameter can be used for troubleshooting
  :)
 
+import module namespace app="http://exist-db.org/xquery/app" at "app.xqm";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace versions="http://exist-db.org/apps/public-repo/versions" at "versions.xqm";
 
