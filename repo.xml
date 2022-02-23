@@ -12,6 +12,11 @@
     <finish>post-install.xq</finish>
     <permissions password="repo" user="repo" group="repo" mode="rwxr-xr-x"/>
     <changelog>
+        <change version="2.1.1">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Fix: Bug introduced in the 'find' endpoint with 2.1.1</li>
+            </ul>
+        </change>
         <change version="2.1.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>New: Minimum required version of eXist is 5.3.0. - <a href="https://github.com/eXist-db/public-repo/pull/67">#67</a></li>
