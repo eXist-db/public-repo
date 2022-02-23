@@ -38,17 +38,7 @@ declare function versions:find-compatible-packages(
     else if ($semver-min and $semver-max) then
         versions:find-version($packages, $semver-min, $semver-max)
     else if (exists($exist-version-semver)) then
-        for $package in $packages
-        return
-            if 
-                (
-                    $exist-version-semver and
-                    versions:is-newer-or-same($exist-version-semver, $package/requires/@semver-min) and
-                    versions:is-older-or-same($exist-version-semver, $package/requires/@semver-max)
-                ) then
-                $package
-            else
-                ()
+        versions:find-packages-satisfying-exist-version-requirements($packages, $exist-version-semver, $semver-min, $semver-max)
     else
         ()
 };
@@ -78,18 +68,6 @@ declare function versions:find-newest-compatible-package(
     => head()
 };
 
-declare 
-    %private
-function versions:is-newer-or-same($version1 as xs:string, $version2 as xs:string?) {
-    empty($version2) or semver:ge($version1, $version2, true())
-};
-
-declare
-    %private
-function versions:is-older-or-same($version1 as xs:string, $version2 as xs:string?) {
-    empty($version2) or semver:le($version1, $version2, true())
-};
-
 declare
     %private
 function versions:find-version($packages as element(package)*, $minVersion as xs:string?, $maxVersion as xs:string?) {
@@ -106,15 +84,16 @@ function versions:find-version($packages as element(package)*, $minVersion as xs
         $newest
     else
         let $package := head($packages)
-        let $packageVersion := $package/version | $package/@version
+        let $packageVersion := ($package/version, $package/@version)[1]
+        let $newestVersion := ($newest/version, $newest/@version)[1]
         let $newer :=
             if (
                 (
                     empty($newest) or 
-                    versions:is-newer($packageVersion, ($newest/version, $newest/@version))
+                    semver:ge($packageVersion, $newestVersion, true())
                 ) and
-                versions:is-newer($packageVersion, $minVersion) and
-                versions:is-older($packageVersion, $maxVersion)
+                semver:ge($packageVersion, $minVersion, true()) and
+                semver:le($packageVersion, $maxVersion, true())
             ) then
                 $package
             else
@@ -123,33 +102,33 @@ function versions:find-version($packages as element(package)*, $minVersion as xs
             versions:find-version(tail($packages), $minVersion, $maxVersion, $newer)
 };
 
-declare 
-    %private 
-function versions:is-newer($available as xs:string, $installed as xs:string) as xs:boolean {
-    let $verInstalled := tokenize($installed, "\.")
-    let $verAvailable := tokenize($available, "\.")
+(:~
+ : Find packages whose eXist version requirements meet the client's eXist version
+ : 
+ : For example, via app.xqm or list.xq, a client may request the subset of a package's
+ : releases that are compatible with eXist 5.3.0. The function examines each release's
+ : eXist dependency declarations (if present) and returns all matching packages.
+ :)
+declare function versions:find-packages-satisfying-exist-version-requirements(
+    $packages as element(package)*,
+    $exist-version-semver as xs:string, 
+    $min-version as xs:string?, 
+    $max-version as xs:string?
+) as element(package)* {
+    for $package in $packages
+    let $satisfies-semver-min-requirement := 
+        if (exists($package/requires/@semver-min)) then
+            semver:ge($exist-version-semver, $package/requires/@semver-min, true())
+        else
+            true()
+    let $satisfies-semver-max-requirement := 
+        if (exists($package/requires/@semver-max)) then
+            semver:lt($exist-version-semver, $package/requires/@semver-max, true())
+        else
+            true()
     return
-        versions:compare-versions(
-            $verInstalled, 
-            $verAvailable, 
-            function($version1, $version2) {
-                number($version1) >= number($version2)
-            }
-        )
+        if ($satisfies-semver-min-requirement and $satisfies-semver-max-requirement) then
+            $package
+        else
+            ()
 };
-
-declare 
-    %private 
-function versions:is-older($available as xs:string, $installed as xs:string) as xs:boolean {
-    let $verInstalled := tokenize($installed, "\.")
-    let $verAvailable := tokenize($available, "\.")
-    return
-        versions:compare-versions(
-            $verInstalled, 
-            $verAvailable, 
-            function($version1, $version2) {
-                number($version1) <= number($version2)
-            }
-        )
-};
-
