@@ -19,12 +19,11 @@ declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 declare option output:method "xml";
 declare option output:media-type "application/xml";
 
-let $exist-version := request:get-parameter("version", ())
-let $basic-semver-regex := "^\d+\.\d+\.\d+-?.*$"
+let $exist-version := request:get-parameter("version", $config:default-exist-version)
 let $exist-version-semver := 
-    if (matches($exist-version, $basic-semver-regex)) then 
-        $exist-version 
-    else 
+    if (semver:validate($exist-version)) then
+        $exist-version
+    else
         $config:default-exist-version
 return
     element apps { 

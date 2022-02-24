@@ -127,7 +127,7 @@ function scanrepo:generate-package-group($packages as element(package)*) {
         let $versions := $packages/version
         let $version-maps := 
             $versions ! map:merge((
-                map:entry("semver", semver:coerce(.) => semver:serialize()), 
+                map:entry("semver", semver:parse(., true()) => semver:serialize()), 
                 map:entry("version", .)
             ))
         let $sorted-semvers := semver:sort($version-maps?semver) => reverse()
