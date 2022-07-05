@@ -12,6 +12,11 @@
     <finish>post-install.xq</finish>
     <permissions password="repo" user="repo" group="repo" mode="rwxr-xr-x"/>
     <changelog>
+        <change version="2.1.2">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Fix: Reinstate support for eXist 4.x build process - <a href="https://github.com/eXist-db/public-repo/pull/78">#78</a></li>
+            </ul>
+        </change>
         <change version="2.1.1">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fix: Bug introduced in the 'find' endpoint with 2.1.0</li>
