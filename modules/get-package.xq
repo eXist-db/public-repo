@@ -55,7 +55,7 @@ return
         let $log := local:log-get-package-event($xar-filename)
         return
             if ($wants-zip) then
-                let $entry := <entry type="binary" method="store" name="/{$xar-filename}" strip-prefix="false">{$xar}</entry>
+                let $entry := <entry type="binary" method="store" name="/{$xar-filename}">{$xar}</entry>
                 let $zip := compression:zip($entry, false())
                 return
                     response:stream-binary($zip, "application/zip")
