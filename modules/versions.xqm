@@ -38,7 +38,7 @@ declare function versions:find-compatible-packages(
     else if ($semver-min and $semver-max) then
         versions:find-version($packages, $semver-min, $semver-max)
     else if (exists($exist-version-semver)) then
-        versions:find-packages-satisfying-exist-version-requirements($packages, $exist-version-semver, $semver-min, $semver-max)
+        versions:find-packages-satisfying-exist-version-requirements($packages, $exist-version-semver)
     else
         ()
 };
@@ -105,25 +105,43 @@ function versions:find-version($packages as element(package)*, $minVersion as xs
 (:~
  : Find packages whose eXist version requirements meet the client's eXist version
  : 
+ : @deprecated As of 2.1.3, use the private function versions:find-packages-satisfying-exist-version-requirements#2
+ :)
+declare function versions:find-packages-satisfying-exist-version-requirements(
+    $packages as element(package)*,
+    $exist-version-semver as xs:string,
+    $min-version as xs:string?, 
+    $max-version as xs:string?
+) as element(package)* {
+    versions:find-packages-satisfying-exist-version-requirements($packages, $exist-version-semver)
+};
+
+(:~
+ : Find packages whose eXist version requirements meet the client's eXist version
+ : 
  : For example, via app.xqm or list.xq, a client may request the subset of a package's
  : releases that are compatible with eXist 5.3.0. The function examines each release's
  : eXist dependency declarations (if present) and returns all matching packages.
  :)
-declare function versions:find-packages-satisfying-exist-version-requirements(
+declare %private function versions:find-packages-satisfying-exist-version-requirements(
     $packages as element(package)*,
-    $exist-version-semver as xs:string, 
-    $min-version as xs:string?, 
-    $max-version as xs:string?
+    $exist-version-semver as xs:string
 ) as element(package)* {
     for $package in $packages
     let $satisfies-semver-min-requirement := 
         if (exists($package/requires/@semver-min)) then
-            semver:ge($exist-version-semver, $package/requires/@semver-min, true())
+            semver:ge-parsed(
+                semver:parse($exist-version-semver, true()), 
+                semver:resolve-if-expath-package-server-template-else-parse($package/requires/@semver-min, "min", true())
+            )
         else
             true()
     let $satisfies-semver-max-requirement := 
         if (exists($package/requires/@semver-max)) then
-            semver:lt($exist-version-semver, $package/requires/@semver-max, true())
+            semver:lt-parsed(
+                semver:parse($exist-version-semver, true()), 
+                semver:resolve-if-expath-package-server-template-else-parse($package/requires/@semver-max, "max", true())
+            )
         else
             true()
     return
