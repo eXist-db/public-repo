@@ -352,7 +352,7 @@ declare function app:package-group-to-list-item($package-group as element(packag
                                             let $download-version-url := concat($repoURL, "public/", $package/@path)
                                             return
                                                 <li>
-                                                    <a href="{$download-version-url}">{$package/@path/string()}</a>
+                                                    <a href="{$download-version-url}">{ $package/version/string() }</a>
                                                 </li>,
                                                 
                                             (: show links to any other version of the package that is compatible with the requested version of eXist, 
