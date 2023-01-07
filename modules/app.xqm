@@ -446,7 +446,7 @@ declare function app:requires-to-english($requires as element()) {
             if (semver:validate-expath-package-semver-template($requires/@semver-max)) then
                 concat("earlier than ", semver:serialize-parsed(semver:resolve-expath-package-semver-template-max($requires/@semver-max)))
             else
-                $requires/@semver-max || "or earlier"
+                $requires/@semver-max || " or earlier"
         )
     else if ($requires/@semver-min) then
         concat(
@@ -463,7 +463,7 @@ declare function app:requires-to-english($requires as element()) {
             if (semver:validate-expath-package-semver-template($requires/@semver-max)) then
                 concat("earlier than ", semver:serialize-parsed(semver:resolve-expath-package-semver-template-max($requires/@semver-max)))
             else
-                $requires/@semver-min || "or earlier"
+                $requires/@semver-min || " or earlier"
         )
     else
         " version " || $config:default-exist-version
