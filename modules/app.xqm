@@ -216,7 +216,7 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
             (: view current package info :)
             else
                 let $packages := $package-group//package
-                let $compatible-packages := versions:find-compatible-packages($packages, $procVersion)
+                let $compatible-packages := versions:get-packages-satisfying-exist-version($packages, $procVersion)
                 let $incompatible-packages := $packages except $compatible-packages
                 let $show-details := true()
                 return

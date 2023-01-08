@@ -20,16 +20,12 @@ declare option output:method "xml";
 declare option output:media-type "application/xml";
 
 let $exist-version := request:get-parameter("version", $config:default-exist-version)
-let $exist-version-semver := 
-    if (semver:validate($exist-version)) then
-        $exist-version
-    else
-        $config:default-exist-version
+let $exist-version-semver := semver:parse($exist-version, true()) => semver:serialize-parsed()
 return
     element apps { 
         attribute version { $exist-version-semver },
         for $package-group in doc($config:package-groups-doc)//package-group
-        let $compatible-packages := versions:find-compatible-packages($package-group//package, $exist-version-semver)
+        let $compatible-packages := versions:get-packages-satisfying-exist-version($package-group//package, $exist-version-semver)
         return
             if (exists($compatible-packages)) then
                 let $newest-package := head($compatible-packages)
