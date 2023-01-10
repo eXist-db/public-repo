@@ -216,7 +216,7 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
             (: view current package info :)
             else
                 let $packages := $package-group//package
-                let $compatible-packages := versions:find-compatible-packages($packages, $procVersion)
+                let $compatible-packages := versions:get-packages-satisfying-exist-version($packages, $procVersion)
                 let $incompatible-packages := $packages except $compatible-packages
                 let $show-details := true()
                 return
@@ -352,7 +352,7 @@ declare function app:package-group-to-list-item($package-group as element(packag
                                             let $download-version-url := concat($repoURL, "public/", $package/@path)
                                             return
                                                 <li>
-                                                    <a href="{$download-version-url}">{$package/@path/string()}</a>
+                                                    <a href="{$download-version-url}">{ $package/version/string() }</a>
                                                 </li>,
                                                 
                                             (: show links to any other version of the package that is compatible with the requested version of eXist, 
@@ -446,7 +446,7 @@ declare function app:requires-to-english($requires as element()) {
             if (semver:validate-expath-package-semver-template($requires/@semver-max)) then
                 concat("earlier than ", semver:serialize-parsed(semver:resolve-expath-package-semver-template-max($requires/@semver-max)))
             else
-                $requires/@semver-max || "or earlier"
+                $requires/@semver-max || " or earlier"
         )
     else if ($requires/@semver-min) then
         concat(
@@ -463,7 +463,7 @@ declare function app:requires-to-english($requires as element()) {
             if (semver:validate-expath-package-semver-template($requires/@semver-max)) then
                 concat("earlier than ", semver:serialize-parsed(semver:resolve-expath-package-semver-template-max($requires/@semver-max)))
             else
-                $requires/@semver-min || "or earlier"
+                $requires/@semver-min || " or earlier"
         )
     else
         " version " || $config:default-exist-version
