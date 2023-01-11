@@ -66,6 +66,8 @@ declare function versions:get-packages-satisfying-exist-version(
             ./requires/@semver-min,
             ./requires/@semver-max
         )
+        or 
+        empty(./requires)
     ]
     => versions:sort-packages()
 };
