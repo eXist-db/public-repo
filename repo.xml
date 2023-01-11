@@ -12,6 +12,11 @@
     <finish>post-install.xq</finish>
     <permissions password="repo" user="repo" group="repo" mode="rwxr-xr-x"/>
     <changelog>
+        <change version="3.0.1">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Fixed: Packages w/o explicit eXist dependency are presumed compatible with eXist >=2.2.0 - <a href="https://github.com/eXist-db/public-repo/pull/82">#82</a></li>
+            </ul>
+        </change>
         <change version="3.0.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Breaking: Refactored modules/versions.xqm to use semver.xq v3.0.0 in order to fix EXPath Package dependency resolution and ensure that the "find" endpoint can use all version attributes for finding packages - <a href="https://github.com/eXist-db/public-repo/pull/81">#81</a></li>
