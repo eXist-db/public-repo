@@ -85,8 +85,9 @@ declare function versions:get-newest-package-satisfying-exist-version(
 };
 
 (:~
- : Sort packages by version
+ : Sort packages by version, newest to oldest
  :)
 declare function versions:sort-packages($packages as element(package)*) {
     semver:sort($packages, function($package) { $package/version }, true())
+    => reverse()
 };
