@@ -12,6 +12,11 @@
     <finish>post-install.xq</finish>
     <permissions password="repo" user="repo" group="repo" mode="rwxr-xr-x"/>
     <changelog>
+        <change version="3.0.2">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Fixed: Package ordering - <a href="https://github.com/eXist-db/public-repo/pull/85">#85</a></li>
+            </ul>
+        </change>
         <change version="3.0.1">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed: Packages w/o explicit eXist dependency are presumed compatible with eXist >=2.2.0 - <a href="https://github.com/eXist-db/public-repo/pull/82">#82</a></li>
