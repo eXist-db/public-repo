@@ -186,6 +186,12 @@ else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin") the
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
                 <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+                {
+                    if (request:get-server-name() = $config:exclude-statistics-server-names) then
+                        ()
+                    else
+                        <add-parameter name="include-statistics" value="true"/>
+                }
             </forward>
         </view>
     </dispatch>

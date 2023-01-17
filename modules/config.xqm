@@ -54,6 +54,10 @@ declare variable $config:raw-packages-doc-name := "raw-packages.xml";
 declare variable $config:package-groups-doc := $config:metadata-col || "/" || $config:package-groups-doc-name;
 declare variable $config:raw-packages-doc := $config:metadata-col || "/" || $config:raw-packages-doc-name;
 
+(: Statistics can be expensive to calculate. Add the server name of an instance you wish to exclude
+ : calculation of. :)
+declare variable $config:exclude-statistics-server-names := ("exist-db.org");
+
 (: The default version number here is assumed when a client does not send a version parameter.
    It is set to 2.2.0 because this version was the last one known to work with most older packages
    before packages began to declare their version constraints in their package metadata.
