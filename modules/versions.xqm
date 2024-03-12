@@ -15,20 +15,27 @@ import module namespace semver="http://exist-db.org/xquery/semver";
  :)
 declare function versions:get-packages-satisfying-version-attributes(
     $packages as element(package)*,
-    $versions as xs:string?, 
+    $versions as xs:string*, 
     $semver as xs:string?, 
     $semver-min as xs:string?, 
     $semver-max as xs:string?
 ) as element(package)* {
-    $packages[
-        semver:satisfies-expath-package-dependency-versioning-attributes(
-            ./version,
-            $versions,
-            $semver,
-            $semver-min,
-            $semver-max
-        )
-    ]
+    if (exists($versions)) then (
+        for-each($versions, function ($v as xs:string) {
+            $packages[
+                semver:satisfies-expath-package-dependency-versioning-attributes(./version, $v, (), (), ())]
+        })
+    ) else (
+        $packages[
+            semver:satisfies-expath-package-dependency-versioning-attributes(
+                ./version,
+                $versions,
+                $semver,
+                $semver-min,
+                $semver-max
+            )
+        ]
+    )
     => versions:sort-packages()
 };
 
@@ -37,7 +44,7 @@ declare function versions:get-packages-satisfying-version-attributes(
  :)
 declare function versions:get-newest-package-satisfying-version-attributes(
     $packages as element(package)*,
-    $versions as xs:string?, 
+    $versions as xs:string*, 
     $semver as xs:string?, 
     $semver-min as xs:string?, 
     $semver-max as xs:string?
