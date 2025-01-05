@@ -24,6 +24,7 @@
   },
   "homepage": "https://exist-db.org/exist/apps/public-repo/",
   "dependencies": {
-    "blueimp-file-upload": "^10.32.0"
+    "blueimp-file-upload": "^10.32.0",
+    "bootstrap": "^5.3.3"
   }
 }
