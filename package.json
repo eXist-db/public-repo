@@ -26,5 +26,8 @@
   "dependencies": {
     "blueimp-file-upload": "^10.32.0",
     "bootstrap": "^5.3.3"
+  },
+  "devDependencies": {
+    "cypress": "^13.17.0"
   }
 }

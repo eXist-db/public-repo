@@ -61,8 +61,11 @@ jobs:
           sleep 10s
 
       # Test       
-      - name: Run test
-        run: bats --tap test/*.bats
+      - name: Run smoke test
+        run: bats --tap test/bats/*.bats
+      
+      - name: run e2e test
+        run: npx cypress run
 
       # # Lint commit messages
       # - name: lint commit message
