@@ -1,0 +1,29 @@
+{
+  "name": "public-repo",
+  "version": "3.0.2",
+  "description": "eXist-db Public Application Repository",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eXist-db/public-repo.git"
+  },
+  "keywords": [
+    "eXist-db",
+    "expath_package",
+    ".xar"
+  ],
+  "author": "exist-db",
+  "license": "LGPL-2.1-only",
+  "bugs": {
+    "url": "https://github.com/eXist-db/public-repo/issues"
+  },
+  "homepage": "https://exist-db.org/exist/apps/public-repo/",
+  "dependencies": {
+    "blueimp-file-upload": "^10.32.0"
+  }
+}
