@@ -25,7 +25,7 @@
 
 # Make sure the package has been deployed
 @test "logs show package deployment" {
-  result=$(docker logs exist | grep -o 'http://exist-db.org/apps/public-repo')
+  result=$(docker logs exist | grep -om 1 'http://exist-db.org/apps/public-repo')
   [ "$result" == 'http://exist-db.org/apps/public-repo' ]
 }
 
