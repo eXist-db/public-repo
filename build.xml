@@ -13,10 +13,11 @@
         <delete dir="${build}" />
         <delete file="expath-pkg.xml" />
         <delete>
-            <fileset dir="resources/scripts" includes="*.js" excludes="repo.js"/>
-            <fileset dir="resources/scripts" includes="*.map" />
+            <fileset dir="resources/scripts" includes="**/*" excludes="repo.js"/>
         </delete>
-        <delete file="resources/css/jquery.fileupload.css" />
+        <delete>
+            <fileset dir="resources/css" includes="**/*" excludes="exist-2.2.css packageManager.css"/>
+        </delete>
     </target>
     <target name="npm">
         <exec executable="npm">
@@ -49,6 +50,8 @@
             <resources>
                 <!-- fileupload -->
                 <file file="node_modules/blueimp-file-upload/css/jquery.fileupload.css" />
+                <file file="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+                <file file="node_modules/bootstrap/dist/css/bootstrap.min.css.map" />
             </resources>
         </copy>
         <zip destfile="${build}/${project.name}-${project.version}${git.commit}.xar">
