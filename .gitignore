@@ -1,7 +1,9 @@
 build/*
+node_modules/
 expath-pkg.xml
 .existdb.json
 .DS_Store
+local.build.properties
 
 # IDE settings
 .vscode
