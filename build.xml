@@ -24,7 +24,7 @@
             <arg value="ci" />
         </exec>
     </target>
-    <target name="xar">
+    <target name="xar" depends="npm">
         <mkdir dir="${build}" />
         <copy file="expath-pkg.xml.tmpl" tofile="expath-pkg.xml" filtering="true" overwrite="true">
             <filterset>
