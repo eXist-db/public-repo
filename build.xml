@@ -24,7 +24,7 @@
         <zip destfile="${build}/${project.name}-${project.version}${git.commit}.xar">
             <fileset dir=".">
                 <include name="*.*"/>
-                <exclude name=".*"/>
+                <exclude name=".*"/>              
                 <include name="modules/**"/>
                 <include name="resources/**"/>
                 <include name="templates/**"/>
@@ -33,6 +33,9 @@
                 <exclude name="*.tmpl"/>
                 <exclude name="*.properties"/>
                 <exclude name="public/*"/>
+                <exclude name="test/"/>
+                <exclude name="node_modules/"/>
+                <exclude name=".github/"/>
             </fileset>
         </zip>
     </target>
