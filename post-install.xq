@@ -2,11 +2,11 @@ xquery version "3.1";
 
 (:~
  : This post-install script sets permissions on the package data collection hierarchy.
- : When pre-install creates the public-repo-data collection, its permissions are admin/dba. 
+ : When pre-install creates the public-repo-data collection, its permissions are admin/dba.
  : This ensures the collections are owned by the default user and group for the app.
  : The script also builds the package metadata if it doesn't already exist.
  :)
- 
+
 import module namespace config="http://exist-db.org/xquery/apps/config" at "modules/config.xqm";
 import module namespace dbu="http://exist-db.org/xquery/utility/db" at "modules/db-utility.xqm";
 import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "modules/scan.xqm";
@@ -25,7 +25,7 @@ declare variable $dir external;
 declare variable $target external;
 
 (: Configuration file for the logs collection :)
-declare variable $logs-xconf := 
+declare variable $logs-xconf :=
     <collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <index>
             <range>
@@ -60,7 +60,7 @@ xmldb:reindex($config:logs-col),
 if (doc-available($config:raw-packages-doc) and doc-available($config:package-groups-doc)) then
     ()
 else
-    scanrepo:rebuild-all-package-metadata() ! sm:chown(., config:repo-permissions()?owner),
-    
+    scanrepo:rebuild-all-package-metadata() ! sm:chown(xs:anyURI(.), config:repo-permissions()?owner),
+
 (: Ensure get-package.xq is run as "repo:repo", so that logs will always be writable :)
 sm:chmod(xs:anyURI($target || "/modules/get-package.xq"), "rwsr-sr-x")

@@ -20,7 +20,7 @@ function dbu:ensure-collection($path as xs:string) as xs:string {
     then $path
     else
         tokenize($path, "/")
-        => tail() 
+        => tail()
         => fold-left("", dbu:create-collection-with-repo-permissions#2)
 };
 
@@ -39,7 +39,7 @@ function dbu:ensure-collection($path as xs:string, $permissions as map(*)) as xs
     then $path
     else
         tokenize($path, "/")
-        => tail() 
+        => tail()
         => fold-left("", dbu:create-collection(?, ?, $permissions))
 };
 
@@ -50,7 +50,7 @@ function dbu:ensure-collection($path as xs:string, $permissions as map(*)) as xs
  : @param $resource-or-collection xs:string
  : @returns the path that was entered
  :)
-declare 
+declare
 function dbu:set-repo-permissions ($resource-or-collection as xs:string) as xs:string {
     dbu:set-permissions($resource-or-collection, $dbu:default-permissions)
 };
@@ -63,15 +63,15 @@ function dbu:set-repo-permissions ($resource-or-collection as xs:string) as xs:s
  : @param $permissions map(xs:string, xs:string) with "owner", "group", "mode"
  : @returns the path that was entered
  :)
-declare 
+declare
 function dbu:set-permissions ($resource-or-collection as xs:string, $permissions as map(*)) as xs:string {
-    sm:chown($resource-or-collection, $permissions?owner),
-    sm:chgrp($resource-or-collection, $permissions?group),
+    sm:chown(xs:anyURI($resource-or-collection), $permissions?owner),
+    sm:chgrp(xs:anyURI($resource-or-collection), $permissions?group),
     sm:chmod(xs:anyURI($resource-or-collection), $permissions?mode),
     $resource-or-collection
 };
 
-declare 
+declare
     %private
 function dbu:create-collection-with-repo-permissions ($collection as xs:string, $next as xs:string) as xs:string {
     if (xmldb:collection-available(concat($collection, '/', $next)))
@@ -82,7 +82,7 @@ function dbu:create-collection-with-repo-permissions ($collection as xs:string, 
 };
 
 
-declare 
+declare
     %private
 function dbu:create-collection ($collection as xs:string, $next as xs:string, $permissions as map(*)) as xs:string {
     if (xmldb:collection-available(concat($collection, '/', $next)))
