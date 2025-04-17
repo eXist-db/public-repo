@@ -8,15 +8,6 @@
     </div>
     <div class="row">
         <div class="col-md-8">
-            <div>
-                <h2>Statistics</h2>
-                <h3>Top 5 packages</h3>
-                <ol data-template="app:load-get-package-logs-for-admin-table" data-template-top-n="5">
-                    <li data-template="templates:each" data-template-from="package-logs" data-template-to="package-log">
-                        <span data-template="app:get-package-stats"/>
-                    </li>
-                </ol>
-            </div>
             <div data-template="app:load-package-groups">
                 <h2>All package groups</h2>
                 <div data-template="templates:each" data-template-from="package-groups" data-template-to="package-group">

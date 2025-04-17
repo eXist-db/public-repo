@@ -189,6 +189,16 @@ else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin") the
             </forward>
         </view>
     </dispatch>
+else if (request:get-method() = ("GET", "POST") and $exist:path eq "/stats") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/templates/stats.html"/>
+        <view>
+            <forward url="{$exist:controller}/modules/view.xq">
+                <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+            </forward>
+        </view>
+    </dispatch>
 
 (: Redirect requests for legacy "/admin.html" page to "/admin" :)
 else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin.html") then
