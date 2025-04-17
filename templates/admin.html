@@ -11,14 +11,14 @@
             <div data-template="app:load-package-groups">
                 <h2>All package groups</h2>
                 <div data-template="templates:each" data-template-from="package-groups" data-template-to="package-group">
-                    <h3><span data-template="app:package-group-abbrev"/></h3>
+                    <h3><span data-template="app:package-group-abbrev"></span></h3>
                     <dl>
                         <dt>Abbrev</dt>
-                        <dd><span data-template="app:package-group-abbrev"/></dd>
+                        <dd><span data-template="app:package-group-abbrev"></span></dd>
                         <dt>Name</dt>
-                        <dd><span data-template="app:package-group-name"/></dd>
+                        <dd><span data-template="app:package-group-name"></span></dd>
                         <dt>Title</dt>
-                        <dd><span data-template="app:package-group-title"/></dd>
+                        <dd><span data-template="app:package-group-title"></span></dd>
                     </dl>
                     <table data-template="app:load-packages" class="table table-bordered">
                         <thead>
@@ -30,9 +30,9 @@
                         </thead>
                         <tbody>
                             <tr data-template="templates:each" data-template-from="packages" data-template-to="package">
-                                <td><span data-template="app:package-version"/></td>
-                                <td><span data-template="app:package-requires"/></td>
-                                <td><span data-template="app:package-date-published"/></td>
+                                <td><span data-template="app:package-version"></span></td>
+                                <td><span data-template="app:package-requires"></span></td>
+                                <td><span data-template="app:package-date-published"></span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -42,67 +42,42 @@
         <div class="col-md-4">
             <p>
                 <a href="" class="btn btn-primary">
-                    <i class="glyphicon glyphicon-share"/> Return to list 
+                    <i class="glyphicon glyphicon-share"></i> Return to list 
                 </a>
             </p>
             <p>
                 <a href="admin?rebuild-package-groups-metadata=true" class="btn btn-default">
-                    <i class="glyphicon glyphicon-repeat"/> Rebuild package-groups metadata 
+                    <i class="glyphicon glyphicon-repeat"></i> Rebuild package-groups metadata 
                 </a>
             </p>
             <a href="?logout=true" class="btn btn-default">
-                <i class="glyphicon glyphicon-log-out"/> Log out</a>
+                <i class="glyphicon glyphicon-log-out"></i> Log out</a>
             <h2>Upload Packages</h2>
             <p>Upload xar packages to the public repository. New packages will appear in the list of
                 available packages immediately upon upload.</p>
-            <p data-template="app:rebuild-package-groups-metadata"/>
+            <p data-template="app:rebuild-package-groups-metadata"></p>
                         
             <span class="btn btn-success fileinput-button">
-                <i class="glyphicon glyphicon-plus"/>
+                <i class="glyphicon glyphicon-plus"></i>
                 <span>Select files...</span>
                 <!-- The file input field used as target for the file upload widget -->
                 <input id="fileupload" type="file" name="files[]" multiple="multiple"/>
             </span>
             <!-- The global progress bar -->
             <div id="progress" class="progress">
-                <div class="progress-bar progress-bar-success"/>
+                <div class="progress-bar progress-bar-success"></div>
             </div>
             <!-- The container for the uploaded files -->
             <table class="files table table-striped">
                 <thead>
                     <th>Uploaded Files</th>
                 </thead>
-                <tbody id="files"/>
+                <tbody id="files"></tbody>
             </table>
         </div>
     </div>
     <script type="text/javascript" src="resources/scripts/jquery.fileupload-ui.js"></script>
     <script type="text/javascript" src="resources/scripts/jquery.iframe-transport.js"></script>
     <script type="text/javascript" src="resources/scripts/jquery.fileupload.js"></script>
-    <script type="text/javascript">
-    $(function () {
-        'use strict';
-        $('#fileupload').fileupload({
-            url: "publish",
-            dataType: 'json',
-            done: function (e, data) {
-                $.each(data.result.files, function (index, file) {
-                    var tr = document.createElement("tr");
-                    var td = document.createElement("td");
-                    td.appendChild(document.createTextNode(file.name));
-                    tr.appendChild(td);
-                    $("#files").append(tr);
-                });
-            },
-            progressall: function (e, data) {
-                var progress = parseInt(data.loaded / data.total * 100, 10);
-                $('#progress .progress-bar').css(
-                    'width',
-                    progress + '%'
-                );
-            }
-        }).prop('disabled', !$.support.fileInput)
-            .parent().addClass($.support.fileInput ? undefined : 'disabled');
-    });
-    </script>
+    <script type="text/javascript" src="resources/scripts/admin.js"></script>
 </div>
