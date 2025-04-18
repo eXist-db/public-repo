@@ -1,0 +1,69 @@
+#main {
+  min-height: calc(100vh - 14rem);
+}
+
+#files {
+    margin-top: 20px;
+}
+
+/* package lists */
+
+.package-list {
+  margin-block-end: 4rem;
+}
+
+.package-list ul {
+    list-style-type: none;
+    padding-inline-start: 0;
+}
+
+.package-list ul li.package {
+  margin-block-end: 1rem;
+  border-radius: 0 1.2rem 0 0;
+  width: 100%;
+  background-color: #fefefe;
+  border: thin solid var(--lightgrey);
+  display: flex;
+  position: relative;
+}
+
+.package-list ul li.package .ribbon {
+  position: absolute;
+  right: 0;
+  width: 80px;
+}
+
+.package-info {
+  margin-inline-end: 6rem;
+}
+.package-info .package-title {
+  font-size: 1.25em;
+  font-weight: bold;
+}
+
+.package-list table {
+  background: transparent;
+}
+.package-list table th,
+.package-list table td {
+  text-align: left;
+  vertical-align: top;
+}
+.package-list table th form,
+.package-list table td form {
+  padding: 0;
+}
+.package-list table ul {
+  padding-inline-start: 0;
+  list-style-type: none;
+}
+.package-list table ul li {
+  /* TBD */
+}
+.package-list .package-icon-area {
+  margin: 1rem;
+}
+.package-list .package-icon-area .appIcon {
+  width: 6rem;
+  max-height: 6rem;
+}

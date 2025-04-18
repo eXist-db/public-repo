@@ -1,24 +1,25 @@
-$(function () {
-    'use strict';
-    $('#fileupload').fileupload({
-        url: "publish",
-        dataType: 'json',
-        done: function (e, data) {
-            $.each(data.result.files, function (index, file) {
-                var tr = document.createElement("tr");
-                var td = document.createElement("td");
-                td.appendChild(document.createTextNode(file.name));
-                tr.appendChild(td);
-                $("#files").append(tr);
-            });
-        },
-        progressall: function (e, data) {
-            var progress = parseInt(data.loaded / data.total * 100, 10);
-            $('#progress .progress-bar').css(
-                'width',
-                progress + '%'
-            );
-        }
-    }).prop('disabled', !$.support.fileInput)
-        .parent().addClass($.support.fileInput ? undefined : 'disabled');
-});
+const files = document.getElementById('files');
+const upload = document.getElementById('upload');
+const uploaded = document.getElementById('uploaded');
+
+async function handleUpload () {
+    for (let fileIndex = 0; fileIndex < files.files.length; fileIndex++) {
+        const file = files.files[fileIndex];
+        const data = new FormData()
+        data.append('files[]', file)
+        await fetch('publish', {
+            'method' : 'POST',
+            'body' : data
+        })
+
+        //append file name to table
+        const tr = document.createElement('tr')
+        const td = document.createElement('td')
+        const text = document.createTextNode(file.name)
+        td.appendChild(text)
+        tr.appendChild(td)
+        uploaded.appendChild(tr)
+    }
+}
+
+upload.addEventListener('click', handleUpload)

@@ -17,6 +17,8 @@ declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 declare option output:method "json";
 declare option output:media-type "application/json";
 
+declare variable $local:file-upload-parameter-name := "files[]";
+
 declare function local:log-put-package-event($filename as xs:string) as empty-sequence() {
     let $package := doc($config:raw-packages-doc)//package[@path eq $filename]
     let $event := 
@@ -46,33 +48,38 @@ declare function local:upload-and-publish($xar-filename as xs:string, $xar-binar
         }
 };
 
-let $xar-filename := request:get-uploaded-file-name("files[]")
-let $xar-binary := request:get-uploaded-file-data("files[]")
-let $user :=
-    (
+declare function local:user-can-publish() as xs:boolean {
+    let $user := (
         request:get-attribute($config:login-domain || ".user"),
         sm:id()//sm:username/string()
     )[1]
+    return (
+        exists($user) and
+        sm:get-user-groups($user) = config:repo-permissions()?group
+    )
+};
 
-let $required-group := config:repo-permissions()?group
+let $_ := util:log("info", request:get-parameter-names())
+
+let $xar-filename := request:get-uploaded-file-name($local:file-upload-parameter-name)
+let $xar-binary := request:get-uploaded-file-data($local:file-upload-parameter-name)
+
 return
-    if (exists($user) and sm:get-user-groups($user) = $required-group) then
-        try {
-            local:upload-and-publish($xar-filename, $xar-binary),
-            local:log-put-package-event($xar-filename)
-        } catch * {
-            map {
-                "result": 
-                    map { 
-                        "name": $xar-filename,
-                        "error": $err:description
-                    }
+if (not(local:user-can-publish())) then (
+    response:set-status-code(403),
+    map {
+        "error": "User must be a member of the " || config:repo-permissions()?group || " group."
+    }
+) else (
+    try {
+        local:upload-and-publish($xar-filename, $xar-binary),
+        local:log-put-package-event($xar-filename)
+    } catch * {
+        map {
+            "result": map {
+                "name": request:get-uploaded-file-name($local:file-upload-parameter-name),
+                "error": $err:description
             }
         }
-    else
-        (
-            response:set-status-code(401),
-            map {
-                "error": "User must be a member of the " || $required-group || " group."
-            }
-        )
+    }
+)
