@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/page.html" data-template-at="container-body">
+<div xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/page.html" data-template-at="main">
     <div class="row">
         <div class="col-md-12">
             <h1>Admin</h1>
@@ -7,77 +7,74 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-8">
-            <div data-template="app:load-package-groups">
-                <h2>All package groups</h2>
-                <div data-template="templates:each" data-template-from="package-groups" data-template-to="package-group">
-                    <h3><span data-template="app:package-group-abbrev"></span></h3>
-                    <dl>
-                        <dt>Abbrev</dt>
-                        <dd><span data-template="app:package-group-abbrev"></span></dd>
-                        <dt>Name</dt>
-                        <dd><span data-template="app:package-group-name"></span></dd>
-                        <dt>Title</dt>
-                        <dd><span data-template="app:package-group-title"></span></dd>
-                    </dl>
-                    <table data-template="app:load-packages" class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Version</th>
-                                <th>eXist Requirement</th>
-                                <th>Date Published</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr data-template="templates:each" data-template-from="packages" data-template-to="package">
-                                <td><span data-template="app:package-version"></span></td>
-                                <td><span data-template="app:package-requires"></span></td>
-                                <td><span data-template="app:package-date-published"></span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="col-md-8" data-template="app:load-package-groups">
+            <h2>All package groups</h2>
+
+            <div class="package-list" data-template="templates:each" data-template-from="package-groups" data-template-to="package-group">
+                <h3><span data-template="app:package-group-abbrev"></span></h3>
+                <dl class="pkg-meta">
+                    <dt>Abbrev</dt>
+                    <dd><span data-template="app:package-group-abbrev"></span></dd>
+                    <dt>Name</dt>
+                    <dd><span data-template="app:package-group-name"></span></dd>
+                    <dt>Title</dt>
+                    <dd><span data-template="app:package-group-title"></span></dd>
+                </dl>
+                <table data-template="app:load-packages" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>eXist Requirement</th>
+                            <th>Date Published</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-template="templates:each" data-template-from="packages" data-template-to="package">
+                            <td><span data-template="app:package-version"></span></td>
+                            <td><span data-template="app:package-requires"></span></td>
+                            <td><span data-template="app:package-date-published"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="col-md-4">
-            <p>
-                <a href="" class="btn btn-primary">
-                    <i class="glyphicon glyphicon-share"></i> Return to list 
-                </a>
-            </p>
-            <p>
-                <a href="admin?rebuild-package-groups-metadata=true" class="btn btn-default">
-                    <i class="glyphicon glyphicon-repeat"></i> Rebuild package-groups metadata 
-                </a>
-            </p>
-            <a href="?logout=true" class="btn btn-default">
-                <i class="glyphicon glyphicon-log-out"></i> Log out</a>
+        <aside class="col-md-4">
             <h2>Upload Packages</h2>
             <p>Upload xar packages to the public repository. New packages will appear in the list of
                 available packages immediately upon upload.</p>
-            <p data-template="app:rebuild-package-groups-metadata"></p>
-                        
-            <span class="btn btn-success fileinput-button">
-                <i class="glyphicon glyphicon-plus"></i>
-                <span>Select files...</span>
-                <!-- The file input field used as target for the file upload widget -->
-                <input id="fileupload" type="file" name="files[]" multiple="multiple"/>
-            </span>
-            <!-- The global progress bar -->
-            <div id="progress" class="progress">
-                <div class="progress-bar progress-bar-success"></div>
+
+            <!-- The file input field used as target for the file upload widget -->
+            <div class="mb-3">
+                <input class="form-control" type="file" name="files[]" multiple="multiple" id="files" />
+            </div>
+            <div class="mb-3">
+                <button id="upload" class="btn btn-success">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    upload
+                </button>
             </div>
             <!-- The container for the uploaded files -->
             <table class="files table table-striped">
                 <thead>
                     <th>Uploaded Files</th>
                 </thead>
-                <tbody id="files"></tbody>
+                <tbody id="uploaded"></tbody>
             </table>
-        </div>
+            <div class="mb-3">
+                <a href="" class="btn btn-primary">
+                    <i class="glyphicon glyphicon-share"></i> Return to list 
+                </a>
+            </div>
+            <div class="mb-3">
+                    <a href="admin?rebuild-package-groups-metadata=true" class="btn btn-outline-secondary">
+                    <i class="glyphicon glyphicon-repeat"></i> Rebuild package-groups metadata 
+                </a>
+            </div>
+            <div class="mb-3">
+                    <a href="?logout=true" class="btn btn-outline-secondary"><i class="glyphicon glyphicon-log-out"></i> Log out</a>
+            </div>
+            <p data-template="app:rebuild-package-groups-metadata"></p>
+        </aside>
     </div>
-    <script type="text/javascript" src="resources/scripts/jquery.ui.widget.js"></script>
-    <script type="text/javascript" src="resources/scripts/jquery.iframe-transport.js"></script>
-    <script type="text/javascript" src="resources/scripts/jquery.fileupload.js"></script>
-    <script type="text/javascript" src="resources/scripts/admin.js"></script>
+    <script src="resources/scripts/admin.js"></script>
 </div>

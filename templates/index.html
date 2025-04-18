@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<div data-template="templates:surround" data-template-with="templates/page.html" data-template-at="container-body">
+<div data-template="templates:surround" data-template-with="templates/page.html" data-template-at="main">
     <div class="row">
         <div class="col-md-12">
-            <h1>Public Application Repository</h1>
+            <h1>XAR Package Registry</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 package-list">
+            <h2>Available Packages</h2>
+            <ul class="packages">
+                <li data-template="app:list-packages"></li>
+            </ul>
+        </div>
+        <div class="col-md-4">
+            <h2>Info</h2>
             <p>This server hosts a public repository of application packages which can be installed into an
                 eXist-db database instance. You can install any package by:</p>
             <ul>
@@ -18,22 +29,6 @@
             <p>To keep up with updates to the apps you have installed, visit the Dashboard's Package
                 Manager app. Also, subscribe to the <a href="feed.xml">atom feed</a> for all package updates
                 for this repository.</p>
-        </div>
-    </div>
-    <div class="row">
-        <div id="listWrapper" class="col-md-8">
-            <h2>Packages</h2>
-            <ul class="packages">
-                <li data-template="app:list-packages"></li>
-            </ul>
-        </div>
-        <div class="col-md-4">
-            <h2>Admin</h2>
-            <p>
-                <a href="./admin" class="btn btn-primary">
-                    <i class="glyphicon glyphicon-open"></i> Upload</a>
-            </p>
-            <p>(requires login)</p>
         </div>
     </div>
 </div>
