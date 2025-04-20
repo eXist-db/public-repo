@@ -98,3 +98,52 @@ declare function versions:sort-packages($packages as element(package)*) {
     semver:sort($packages, function($package) { $package/version }, true())
     => reverse()
 };
+
+(:~
+ : Express a version requirement in human readable form
+ :)
+declare function versions:requires-to-english($requires as element(), $default as xs:string?) {
+    if ($requires/@version) then (
+        concat(" version ", $requires/@version)
+    ) else if ($requires/@semver) then (
+        concat(" version ", $requires/@semver)
+    ) else if ($requires/@semver-min and $requires/@semver-max) then (
+        concat(
+            " version ", 
+            if (semver:validate-expath-package-semver-template($requires/@semver-min)) then (
+                semver:serialize-parsed(semver:resolve-expath-package-semver-template-min($requires/@semver-min))
+            ) else (
+                $requires/@semver-min
+            ),
+            " or later, and ", 
+            if (semver:validate-expath-package-semver-template($requires/@semver-max)) then (
+                concat("earlier than ", semver:serialize-parsed(semver:resolve-expath-package-semver-template-max($requires/@semver-max)))
+            ) else (
+                $requires/@semver-max || " or earlier"
+            )
+        )
+    ) else if ($requires/@semver-min) then (
+        concat(
+            " version ", 
+            if (semver:validate-expath-package-semver-template($requires/@semver-min)) then (
+                semver:serialize-parsed(semver:resolve-expath-package-semver-template-min($requires/@semver-min))
+            ) else (
+                $requires/@semver-min
+            ),
+            " or later"
+        )
+    ) else if ($requires/@semver-max) then (
+        concat(
+            " version ", 
+            if (semver:validate-expath-package-semver-template($requires/@semver-max)) then (
+                concat("earlier than ", semver:serialize-parsed(semver:resolve-expath-package-semver-template-max($requires/@semver-max)))
+            ) else (
+                $requires/@semver-min || " or earlier"
+            )
+        )
+    ) else if ($default) then (
+        " version " || $default
+    ) else (
+        "any version"
+    )
+};

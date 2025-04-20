@@ -6,37 +6,69 @@
     margin-top: 20px;
 }
 
+.hero {
+  text-shadow: 1px 1px 2px var(--darkprimary);
+  font-size: 6em;
+  font-weight: 900;
+}
+
 /* package lists */
 
 .package-list {
   margin-block-end: 4rem;
+  list-style-type: none;
+  padding-inline-start: 0;
 }
 
-.package-list ul {
-    list-style-type: none;
-    padding-inline-start: 0;
-}
-
-.package-list ul li.package {
-  margin-block-end: 1rem;
-  border-radius: 0 1.2rem 0 0;
-  width: 100%;
-  background-color: #fefefe;
-  border: thin solid var(--lightgrey);
+.package {
   display: flex;
   position: relative;
+  border: thin solid var(--lightgrey);
+  border-radius: 0 1.2rem 0 0;
+  margin-block-end: 1rem;
+  background-color: #fefefe;
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: 6rem;
+  --package-info-margin: 1.5rem;
+}
+.package.package-detail {
+  margin-block-end: 4rem;
+  background-size: 8rem;
+}
+.package-detail .package-info {
+  margin-block-end: 4rem;
 }
 
-.package-list ul li.package .ribbon {
-  position: absolute;
-  right: 0;
-  width: 80px;
+.package.application {
+  background-image: url(/exist/apps/public-repo/resources/images/app.gif);
+}
+.package.library {
+  background-image: url(/exist/apps/public-repo/resources/images/library.gif);
+}
+
+.package.plugin {
+  background-image: url(/exist/apps/public-repo/resources/images/plugin.gif);
 }
 
 .package-info {
   margin-inline-end: 6rem;
 }
+
+.package .package-icon-area {
+  margin: var(--package-info-margin);
+}
+.package-detail .package-icon-area {
+  margin-block-start: 2.25rem; /* h2 margin-block-start */
+}
+
+.package .package-icon-area .app-icon {
+  width: 6rem;
+  max-height: 6rem;
+}
+
 .package-info .package-title {
+  margin-block-start: var(--package-info-margin);
   font-size: 1.25em;
   font-weight: bold;
 }
@@ -56,14 +88,4 @@
 .package-list table ul {
   padding-inline-start: 0;
   list-style-type: none;
-}
-.package-list table ul li {
-  /* TBD */
-}
-.package-list .package-icon-area {
-  margin: 1rem;
-}
-.package-list .package-icon-area .appIcon {
-  width: 6rem;
-  max-height: 6rem;
 }

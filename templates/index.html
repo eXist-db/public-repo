@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <div data-template="templates:surround" data-template-with="templates/page.html" data-template-at="main">
-    <div class="row">
-        <div class="col-md-12">
-            <h1>XAR Package Registry</h1>
+    <div class="row d-flex align-items-center" style="height:50vh; ">
+        <div class="col-md-12 d-flex justify-content-center">
+            <h1 class="hero">XAR Package Registry</h1>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-md-8" id="package-list">
-            <h2>Available Packages</h2>
-            <ul class="packages">
-                <li data-template="app:list-packages"></li>
-            </ul>
-        </div>
-        <div class="col-md-4" id="user-docu">
-            <h2>Info</h2>
+        <div class="col-md-12 d-flex justify-content-center">
             <p>This server hosts a public repository of application packages which can be installed into an
-                eXist-db database instance. You can install any package by:</p>
+                eXist-db database instance.</p>
+        </div>
+        <div class="col-md-12 d-flex justify-content-center">
+            <form method="GET" action="search" class="form form-horizontal col-lg-8">
+                <div class="input-group">
+                    <input class="form-control" type="text" name="q" placeholder="search for package names or abbrevs..."/>
+                    <button class="btn btn-lg btn-primary" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-12" id="user-docu">
+            <h2>Installation</h2>
+            <p>You can install any package by:</p>
             <ul>
                 <li>Downloading the package and uploading it to an eXist-db database via the Dashboard's
                     Package Manager app.</li>
@@ -25,6 +28,11 @@
                     edit the repository URL your Package Manager is using, go to your Dashboard, click on
                     the gear icon beneath the eXist-db icon, and you will see a field, "Public Repository
                     URL.")</li>
+                <li>using <a href="xst">xst</a>
+                    <pre><code>
+                        xst package install from-registry --registry this.server.url package-name-or-abbrev
+                    </code></pre>
+                </li>
             </ul>
             <p>To keep up with updates to the apps you have installed, visit the Dashboard's Package
                 Manager app. Also, subscribe to the <a href="feed.xml">atom feed</a> for all package updates

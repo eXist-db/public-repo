@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <div xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/page.html" data-template-at="main">
-    <h1 class="rounded">Administrator Login</h1>
-    <div class="alert alert-success">
-        Please login. The user has to be a member of the "repo" group.
+    <div class="container">
+        <h1 class="rounded">Administrator Login</h1>
+        <div class="alert alert-success row">
+            Please login. The user has to be a member of the "repo" group.
+        </div>
+        <form method="POST" class="form form-horizontal">
+            <div class="row mb-3">
+                <label class="col-form-label col-md-1" for="user">User:</label>
+                <div class="col-md-3">
+                    <input class="form-control" type="text" name="user" required="required" autofocus="autofocus"/>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-form-label col-md-1" for="password">Password:</label>
+                <div class="col-md-3">
+                    <input class="form-control" type="password" name="password"/>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-offset-1 col-sm-12">
+                    <button class="btn btn-primary" type="submit">Login</button>
+                </div>
+            </div>
+        </form>
     </div>
-    <form method="POST" class="form form-horizontal">
-        <div class="form-group">
-            <label class="control-label col-md-1" for="user">User:</label>
-            <div class="col-md-3">
-                <input type="text" name="user" required="required" autofocus="autofocus"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-md-1" for="password">Password:</label>
-            <div class="col-md-3">
-                <input type="password" name="password"/>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-md-offset-1 col-sm-12">
-                <button class="btn btn-primary" type="submit">Login</button>
-            </div>
-        </div>
-    </form>
 </div>
