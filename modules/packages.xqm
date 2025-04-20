@@ -27,13 +27,13 @@ function packages:list-all() as element(li)* {
     for $package-group in doc($config:package-groups-doc)//package-group
     order by lower-case($package-group/title)
     return
-        packages:render-list-item($package-group)
+        packages:render-list-item($package-group, <li/>)
 };
 
 (:~
  : Used by all HTML listings of packages - landing page views of all packages and interior views of individual package groups
  :)
-declare function packages:render-list-item($package-group as element(package-group)) as element(li) {
+declare function packages:render-list-item($package-group as element(package-group), $node as element()) as element(li) {
     let $repoURL := $packages:repo-url
     let $title := $package-group/title/string()
     let $package := head($package-group//package)
@@ -62,8 +62,9 @@ declare function packages:render-list-item($package-group as element(package-gro
         )
 
     return
-        <li class="package {$package/type}">
-            <a href="{$info-url}" class="package-icon-area"><img class="app-icon" src="{$icon}" /></a>
+       element { node-name($node) } {
+            attribute class { "package " || $package/type },
+            <a href="{$info-url}" class="package-icon-area"><img class="app-icon" src="{$icon}" /></a>,
             <div class="package-info">
                 <h3 class="package-title"><a href="{$info-url}">{$title}</a></h3>
                 <p class="package-description">{$package/description/string()}</p>
@@ -80,7 +81,7 @@ declare function packages:render-list-item($package-group as element(package-gro
                     </a>
                 </div>
             </div>
-        </li>
+       }
 };
 
 

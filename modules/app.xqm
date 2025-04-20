@@ -40,7 +40,7 @@ declare
 function app:search-package ($node as node(), $model as map(*), $q as xs:string?) as element(li)* {
     if (empty($q)) then () else
     for $package-group in packages:search($q) 
-    return packages:render-list-item($package-group)
+    return packages:render-list-item($package-group, $node)
 };
 
 (:~
@@ -130,15 +130,23 @@ declare function app:package-date-published($node as node(), $model as map(*)) {
  : Load the get-package logs for the admin section's table
  :)
 declare %templates:wrap
-function app:package-download-stats ($node as node(), $model as map(*), $top-n as xs:integer) as map(*) {
+function app:top-download-stats ($node as node(), $model as map(*), $top-n as xs:integer) as map(*) {
     packages:download-stats($top-n)
 };
 
 (:~
  : Load the package title for the admin section's table
  :)
-declare function app:get-package-stats($node as node(), $model as map(*)) {
-    $model?package-log?package-name || " (" || $model?package-log?count || ")"
+declare %templates:wrap
+function app:package-stats-item($node as node(), $model as map(*)) {
+    doc($config:package-groups-doc)//package-group[name = $model?package-log?package-name]
+    => packages:render-list-item($node)
+};
+
+declare
+    %templates:wrap
+function app:package-stats-download($node as node(), $model as map(*)) {
+    $model?package-log?count
 };
 
 (:~
@@ -232,5 +240,22 @@ declare function app:view-package($node as node(), $model as map(*)) {
                 response:set-status-code(404),
                 <li class="package text-warning">No package {$abbrev} is available.</li>
             )
+    )
+};
+
+declare
+    %templates:replace
+function app:featured-packages ($node as node(), $model as map(*)) as element(div)? {
+    if (empty(doc($config:app-data-col || '/' || $config:settings-doc-name)//featured)) then (
+    ) else (
+        <div>{$node/@*}
+            <h2>Featured Packages</h2>
+            <ul class="package-list">{
+                let $featured := doc($config:app-data-col || '/' || $config:settings-doc-name)//featured/string()[. ne '']
+                let $package-groups := doc($config:package-groups-doc)//package-group[abbrev = $featured]
+                return $package-groups ! packages:render-list-item(., <li/>)
+            }
+            </ul>
+        </div>
     )
 };

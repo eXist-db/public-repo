@@ -8,14 +8,21 @@
 
 .hero {
   text-shadow: 1px 1px 2px var(--darkprimary);
-  font-size: 6em;
-  font-weight: 900;
+  font-size: 3.25rem;
+  font-weight: 700;
+}
+
+/* download stats */
+
+.download-number {
+  font-size: 2rem;
+  width: 10%;
+  text-align: center;
 }
 
 /* package lists */
 
 .package-list {
-  margin-block-end: 4rem;
   list-style-type: none;
   padding-inline-start: 0;
 }
@@ -29,12 +36,12 @@
   background-color: #fefefe;
   background-repeat: no-repeat;
   background-position: top right;
-  background-size: 6rem;
+  background-size: 5rem;
   --package-info-margin: 1.5rem;
 }
 .package.package-detail {
-  margin-block-end: 4rem;
-  background-size: 8rem;
+  margin-block-end: 3rem;
+  background-size: 4rem;
 }
 .package-detail .package-info {
   margin-block-end: 4rem;
@@ -52,7 +59,7 @@
 }
 
 .package-info {
-  margin-inline-end: 6rem;
+  margin-inline-end: 4rem;
 }
 
 .package .package-icon-area {
@@ -63,8 +70,8 @@
 }
 
 .package .package-icon-area .app-icon {
-  width: 6rem;
-  max-height: 6rem;
+  width: 4rem;
+  max-height: 4rem;
 }
 
 .package-info .package-title {
@@ -88,4 +95,25 @@
 .package-list table ul {
   padding-inline-start: 0;
   list-style-type: none;
+}
+
+/* `lg` applies to medium devices (tablets, less than 992px) */
+@media (min-width: 992px) {
+  .hero {
+    font-size: 6rem;
+  }
+  .package {
+    background-size: 6rem;
+  }
+  .package.package-detail {
+    margin-block-end: 4rem;
+    background-size: 8rem;
+  }
+  .package-detail .package-info {
+    margin-block-end: 4rem;
+  }
+  .package .package-icon-area .app-icon {
+    width: 6rem;
+    max-height: 6rem;
+  }
 }
