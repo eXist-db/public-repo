@@ -22,6 +22,19 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 (: TODO shouldn't we get $repoURL from $config? - joewiz :)
 declare variable $app:repo-url := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/");
 
+declare variable $app:settings := doc($config:app-data-col || '/' || $config:settings-doc-name)/settings;
+
+declare
+    %templates:wrap
+function app:title($node as node(), $model as map(*)) as xs:string? {
+    $app:settings/title/string()
+}; 
+
+declare
+    %templates:wrap
+function app:description($node as node(), $model as map(*)) as xs:string? {
+    $app:settings/description/text()
+};
 
 (:~
  : Set the base-elements href attribute to a URL that will be used to resolve relative paths
@@ -246,12 +259,12 @@ declare function app:view-package($node as node(), $model as map(*)) {
 declare
     %templates:replace
 function app:featured-packages ($node as node(), $model as map(*)) as element(div)? {
-    if (empty(doc($config:app-data-col || '/' || $config:settings-doc-name)//featured)) then (
+    if (empty($app:settings//featured)) then (
     ) else (
         <div>{$node/@*}
             <h2>Featured Packages</h2>
             <ul class="package-list">{
-                let $featured := doc($config:app-data-col || '/' || $config:settings-doc-name)//featured/string()[. ne '']
+                let $featured := $app:settings//featured/string()[. ne '']
                 let $package-groups := doc($config:package-groups-doc)//package-group[abbrev = $featured]
                 return $package-groups ! packages:render-list-item(., <li/>)
             }

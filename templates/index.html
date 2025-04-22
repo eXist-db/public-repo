@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <div data-template="templates:surround" data-template-with="templates/page.html" data-template-at="main">
-    <div class="col-md-12 text-center">
-        <h1 class="hero">XAR Package Registry</h1>
-        <p>This server hosts a public repository of application packages which can be installed into an
-            eXist-db database instance.</p>
+    <div class="col-md-12 mt-4 mb-4 text-center">
+        <h1 class="hero" data-template="app:title"></h1>
+        <p class="tagline" data-template="app:description"></p>
     </div>
-    <div class="col-md-12 d-flex justify-content-center">
-        <form method="GET" action="search" class="form form-horizontal col-lg-8">
+    <div class="col-md-12 col-lg-8 offset-lg-2">
+        <form method="GET" action="search" class="form">
             <div class="input-group">
                 <input class="form-control" type="text" name="q" placeholder="search for package names or abbrevs..."/>
                 <button class="btn btn-lg btn-primary" type="submit">Search</button>
