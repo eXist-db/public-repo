@@ -13,10 +13,10 @@
         <delete dir="${build}" />
         <delete file="expath-pkg.xml" />
         <delete>
-            <fileset dir="resources/scripts" includes="**/*" excludes="repo.js"/>
+            <fileset dir="resources/scripts" includes="**/*" excludes="admin.js"/>
         </delete>
         <delete>
-            <fileset dir="resources/css" includes="**/*" excludes="exist-2.2.css packageManager.css"/>
+            <fileset dir="resources/css" includes="**/*" excludes="exist-6.css public-repo.css"/>
         </delete>
     </target>
     <target name="npm">
