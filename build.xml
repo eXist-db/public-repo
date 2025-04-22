@@ -37,19 +37,11 @@
                 <!-- bootstrap -->
                 <file file="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" />
                 <file file="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js.map" />
-                <!-- fileupload -->
-                <file file="node_modules/blueimp-file-upload/js/jquery.fileupload.js" />
-                <file file="node_modules/blueimp-file-upload/js/jquery.iframe-transport.js" />
-                <file file="node_modules/blueimp-file-upload/js/jquery.fileupload-ui.js" />
-                <!-- jquery -->
-                <file file="node_modules/jquery/dist/jquery.min.js" />
-                <file file="node_modules/jquery/dist/jquery.min.map" />
             </resources>
         </copy>
         <copy todir="resources/css" flatten="true" overwrite="true">
             <resources>
                 <!-- fileupload -->
-                <file file="node_modules/blueimp-file-upload/css/jquery.fileupload.css" />
                 <file file="node_modules/bootstrap/dist/css/bootstrap.min.css" />
                 <file file="node_modules/bootstrap/dist/css/bootstrap.min.css.map" />
             </resources>
