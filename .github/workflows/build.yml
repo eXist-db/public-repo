@@ -15,12 +15,12 @@ jobs:
        matrix:
         # created with 7.0.0-SNAPSHOT, 6.3.0
          exist-version: [latest, 6.0.0, release]
-         java-version: [8, 17]
+         java-version: [8, 21]
          exclude:
            - exist-version: release
-             java-version: 17
+             java-version: 21
            - exist-version: 6.0.0
-             java-version: 17
+             java-version: 21
            - exist-version: latest
              java-version: 8
 
@@ -49,7 +49,7 @@ jobs:
       - name: Add expath dependencies
         working-directory: build
         run: |
-          wget https://exist-db.org/exist/apps/public-repo/public/templating-1.1.0.xar -O 001.xar
+          wget https://exist-db.org/exist/apps/public-repo/public/templating-1.2.1.xar -O 001.xar
           wget https://exist-db.org/exist/apps/public-repo/public/semver-xq-3.0.0.xar -O 002.xar
 
       # Install
