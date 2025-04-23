@@ -1,170 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <html data-template="lib:resolve-apps" data-template-abbrev="dashboard, eXide, fundocs, exist-documentation, demo, monex">
     <head>
-        <title>eXist-db Public App Repository</title>
+        <title>eXist-db Package Registry</title>
         <base data-template="app:base-url" />
-        <link rel="shortcut icon" href="$shared/resources/images/exist_icon_16x16.ico" />
+        <link rel="shortcut icon" href="resources/images/exist_icon_16x16.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" type="text/css" href="resources/css/jquery.fileupload.css "/>
-        <link rel="stylesheet" type="text/css" href="resources/css/packageManager.css" />
+        <link href="resources/css/bootstrap.min.css" rel="stylesheet" />
+        <link rel="stylesheet" type="text/css" href="resources/css/exist-6.css" />
+        <link rel="stylesheet" type="text/css" href="resources/css/public-repo.css" />
         <link rel="alternate" type="application/atom+xml" href="feed.xml" title="eXist-db Public Package Repository"/>
-        <script type="text/javascript" src="$shared/resources/scripts/jquery/jquery-1.7.1.min.js"></script>
-        <script type="text/javascript" src="$shared/resources/scripts/bootstrap-3.0.3.min.js"></script>
-        <script type="text/javascript" src="resources/scripts/repo.js"></script>
     </head>
-    <body id="grey-top" data-template="lib:parse-params" data-template-start="\{">
-        <div class="grey-bot">
-            <div class="container" id="main-container">
-                <div class="row">
-                    <div class="col-md-12" id="header">
-                        <a href="/" id="logo">eXistDB</a>
-                    </div>
-                </div>
-                <div class="row">
-                    <nav class="navbar navbar-default" role="navigation">
-                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                        <div class="navbar-collapse collapse" id="navbar-collapse-1">
-                            <ul class="nav navbar-nav">
-                                <li class="dropdown" id="about">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Home</a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a href="{dashboard}/index.html">Dashboard</a>
-                                        </li>
-                                        <li>
-                                            <a href="https://exist-db.org">eXist-db.org</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="dropdown" id="demo">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Demo</a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a href="{demo}/index.html">Overview</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/examples/basic/basics.html">Basic XQuery Examples</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/examples/basic/xquery3.html">XQuery 3.0 Examples</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/examples/web/index.html">Web Examples</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/examples/urlrewriting/index.html">URL Rewriting</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/examples/special/index.html">Special Features</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/examples/templating/templates.html">Templating</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/cex-demo.html">Content Extraction</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/examples/tests/test.html">Unit Testing</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/examples/xforms/">XForms and RestXQ</a>
-                                        </li>
-                                        <li>
-                                            <a href="{demo}/examples/contacts/html/home.html?browseContacts">RestXQ and AngularJS</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="dropdown" id="documentation">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation</a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a href="{exist-documentation}/documentation.xml">Documentation</a>
-                                        </li>
-                                        <li>
-                                            <a href="{fundocs}/index.html">XQuery Functions</a>
-                                        </li>
-                                        <li>
-                                            <a href="{exist-documentation}/getting-help.xml">Get Support</a>
-                                        </li>
-                                        <li>
-                                            <a href="https://atomic.exist-db.org">News / Wiki</a>
-                                        </li>
-                                        <li>
-                                            <a href="https://en.wikibooks.org/wiki/XQuery">XQuery Wikibook</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="dropdown" id="development">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Development</a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a href="{eXide}/index.html">eXide</a>
-                                        </li>
-                                        <li>
-                                            <a href="https://exist-db.org/api/index.html">Javadocs</a>
-                                        </li>
-                                        <li>
-                                            <a href="https://sourceforge.net/p/exist/bugs/">Bug Tracker</a>
-                                        </li>
-                                        <li>
-                                            <a href="https://sourceforge.net/p/exist/code/">Subversion</a>
-                                        </li>
-                                        <li>
-                                            <a href="https://sourceforge.net/p/exist/patches/">Submit Patches</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="dropdown" id="administration">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Administration</a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a href="{dashboard}/index.html">Dashboard</a>
-                                        </li>
-                                        <li>
-                                            <a href="/webstart/exist.jnlp">Webstart Client</a>
-                                        </li>
-                                        <li>
-                                            <a href="{monex}">Monitoring and Profiling</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                    </nav>
-                </div>
-                <div id="container-body" class="row">
-                    <div class="col-md-12" id="content"></div>
-                </div>
-            </div>
-        </div>
-        <div id="footer">
-            <div class="container">
-                <ul>
-                    <li>
-                        <a href="https://exist-db.org">eXist-db.org</a>
-                    </li>
-                    <li>
-                        <a href="{exist-documentation}/documentation.xml">Documentation</a>
-                    </li>
-                    <li>
-                        <a href="{demo}/index.html">Demo</a>
-                    </li>
-                    <li class="hidden-xs-inline">
-                        <a href="/status">Status</a>
-                    </li>
-                    <li>
-                        <a href="{exist-documentation}/legal.xml">Legal</a>
-                    </li>
+    <body data-template="lib:parse-params" data-template-start="\{">
+        <div class="container"><div id="header"><a href="/" id="logo">eXistDB</a></div></div>
+        <nav class="navbar navbar-dark navbar-expand-md" role="navigation">
+            <div class="container navbar-container">
+              <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+                </svg>
+                <span class="visually-hidden-focusable">Toggle navigation</span>
+              </button>
+              <div class="navbar-collapse collapse" id="navbar-collapse-1">
+                <ul class="navbar-nav me-auto">
+                  <li class="nav-item dropdown">
+                    <a href="" class="nav-link">List</a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="admin" class="nav-link">Publish</a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="stats" class="nav-link">Download Statistics</a>
+                  </li>
                 </ul>
-                <div id="copyright" class="hidden-xs">
-                    <p>Copyright eXist-db Project 2014</p>
-                </div>
+                <!--
+                <form id="header-search" class="d-flex" role="search" action="search.html" method="GET">
+                  <input type="text" name="q" class="form-control me-2" placeholder="Search Documentation" />
+                  <button class="btn btn-outline-info" type="submit">Search</button>
+                </form> -->
             </div>
-        </div>
+            </div>
+          </nav>
+        
+          <div class="container">
+            <main id="main" class="row"></main>
+          </div>
+
+          <footer id="footer">
+            <div class="container d-flex">
+              <ul class="me-auto">
+                <li>
+                  <a href="https://exist-db.org">eXist-db.org</a>
+                </li>
+                <li>
+                  <a href="documentation.xml">Documentation</a>
+                </li>
+                <li>
+                  <a href="legal.xml">Legal</a>
+                </li>
+              </ul>
+              <div id="copyright" class="d-hidden-s">
+                <p>Copyright eXist-db Project 2014</p>
+              </div>
+            </div>
+          </footer>
+          <script src="resources/scripts/bootstrap.bundle.min.js" defer="defer"></script>
     </body>
 </html>

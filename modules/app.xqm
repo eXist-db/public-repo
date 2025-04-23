@@ -6,16 +6,20 @@ xquery version "3.1";
 
 module namespace app="http://exist-db.org/xquery/app";
 
-import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
-import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
-import module namespace versions="http://exist-db.org/apps/public-repo/versions" at "versions.xqm";
-
 import module namespace semver="http://exist-db.org/xquery/semver";
 import module namespace templates="http://exist-db.org/xquery/html-templating";
+
+import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace redirect="http://exist-db.org/xquery/lib/redirect" at "redirect.xqm";
+import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at "scan.xqm";
+import module namespace versions="http://exist-db.org/apps/public-repo/versions" at "versions.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+
+
+declare variable $app:repo-url := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/");
 
 
 (:~
@@ -115,8 +119,9 @@ declare function app:package-date-published($node as node(), $model as map(*)) {
 (:~
  : Load the get-package logs for the admin section's table
  :)
-declare %templates:wrap function app:load-get-package-logs-for-admin-table($node as node(), $model as map(*), $top-n as xs:integer) {
-    let $package-logs := 
+declare %templates:wrap
+function app:load-get-package-logs-for-admin-table ($node as node(), $model as map(*), $top-n as xs:integer) {
+    let $package-logs :=
         for $event in collection($config:logs-col)//event[type eq "get-package"]
         group by $package-name := $event/package-name/string()
         let $count := count($event)
@@ -126,9 +131,10 @@ declare %templates:wrap function app:load-get-package-logs-for-admin-table($node
                 "package-name": $package-name,
                 "count": $count
             }
+
     return
-        map { "package-logs": 
-            subsequence($package-logs, 1, $top-n)
+        map {
+            "package-logs": subsequence($package-logs, 1, $top-n)
         }
 };
 
@@ -172,69 +178,67 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
     let $abbrev := request:get-parameter("abbrev", ())
     let $procVersion := request:get-parameter("eXist-db-min-version", $config:default-exist-version)
     let $package-groups := doc($config:package-groups-doc)//package-group[abbrev eq $abbrev]
-    return
-        (
-            if (count($package-groups) gt 1) then 
-                <p>More than one package matches the requested convenient short 
-                    name, <code>{$abbrev}</code>. The unique package names that 
-                    match this short name are: 
-                    <ol>
-                        {
-                            for $package-group in $package-groups
-                            let $name := $package-group/name
-                            order by $name
-                            return
-                                <li><code>{$name/string()}</code></li>
-                        }
-                    </ol>
-                    The packages with versions available that are compatible with eXist {$procVersion} or higher are as follows:
-                </p>
-            else 
-                ()
-            ,
-    let $listing := 
-        for $package-group in $package-groups
-        return
-            (: catch requests for a package using its legacy "abbrev" and redirect
-             : them to a URL using the app's current abbrev, to encourage use of the
-             : current abbrev :)
-            if ($package-group/abbrev[. eq $abbrev]/@type eq "legacy") then
-                let $current-abbrev := $package-group/abbrev[not(@type eq "legacy")]
-                (: TODO shouldn't we get $repoURL from $config? - joewiz :)
-                let $repoURL := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/")
-                let $newest-compatible-package := head($package-group//package[abbrev eq $abbrev])
-                let $required-exist-version := $newest-compatible-package/requires[@processor eq $config:exist-processor-name]/(@version, @semver-min)[1]
-                let $info-url :=
-                    concat($repoURL, "packages/", $current-abbrev, ".html",
-                        if ($required-exist-version) then
-                            concat("?eXist-db-min-version=", $required-exist-version)
-                        else
-                            ()
-                    )
-                return
-                    app:redirect-to($info-url)
-            (: view current package info :)
-            else
-                let $packages := $package-group//package
-                let $compatible-packages := versions:get-packages-satisfying-exist-version($packages, $procVersion)
-                let $incompatible-packages := $packages except $compatible-packages
-                let $show-details := true()
-                return
-                    if ($compatible-packages or $incompatible-packages) then
-                        let $trimmed-package-group := 
-                            element package-group { 
-                                $package-group/(title, name, abbrev),
-                                $compatible-packages
-                            }
+    return (
+        if (count($package-groups) eq 1) then (
+        ) else
+            <p>More than one package matches the requested convenient short 
+                name, <code>{$abbrev}</code>. The unique package names that 
+                match this short name are: 
+                <ol>
+                    {
+                        for $package-group in $package-groups
+                        let $name := $package-group/name
+                        order by $name
                         return
-                            app:package-group-to-list-item($trimmed-package-group, $incompatible-packages, $procVersion, $show-details)
-                    else
-                        <li class="package text-warning">The package with convenient short name <code>{$abbrev}</code> and with unique package name <code>{$package-group/name}</code> is not compatible with eXist {$procVersion} and requires a newer version of eXist.</li>
-    return
-        if (exists($listing)) then
-            $listing
-        else
-            (
+                            <li><code>{$name/string()}</code></li>
+                    }
+                </ol>
+                The packages with versions available that are compatible with eXist {$procVersion} or higher are as follows:
+            </p>
+        ,
+        let $listing := 
+            for $package-group in $package-groups
+            return
+                (: catch requests for a package using its legacy "abbrev" and redirect
+                : them to a URL using the app's current abbrev, to encourage use of the
+                : current abbrev :)
+                if ($package-group/abbrev[. eq $abbrev]/@type eq "legacy") then
+                    let $current-abbrev := $package-group/abbrev[not(@type eq "legacy")]
+                    (: TODO shouldn't we get $repoURL from $config? - joewiz :)
+                    let $repoURL := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/")
+                    let $newest-compatible-package := head($package-group//package[abbrev eq $abbrev])
+                    let $required-exist-version := $newest-compatible-package/requires[@processor eq $config:exist-processor-name]/(@version, @semver-min)[1]
+                    let $info-url :=
+                        concat($repoURL, "packages/", $current-abbrev, ".html",
+                            if ($required-exist-version) then
+                                concat("?eXist-db-min-version=", $required-exist-version)
+                            else
+                                ()
+                        )
+                    return
+                        redirect:permanent($info-url)
+                (: view current package info :)
+                else
+                    let $packages := $package-group//package
+                    let $compatible-packages := versions:get-packages-satisfying-exist-version($packages, $procVersion)
+                    let $incompatible-packages := $packages except $compatible-packages
+                    let $show-details := true()
+                    return
+                        if ($compatible-packages or $incompatible-packages) then
+                            let $trimmed-package-group := 
+                                element package-group { 
+                                    $package-group/(title, name, abbrev),
+                                    $compatible-packages
+                                }
+                            return
+                                app:package-group-to-list-item($trimmed-package-group, $incompatible-packages, $procVersion, $show-details)
+                        else
+                            <li class="package text-warning">The package with convenient short name <code>{$abbrev}</code> and with unique package name 
+                                <code>{$package-group/name}</code> is not compatible with eXist {$procVersion} and requires a newer version of eXist.</li>
+        return
+            if (exists($listing)) then (
+                $listing
+            ) else (
                 response:set-status-code(404),
                 <li class="package text-warning">No package {$abbrev} is available.</li>
             )
@@ -246,7 +250,7 @@ declare function app:view-package($node as node(), $model as map(*), $mode as xs
  :)
 declare function app:package-group-to-list-item($package-group as element(package-group), $incompatible-packages as element(package)*, $procVersion as xs:string?, $show-details as xs:boolean) {
     (: TODO shouldn't we get $repoURL from $config? - joewiz :)
-    let $repoURL := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/")
+    let $repoURL := $app:repo-url
     let $packages := $package-group//package
     let $newest-package := head($packages)
     let $older-packages := tail($packages)
@@ -258,6 +262,7 @@ declare function app:package-group-to-list-item($package-group as element(packag
                 $repoURL || "public/" || $newest-package/icon[1]
         else
             $repoURL || "resources/images/package.png"
+    let $title := $package-group/title/string()
     let $path := $newest-package/@path
     let $requires := $newest-package/requires
     let $download-url := concat($repoURL, "public/", $path)
@@ -269,161 +274,175 @@ declare function app:package-group-to-list-item($package-group as element(packag
             else
                 ()
         )
+
     return
         <li class="package {$newest-package/type}">
-            <div class="packageIconArea">
-                <a href="{$info-url}"><img class="appIcon" src="{$icon}"/></a>
-            </div>
+            {app:package-type-icon($newest-package/type)}
+            <a href="{$info-url}" class="package-icon-area"><img class="appIcon" src="{$icon}" /></a>
+            <div class="package-info">
             {
-                switch ($newest-package/type)
-                    case ("application") return
-                        <img src="{$repoURL || "resources/images/app.gif"}" class="ribbon" alt="application" title="This is an application"/>
-                    case ("library") return
-                        <img src="{$repoURL || "resources/images/library.gif"}" class="ribbon" alt="library" title="This is a library"/>
-                    case ("plugin") return
-                        <img src="{$repoURL || "resources/images/plugin.gif"}" class="ribbon" alt="plugin" title="This is a plugin"/>
-                    default return ()
-            }
-            <h3 style="padding-bottom: 0"><a href="{$info-url}">{$package-group/title/string()}</a></h3>
-            {
-                if ($show-details) then
-                    <table>
-                        { 
-                            if ($newest-package) then 
-                                (
+                if (not($show-details)) then (
+                    app:short-package-summary($title, $newest-package, $requires, $download-url, $info-url)
+                ) else (
+                    <h2><a href="{$info-url}">{$title}</a></h2>,
+                    if (empty($newest-package)) then (
+                        <p>No versions of {string-join($package-group/abbrev, " or ")} found that are compatible with eXist-db {$procVersion}+.</p>
+                    ) else (
+                        <table>
+                            <tr>
+                                <th>Description:</th>
+                                <td>{ $newest-package/description/string() }</td>
+                            </tr>
+                            <tr>
+                                <th>Version:</th>
+                                <td>{ $newest-package/version/string() }</td>
+                            </tr>
+                            <tr>
+                                <th>Size:</th>
+                                <td>{ $newest-package/@size idiv 1024 }k</td>
+                            </tr>
+                            {
+                                if (empty($newest-package/requires)) then (
+                                ) else (
                                     <tr>
-                                        <th>Description:</th>
-                                        <td>{ $newest-package/description/string() }</td>
-                                    </tr>,
-                                    <tr>
-                                        <th>Version:</th>
-                                        <td>{ $newest-package/version/string() }</td>
-                                    </tr>,
-                                    <tr>
-                                        <th>Size:</th>
-                                        <td>{ $newest-package/@size idiv 1024 }k</td>
-                                    </tr>,
-                                    if ($newest-package/requires) then
-                                        <tr>
-                                            <th class="requires">Requirement:</th>
-                                            <td>eXist-db { if ($requires) then app:requires-to-english($requires) else () }</td>
-                                        </tr>
-                                    else
-                                        (),
-                                    <tr>
-                                        <th>Short Title:</th>
-                                        <td>{ $newest-package/abbrev[not(@type)]/string() }</td>
-                                    </tr>,
-                                    <tr>
-                                        <th>Package Name (URI):</th>
-                                        <td>{ $newest-package/name/string() }</td>
-                                    </tr>,
-                                    <tr>
-                                        <th>Author(s):</th>
-                                        <td>{string-join($newest-package/author, ", ")}</td>
-                                    </tr>,
-                                    <tr>
-                                        <th>License:</th>
-                                        <td>{ $newest-package/license/string() }</td>
-                                    </tr>,
-                                    if ($newest-package/website != "") then
-                                        <tr>
-                                            <th>Website:</th>
-                                            <td><a href="{$newest-package/website}">{ $newest-package/website/string() }</a></td>
-                                        </tr>
-                                    else
-                                        (),
-                                    <tr>
-                                        <th>Download:</th>
-                                        <td><a href="{$download-url}" title="click to download package">{$path/string()}</a></td>
+                                        <th class="requires">Requirement:</th>
+                                        <td>eXist-db { if ($requires) then app:requires-to-english($requires) else () }</td>
                                     </tr>
                                 )
-                            else
-                                <p>No versions of {string-join($package-group/abbrev, " or ")} found that are compatible with eXist-db {$procVersion}+.</p>
-                        }
-                        {
-                            if ($older-packages or $incompatible-packages) then
-                                <tr>
-                                    <th>Download other versions:</th>
-                                    <td>
-                                        <ul>{
-                                            (: show links to older versions of the package that are compatible with the requested version of eXist :)
-                                            for $package in $older-packages
-                                            let $download-version-url := concat($repoURL, "public/", $package/@path)
-                                            return
-                                                <li>
-                                                    <a href="{$download-version-url}">{ $package/version/string() }</a>
-                                                </li>,
-                                                
-                                            (: show links to any other version of the package that is compatible with the requested version of eXist, 
-                                               but show the requirement that isn't met. use case: crypto library, whose abbrev has changed and whose 
-                                               eXist requirements changed in odd ways. for example: 
-                                                   - 1. crypto@1.0.0 requires eXist-db 5.0.0-RC8+
-                                                   - 2. expath-crypto-exist-lib@5.3.0 requires eXist-db 4.4.0+
-                                                   - 3. both versions share the same package name: http://expath.org/ns/crypto. 
-                                                   - so based on package version, #2 is the newest package
-                                                   - but based on eXist version, #1 is more compatible with eXist 5.x
-                                                   - a messy situation, but it's better to show this info than hide packages from view
-                                            :)
-                                            for $package in $incompatible-packages
-                                            let $download-version-url := concat($repoURL, "public/", $package/@path)
-                                            let $requires := $package/requires
-                                            return
-                                                <li>
-                                                    <a href="{$download-version-url}">{ $package/version/string() }</a>
-                                                    {
-                                                        " (Note: Requires eXist-db "
-                                                        || app:requires-to-english($requires)
-                                                        || 
-                                                            (
-                                                                if ($package/abbrev ne $package-group/abbrev[not(@type = "legacy")]) then 
-                                                                    (". This version's short title is “" || $package/abbrev || "”") 
-                                                                else 
-                                                                    ()
-                                                            )
-                                                        || ".)"
-                                                    }
-                                                </li>
-                                        }</ul>
-                                    </td>
-                                </tr>
-                            else ()
-                        }
-                        {
-                            if (exists($newest-package/changelog/change)) then
-                                (
-                                <tr>
-                                    <th colspan="2">Change log:</th>
-                                </tr>
-                                ,
+                            }
+                            <tr>
+                                <th>Package Abbrev:</th>
+                                <td>{ $newest-package/abbrev[not(@type)]/string() }</td>
+                            </tr>
+                            <tr>
+                                <th>Package Name:</th>
+                                <td>{ $newest-package/name/string() }</td>
+                            </tr>
+                            <tr>
+                                <th>Author(s):</th>
+                                <td>{string-join($newest-package/author, ", ")}</td>
+                            </tr>
+                            <tr>
+                                <th>License:</th>
+                                <td>{ $newest-package/license/string() }</td>
+                            </tr>
+                            {
+                                if ($newest-package/website eq "") then (
+                                ) else (
+                                    <tr>
+                                        <th>Website:</th>
+                                        <td><a href="{$newest-package/website}">{ $newest-package/website/string() }</a></td>
+                                    </tr>
+                                )
+                            }
+                            <tr>
+                                <th>Download:</th>
+                                <td><a href="{$download-url}" title="click to download package">{$path/string()}</a></td>
+                            </tr>
+                        </table>
+                    )
+                    ,
+                    if (empty(($older-packages, $incompatible-packages))) then (
+                    ) else (
+                        <div class="other-versions">
+                            <h3>Download other versions:</h3>
+                            <ul class="compatible">
+                            {
+                                (: show links to older versions of the package that are compatible with the requested version of eXist :)
+                                for $package in $older-packages
+                                let $download-version-url := concat($repoURL, "public/", $package/@path)
+                                return
+                                    <li>
+                                        <a href="{$download-version-url}">{ $package/version/string() }</a>
+                                    </li>
+                            }
+                            </ul>
+                            <ul class="incompatbile">
+                            {
+                                (: show links to any other version of the package that is compatible with the requested version of eXist, 
+                                    but show the requirement that isn't met. use case: crypto library, whose abbrev has changed and whose 
+                                    eXist requirements changed in odd ways. for example: 
+                                        - 1. crypto@1.0.0 requires eXist-db 5.0.0-RC8+
+                                        - 2. expath-crypto-exist-lib@5.3.0 requires eXist-db 4.4.0+
+                                        - 3. both versions share the same package name: http://expath.org/ns/crypto. 
+                                        - so based on package version, #2 is the newest package
+                                        - but based on eXist version, #1 is more compatible with eXist 5.x
+                                        - a messy situation, but it's better to show this info than hide packages from view
+                                :)
+                                for $package in $incompatible-packages
+                                let $download-version-url := concat($repoURL, "public/", $package/@path)
+                                let $requires := $package/requires
+                                return
+                                    <li>
+                                        <a href="{$download-version-url}">{ $package/version/string() }</a>
+                                        {
+                                            " (Note: Requires eXist-db "
+                                            || app:requires-to-english($requires)
+                                            || (
+                                                if ($package/abbrev ne $package-group/abbrev[not(@type = "legacy")]) then 
+                                                    (". This version's short title is “" || $package/abbrev || "”") 
+                                                else 
+                                                    ()
+                                                )
+                                            || ".)"
+                                        }
+                                    </li>
+                            }
+                            </ul>
+                        </div>
+                    )
+                    ,
+                    if (empty($newest-package/changelog/change)) then (
+                    ) else (
+                        <div class="changelog">
+                            <h3>Change log:</h3>
+                            <table class="table">
+                            {
                                 for $change in $newest-package/changelog/change
                                 let $version := $change/@version/string()
                                 let $comment := $change/node()
                                 order by $version descending collation "http://www.w3.org/2013/collation/UCA?numeric=yes"
                                 return
-                                    <tr>
-                                        <td>{$version}</td>
+                                    <tr class="changelog-row">
+                                        <th>{$version}</th>
                                         <td>{$comment}</td>
                                     </tr>
-                                )
-                            else ()
-                        }
-                    </table>
-                else 
-                    <p> 
-                        {$newest-package/description/string()}
-                        <br/>
-                        Version {$newest-package/version/string()} {
-                            if ($requires) then
-                                concat(" (Requires eXist-db ", app:requires-to-english($requires), ".)")
-                            else
-                                ()
                             }
-                        <br/>
-                        Read <a href="{$info-url}">more information</a>, or download <a href="{$download-url}" title="click to download package">{$newest-package/@path/string()}</a>.
-                    </p>
-            }
-        </li>
+                            </table>
+                        </div>
+                    )
+                )
+        }
+        </div>
+    </li>
+};
+
+declare function app:package-type-icon ($type as xs:string?) as element(img)? {
+    switch ($type)
+        case ("application") return
+            <img src="{$app:repo-url || "resources/images/app.gif"}" class="ribbon" alt="application" title="This is an application"/>
+        case ("library") return
+            <img src="{$app:repo-url || "resources/images/library.gif"}" class="ribbon" alt="library" title="This is a library"/>
+        case ("plugin") return
+            <img src="{$app:repo-url || "resources/images/plugin.gif"}" class="ribbon" alt="plugin" title="This is a plugin"/>
+        default return ()
+};
+
+declare function app:short-package-summary($title as xs:string, $package as element(), $requires as element(), $download-url as xs:string, $info-url as xs:string) as element()+ {
+    <h3 class="package-title"><a href="{$info-url}">{$title}</a></h3>,
+    <p class="package-description">{$package/description/string()}</p>,
+    <div class="mb-4">
+        <a class="icon-link" href="{$download-url}">
+            Download Version {$package/version/string()}
+        </a>
+        or
+        <a class="icon-link icon-link-hover" href="{$info-url}">
+            Read More Information
+            <svg xmlns="http://www.w3.org/2000/svg" class="bi" viewBox="0 0 16 16" aria-hidden="true">  
+                <path d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+            </svg>
+        </a>
+    </div>
 };
 
 (:~
@@ -467,13 +486,4 @@ declare function app:requires-to-english($requires as element()) {
         )
     else
         " version " || $config:default-exist-version
-};
-
-(:~
- : helper function to work around a bug in response:redirect-to#1
- : see https://github.com/eXist-db/exist/issues/4249
- :)
-declare function app:redirect-to ($location as xs:string) {
-    response:set-status-code(302),
-    response:set-header("Location", $location)
 };

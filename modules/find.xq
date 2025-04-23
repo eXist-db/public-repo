@@ -18,9 +18,9 @@ xquery version "3.1";
  : @see http://expath.org/spec/pkg
  :)
 
-import module namespace app="http://exist-db.org/xquery/app" at "app.xqm";
-import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
+import module namespace redirect="http://exist-db.org/xquery/lib/redirect" at "redirect.xqm";
 import module namespace versions="http://exist-db.org/apps/public-repo/versions" at "versions.xqm";
+import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
@@ -167,7 +167,7 @@ if (empty($packages)) then (
         attribute url { $abs-public || $package/@path }
     }
 ) else if ($zip) then (
-    app:redirect-to($abs-public || $package/@path || ".zip")
+    redirect:found($abs-public || $package/@path || ".zip")
 ) else (
-    app:redirect-to($abs-public || $package/@path)
+    redirect:found($abs-public || $package/@path)
 )
