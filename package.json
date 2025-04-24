@@ -1,6 +1,6 @@
 {
   "name": "public-repo",
-  "version": "3.0.2",
+  "version": "4.0.0",
   "description": "Expath Package Registry",
   "directories": {
     "test": "test"

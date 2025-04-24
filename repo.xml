@@ -12,6 +12,18 @@
     <finish>post-install.xq</finish>
     <permissions password="repo" user="repo" group="repo" mode="rwxr-xr-x"/>
     <changelog>
+        <change version="4.0.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>Breaking: minimum required processor version is eXist-6.0.0 - <a href="https://github.com/eXist-db/public-repo/pull/95">#95</a></li>
+                <li>New: Reworked site structure and revamped page layout - <a href="https://github.com/eXist-db/public-repo/pull/94">#94</a></li>
+                <li>New: Package Search - <a href="https://github.com/eXist-db/public-repo/pull/94">#94</a></li>
+                <li>New: Features Packages - <a href="https://github.com/eXist-db/public-repo/pull/94">#94</a></li>
+                <li>New: Package Download Statistics - <a href="https://github.com/eXist-db/public-repo/pull/94">#94</a></li>
+                <li>Fixed: Updating edge case - <a href="https://github.com/eXist-db/public-repo/issues/93">#93</a></li>
+                <li>Fixed: Package installation - <a href="https://github.com/eXist-db/public-repo/issues/90">#90</a></li>
+                <li>Build: Now has end to end tests - <a href="https://github.com/eXist-db/public-repo/pull/95">#95</a></li>
+            </ul>
+        </change>
         <change version="3.0.2">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Fixed: Package ordering - <a href="https://github.com/eXist-db/public-repo/pull/85">#85</a></li>
