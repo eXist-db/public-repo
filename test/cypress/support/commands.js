@@ -11,6 +11,11 @@
 //
 // -- This is a parent command --
 // Cypress.Commands.add('login', (email, password) => { ... })
+Cypress.Commands.add('navBar', () => {
+    cy.get('.navbar').should('exist')
+    cy.get('.nav-link').should('have.length', 5)
+})
+
 //
 //
 // -- This is a child command --
