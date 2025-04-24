@@ -10,7 +10,16 @@
 //
 //
 // -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
+Cypress.Commands.add('login', (email, password) => { 
+    cy.get('input[name="user"]').type(email)
+    cy.get('input[name="password"]').type(password)
+    cy.get('.btn-primary').click()
+ })
+
+Cypress.Commands.add('navBar', () => {
+    cy.get('.navbar').should('exist')
+    cy.get('.nav-link').should('have.length', 5)
+})
 //
 //
 // -- This is a child command --

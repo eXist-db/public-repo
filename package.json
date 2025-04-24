@@ -1,12 +1,12 @@
 {
   "name": "public-repo",
   "version": "3.0.2",
-  "description": "eXist-db Public Application Repository",
+  "description": "Expath Package Registry",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx cypress run"
   },
   "repository": {
     "type": "git",

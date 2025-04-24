@@ -58,7 +58,7 @@ jobs:
           docker run -dit -p 8080:8080 -v ${{ github.workspace }}/build:/exist/autodeploy \
           --name exist --rm --health-interval=2s --health-start-period=4s \
           duncdrum/existdb:${{ matrix.exist-version }}
-          sleep 10s
+          sleep 13s
 
       # Test       
       - name: Run smoke test
@@ -68,11 +68,14 @@ jobs:
         run: npx cypress run
 
       # Commit Vendor Deps
+      # Vendor dependencies are only committed when the build is triggered by a push to master
+      # to avoid permission issues with dependabot or PRs from forks
       - name: Commit and Push
-        if: ${{ matrix.java-version == 21 && github.event_name == 'push' && github.ref != 'refs/heads/master' }}
+        if: ${{ matrix.java-version == 21 && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: actions-x/commit@v6
         with:
           message: "chore(npm): bump vendor files [skip ci]"
+          name: "eXist community bot"
 
   # release:
   #   name: Release
