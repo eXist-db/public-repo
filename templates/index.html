@@ -1,34 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <div data-template="templates:surround" data-template-with="templates/page.html" data-template-at="main">
-    <div class="row">
-        <div class="col-md-12">
-            <h1>XAR Package Registry</h1>
-        </div>
+    <div class="col-md-12 mt-4 mb-4 text-center">
+        <h1 class="hero" data-template="app:title"></h1>
+        <p class="tagline" data-template="app:description"></p>
     </div>
-    <div class="row">
-        <div class="col-md-8" id="package-list">
-            <h2>Available Packages</h2>
-            <ul class="packages">
-                <li data-template="app:list-packages"></li>
-            </ul>
-        </div>
-        <div class="col-md-4" id="user-docu">
-            <h2>Info</h2>
-            <p>This server hosts a public repository of application packages which can be installed into an
-                eXist-db database instance. You can install any package by:</p>
-            <ul>
-                <li>Downloading the package and uploading it to an eXist-db database via the Dashboard's
-                    Package Manager app.</li>
-                <li>Install the package directly from the Dashboard's Package Manager app. (By default the
-                    Package Manager is configured to access the eXist-db public application repository feed,
-                    at <a href="https://exist-db.org/exist/apps/public-repo/public/apps.xml">https://exist-db.org/exist/apps/public-repo/public/apps.xml</a>. To check or
-                    edit the repository URL your Package Manager is using, go to your Dashboard, click on
-                    the gear icon beneath the eXist-db icon, and you will see a field, "Public Repository
-                    URL.")</li>
-            </ul>
-            <p>To keep up with updates to the apps you have installed, visit the Dashboard's Package
-                Manager app. Also, subscribe to the <a href="feed.xml">atom feed</a> for all package updates
-                for this repository.</p>
-        </div>
+    <div class="col-md-12 col-lg-8 offset-lg-2">
+        <form method="GET" action="search" class="form">
+            <div class="input-group">
+                <input class="form-control" type="text" name="q" placeholder="search for package names or abbrevs..."/>
+                <button class="btn btn-lg btn-primary" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-12 mb-4" id="installation">
+        <h2>Installation</h2>
+        <p>You can install any package by:</p>
+        <ul>
+            <li>
+                Downloading the package and uploading it to an eXist-db database via the Dashboard's
+                Package Manager app.
+            </li>
+            <li>
+                Install the package directly from the Dashboard's Package Manager app. (By default the
+                Package Manager is configured to access the eXist-db public application repository feed, at
+                <a href="https://exist-db.org/exist/apps/public-repo/public/apps.xml">https://exist-db.org/exist/apps/public-repo/public/apps.xml</a>.
+                To check or edit the repository URL your Package Manager is using, go to your Dashboard, click on
+                the gear icon beneath the eXist-db icon, and you will see a field, "Public Repository
+                URL.")
+            </li>
+            <li>
+                From the comand line using the nodejs based command line client <a href="https://www.npmjs.com/package/@existdb/xst">xst</a>
+                To install the latest version of the monex application, compatbile with the instance it is installed to run:
+                <code>xst package install from-registry monex</code>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-12 mb-4" data-template="app:featured-packages"></div>
+    <div class="col-md-12 mb-4">
+        <h2>Keeping up to date</h2>
+        <p>
+            To keep up with updates to the apps you have installed, visit the Dashboard's Package
+            Manager app.
+        </p>
+        <p>
+            You can also subscribe to the <a href="feed.xml">atom feed</a> for all package updates
+            for this repository.
+        </p>
     </div>
 </div>

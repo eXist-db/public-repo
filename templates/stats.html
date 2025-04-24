@@ -1,13 +1,14 @@
 <div xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround" data-template-with="templates/page.html" data-template-at="main">
     <div class="row">
         <div class="col-md-12">
-            <h2>Statistics</h2>
-            <h3>Top 5 packages</h3>
-            <ol data-template="app:load-get-package-logs-for-admin-table" data-template-top-n="5">
-                <li data-template="templates:each" data-template-from="package-logs" data-template-to="package-log">
-                    <span data-template="app:get-package-stats"></span>
-                </li>
-            </ol>
+            <h1>Statistics</h1>
+            <h2>Top 5 Most Downloaded Packages</h2>
+            <table data-template="app:top-download-stats" data-template-top-n="5">
+                <tr data-template="templates:each" data-template-from="package-logs" data-template-to="package-log">
+                    <th class="download-number" data-template="app:package-stats-download"></th>
+                    <td data-template="app:package-stats-item"></td>
+                </tr>
+            </table>
         </div>
     </div>
 </div>

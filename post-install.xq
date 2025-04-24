@@ -34,6 +34,16 @@ declare variable $logs-xconf :=
         </index>
     </collection>;
 
+declare variable $settings :=
+    <settings>
+        <title>EXPath Package Registry</title>
+        <description>
+            This is a registry of EXpath packages which can be installed into any compatible processor.
+        </description>
+        <featured>abbrev</featured>
+    </settings>
+;
+
 declare variable $permissions := config:repo-permissions();
 
 (: Create the data collection hierarchy and set the package permissions :)
@@ -45,6 +55,11 @@ $config:icons-col,
 $config:metadata-col,
 $config:logs-col
 ), dbu:ensure-collection(?)),
+
+(: create empty settings if needed :)
+if (doc-available($config:app-data-col || '/' || $config:settings-doc-name)) then () else (
+    xmldb:store($config:app-data-col, $config:settings-doc-name, $settings)
+),
 
 (: Create log indexes :)
 

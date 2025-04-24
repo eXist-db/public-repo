@@ -49,6 +49,7 @@ declare variable $config:metadata-col := $config:app-data-col || "/" || $config:
 declare variable $config:logs-col := $config:app-data-col || "/" || $config:logs-col-name;
 
 
+declare variable $config:settings-doc-name := "settings.xml";
 declare variable $config:package-groups-doc-name := "package-groups.xml";
 declare variable $config:raw-packages-doc-name := "raw-packages.xml";
 declare variable $config:package-groups-doc := $config:metadata-col || "/" || $config:package-groups-doc-name;

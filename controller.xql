@@ -63,6 +63,29 @@ else if (request:get-method() eq "GET" and $exist:path eq "/index.html") then
         <redirect url="{$app-root-absolute-url}/"/>
     </dispatch>
 
+else if (request:get-method() eq "GET" and $exist:path eq "/search") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/templates/search.html"/>
+        <view>
+            <forward url="{$exist:controller}/modules/view.xq">
+                <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+            </forward>
+        </view>
+    </dispatch>
+
+else if (request:get-method() eq "GET" and $exist:path eq "/list") then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/templates/list.html"/>
+        <view>
+            <forward url="{$exist:controller}/modules/view.xq">
+                <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+            </forward>
+        </view>
+    </dispatch>
+
+
 (: List apps for packageservice. See https://github.com/eXist-db/existdb-packageservice/blob/master/modules/packages.xqm#L285-L286. :)
 else if (request:get-method() eq "GET" and $exist:path eq "/public/apps.xml") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
