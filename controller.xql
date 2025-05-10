@@ -191,7 +191,7 @@ else if (request:get-method() eq "GET" and contains($exist:path, "/resources/"))
 else if 
     (
         not(local:is-authorized-user()) and 
-        $exist:path = ("/admin", "/publish")
+        $exist:path = ("/admin", "/publish", "/stats")
     ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/templates/login.html"/>
