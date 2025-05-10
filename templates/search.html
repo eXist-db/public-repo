@@ -1,23 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <div data-template="templates:surround" data-template-with="templates/page.html" data-template-at="main">
-    <div class="row">
-        <div class="col-md-12">
-            <h1>Package Search</h1>
-            <form method="GET" class="form form-horizontal">
-                <div class="row mb-3">
-                    <label class="col-form-label col-auto" for="q">Search</label>
-                    <div class="col-auto">
-                        <input class="form-control" type="text" name="q" autofocus="autofocus" value="{q}"/>
-                    </div>
-                    <div class="col-auto">
-                        <button class="btn btn-primary" type="submit">Search</button>
-                    </div>
-                </div>
-            </form>
-            <h2>Results</h2>
-            <ul class="package-list">
-                <li data-template="app:search-package"></li>
-            </ul>
-        </div>
+    <div class="col-md-12">
+        <h1>Package Search</h1>
+        <form method="GET" class="form form-horizontal col-md-8 col-lg-6">
+            <div class="input-group">
+                <input class="form-control" type="text" name="q" value="{q}" autofocus="autofocus" placeholder="search for package names or abbrevs..."/>
+                <button class="btn btn-lg btn-primary" type="submit">Search</button>
+            </div>
+        </form>
+        <h2>Results</h2>
+        <ul data-template="app:search-package"></ul>
     </div>
 </div>

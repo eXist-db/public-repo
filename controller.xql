@@ -56,13 +56,6 @@ else if (request:get-method() eq "GET" and $exist:path eq "/") then
         </view>
     </dispatch>
 
-(: Redirect request for legacy "/index.html" page to "/" :)
-else if (request:get-method() eq "GET" and $exist:path eq "/index.html") then
-    (: TODO make the redirect issue a 301 :)
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{$app-root-absolute-url}/"/>
-    </dispatch>
-
 else if (request:get-method() eq "GET" and $exist:path eq "/search") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/templates/search.html"/>
@@ -81,6 +74,7 @@ else if (request:get-method() eq "GET" and $exist:path eq "/list") then
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
                 <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+                <add-parameter name="top-nav-search" value="yes"/>
             </forward>
         </view>
     </dispatch>
@@ -107,6 +101,7 @@ else if (request:get-method() eq "GET" and starts-with($exist:path, "/packages")
             <forward url="{$exist:controller}/modules/view.xq">
                 <add-parameter name="abbrev" value="{$exist:resource}"/>
                 <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+                <add-parameter name="top-nav-search" value="yes"/>
             </forward>
         </view>
     </dispatch>
@@ -167,12 +162,6 @@ else if (request:get-method() eq "GET" and $exist:path eq "/feed.xml") then
         <forward url="{$exist:controller}/modules/feed.xq"/>
     </dispatch>
 
-else if (request:get-method() eq "GET" and contains($exist:path, "/$shared/")) then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/shared-resources/{substring-after($exist:path, '/$shared/')}">
-            <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
-        </forward>
-    </dispatch>
 
 else if (request:get-method() eq "GET" and contains($exist:path, "/resources/")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -189,7 +178,7 @@ else if (request:get-method() eq "GET" and contains($exist:path, "/resources/"))
 else if 
     (
         not(local:is-authorized-user()) and 
-        $exist:path = ("/admin", "/publish")
+        $exist:path = ("/admin", "/publish", "/stats")
     ) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/templates/login.html"/>
@@ -209,25 +198,19 @@ else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin") the
             <forward url="{$exist:controller}/modules/view.xq">
                 <set-header name="Cache-Control" value="no-cache"/>
                 <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+                <add-parameter name="top-nav-search" value="yes"/>
             </forward>
         </view>
     </dispatch>
-else if (request:get-method() = ("GET", "POST") and $exist:path eq "/stats") then
+else if (request:get-method() = ("GET") and $exist:path eq "/stats") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/templates/stats.html"/>
         <view>
             <forward url="{$exist:controller}/modules/view.xq">
-                <set-header name="Cache-Control" value="no-cache"/>
                 <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+                <add-parameter name="top-nav-search" value="yes"/>
             </forward>
         </view>
-    </dispatch>
-
-(: Redirect requests for legacy "/admin.html" page to "/admin" :)
-else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin.html") then
-    (: TODO make the redirect issue a 301 :)
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{$app-root-absolute-url}/admin"/>
     </dispatch>
 
 (: Accept package uploads at the "/publish" endpoint :)
