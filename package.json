@@ -24,7 +24,7 @@
   },
   "homepage": "https://exist-db.org/exist/apps/public-repo/",
   "dependencies": {
-    "bootstrap": "^5.3.5"
+    "bootstrap": "^5.3.6"
   },
   "devDependencies": {
     "cypress": "^14.3.3"
