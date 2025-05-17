@@ -39,7 +39,7 @@ jobs:
             $(find . -type f -name '*.xml')
 
       # Build 
-      - name: Build Expath Package
+      - name: Build EXpath Package
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
