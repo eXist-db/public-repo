@@ -69,18 +69,12 @@ function app:search-package ($node as node(), $model as map(*), $q as xs:string?
     )
 };
 
-declare
-    %templates:replace
+(:~
+ : Read setting from model and either show or omit the search form in the top navigation bar
+ :)
+declare %templates:replace
 function app:show-top-nav-search ($node as node(), $model as map(*)) as element()? {
-    (: if ($model?show-top-nav-search) then ( :)
-    if ($model?('show-top-nav-search')) then (
-        $node
-    ) else (
-        <span>{
-            $model?('show-top-nav-search'),
-            request:get-parameter("top-nav-search", "no")
-        }</span>
-    )
+    if ($model?('show-top-nav-search')) then ($node) else ()
 };
 
 (:~
