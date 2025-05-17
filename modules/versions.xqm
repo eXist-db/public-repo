@@ -1,7 +1,7 @@
 xquery version "3.1";
 
 (:~
- : A library module for finding packages by EXPath Package dependency version attributes 
+ : A library module for finding packages by EXpath Package dependency version attributes 
  : or eXist version
  :)
 
@@ -11,7 +11,7 @@ import module namespace semver="http://exist-db.org/xquery/semver";
 
 
 (:~
- : Get all packages satisfying EXPath Package dependency version attributes
+ : Get all packages satisfying EXpath Package dependency version attributes
  :)
 declare function versions:get-packages-satisfying-version-attributes(
     $packages as element(package)*,
@@ -40,7 +40,7 @@ declare function versions:get-packages-satisfying-version-attributes(
 };
 
 (:~
- : Get the newest version of a package satisfying EXPath Package dependency version attributes
+ : Get the newest version of a package satisfying EXpath Package dependency version attributes
  :)
 declare function versions:get-newest-package-satisfying-version-attributes(
     $packages as element(package)*,

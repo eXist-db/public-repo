@@ -50,10 +50,31 @@ function app:base-url($node as node(), $model as map(*), $base-url as xs:string)
 }; 
 
 declare
-function app:search-package ($node as node(), $model as map(*), $q as xs:string?) as element(li)* {
-    if (empty($q)) then () else
-    for $package-group in packages:search($q) 
-    return packages:render-list-item($package-group, $node)
+    %templates:replace
+function app:search-package ($node as node(), $model as map(*), $q as xs:string?) as element() {
+    if (empty($q) or string-length($q) eq 0) then (
+        <p>Enter a search term in the input above.</p>
+    ) else (
+        let $results := packages:search($q)
+        
+        return
+            if (count($results) = 0) then (
+                <p>The search for <strong>{$q}</strong> yielded no results.</p>
+            ) else (
+                <ul class="package-list">{
+                    for $package-group in $results
+                    return packages:render-list-item($package-group, <li />)
+                }</ul>
+            )
+    )
+};
+
+(:~
+ : Read setting from model and either show or omit the search form in the top navigation bar
+ :)
+declare %templates:replace
+function app:show-top-nav-search ($node as node(), $model as map(*)) as element()? {
+    if ($model?('show-top-nav-search')) then ($node) else ()
 };
 
 (:~

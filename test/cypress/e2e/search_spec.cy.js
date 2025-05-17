@@ -13,4 +13,9 @@ describe('search page', () => {
     it('should have the page title', () => {
         cy.get('h1').contains('Package Search')
     })
+
+    it('should not show the search form in the nav bar', () => {
+        cy.get('#header-search').should('not.exist')
+    })
+
 })
