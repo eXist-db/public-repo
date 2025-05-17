@@ -202,7 +202,7 @@ else if (request:get-method() = ("GET", "POST") and $exist:path eq "/admin") the
             </forward>
         </view>
     </dispatch>
-else if (request:get-method() = ("GET") and $exist:path eq "/stats") then
+else if (request:get-method() = ("GET", "POST") and $exist:path eq "/stats") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/templates/stats.html"/>
         <view>
