@@ -14,8 +14,8 @@
   },
   "keywords": [
     "eXist-db",
-    "expath_package",
-    ".xar"
+    "expath-package",
+    "xar"
   ],
   "author": "exist-db",
   "license": "LGPL-2.1-only",
