@@ -17,4 +17,9 @@ describe('landing page', () => {
     it('should have an Installation section', () => {
         cy.get('#installation > h2').contains('Installation')
     })
+
+    it('should not show the search form in the nav bar', () => {
+        cy.get('#header-search').should('not.exist')
+    })
+
 })
