@@ -36,9 +36,9 @@ declare variable $logs-xconf :=
 
 declare variable $settings :=
     <settings>
-        <title>EXpath Package Registry</title>
+        <title>EXPath Package Registry</title>
         <description>
-            This is a registry of EXpath packages which can be installed into any compatible processor.
+            This is a registry of EXPath packages which can be installed into any compatible processor.
         </description>
         <featured>abbrev</featured>
     </settings>
