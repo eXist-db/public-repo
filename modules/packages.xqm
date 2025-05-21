@@ -11,11 +11,15 @@ declare
 function packages:search ($query as xs:string) as element(package-group)* {
     filter(
         doc($config:package-groups-doc)//package-group,
-        function ($pkg) {
-            $pkg[abbrev[not(@type)][contains(., $query)]]
-            or $pkg[contains(name, $query)]
-        }
+        packages:filter-by-query(?, lower-case($query))
     )
+};
+
+declare %private
+function packages:filter-by-query($package-group as element(package-group), $query as xs:string) as xs:boolean {
+    $package-group[contains(lower-case(title), $query)]
+    or $package-group[contains(name, $query)]
+    or $package-group[abbrev[not(@type)][contains(., $query)]]
 };
 
 (:~

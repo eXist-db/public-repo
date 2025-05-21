@@ -26,9 +26,16 @@ declare variable $local:templating-configuration := map {
     $templates:CONFIG_STOP_ON_ERROR : true()
 };
 
+declare variable $local:initial-model := map {
+    "show-top-nav-search": (
+        request:get-parameter("top-nav-search", "no") = "yes"
+    )
+};
+
+
 templates:apply(
     request:get-data(),
     local:lookup#2,
-    (),
+    $local:initial-model,
     $local:templating-configuration
 )

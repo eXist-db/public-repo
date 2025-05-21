@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <html data-template="lib:resolve-apps" data-template-abbrev="dashboard, eXide, fundocs, exist-documentation, demo, monex">
     <head>
-        <title>Expath Package Registry</title>
+        <title>EXPath Package Registry</title>
         <base data-template="app:base-url" />
         <link rel="shortcut icon" href="resources/images/exist_icon_16x16.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -38,7 +38,7 @@
                     <a href="stats" class="nav-link">Statistics</a>
                   </li>
                 </ul>
-                <form id="header-search" class="d-flex" role="search" action="search" method="GET">
+                <form data-template="app:show-top-nav-search" id="header-search" class="d-flex" role="search" action="search" method="GET">
                   <input type="text" name="q" class="form-control me-2" placeholder="Search Packages" />
                   <button class="btn btn-outline-info" type="submit">Search</button>
                 </form>
