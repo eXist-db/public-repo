@@ -42,5 +42,4 @@ describe('admin page', () => {
           .click()
         cy.url().should('not.include', '/admin')
     })
-
 })

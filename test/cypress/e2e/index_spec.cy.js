@@ -11,7 +11,7 @@ describe('landing page', () => {
     })
 
     it('should have the default main title', () => {
-        cy.get('h1.hero').contains('EXPath Package Registry')
+        cy.get('h1.hero').contains('EXPath Package Repository')
     })
 
     it('should have an Installation section', () => {
