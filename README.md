@@ -1,6 +1,6 @@
-# EXPath Package Registry
+# EXPath Package Repository
 
-eXist-db EXPath Package Registry (public-repo)
+eXist-db EXPath Package Repository (public-repo)
 
 This application allows an eXist-db instance to host a repository of applications and libraries stored in the [EXPath Package format](https://expath.org/spec/pkg).
 
@@ -15,7 +15,7 @@ The application:
 - Allows administrators to log in, upload new packages, and refresh the package metadata
 - Allows administrators to log in and see some download statistics
 
-Other eXist-db clients can browse available packages via Dashboard > Package Manager. By default, eXist-db's Dashboard > Package Manager is configured to access the eXist-db EXPath Package Registry at https://exist-db.org/exist/apps/public-repo.
+Other eXist-db clients can browse available packages via Dashboard > Package Manager. By default, eXist-db's Dashboard > Package Manager is configured to access the eXist-db EXPath Package Repository at https://exist-db.org/exist/apps/public-repo.
 
 # Installation
 
