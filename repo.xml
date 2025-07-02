@@ -12,6 +12,12 @@
     <finish>post-install.xq</finish>
     <permissions password="repo" user="repo" group="repo" mode="rwxr-xr-x"/>
     <changelog>
+        <change version="4.1.0">
+            <ul xmlns="http://www.w3.org/1999/xhtml">
+                <li>New: Additional tweaks - <a href="https://github.com/eXist-db/public-repo/pull/105">#105</a></li>
+                <li>Fixed: Change term "registry" back to "repository" - <a href="https://github.com/eXist-db/public-repo/pull/113">#113</a></li>
+            </ul>
+        </change>
         <change version="4.0.0">
             <ul xmlns="http://www.w3.org/1999/xhtml">
                 <li>Breaking: minimum required processor version is eXist-6.0.0 - <a href="https://github.com/eXist-db/public-repo/pull/95">#95</a></li>
