@@ -47,14 +47,19 @@ declare variable $versions-or-version-range :=
         or exists($semver-max)
 ;
 
-(:
- input: "text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8"
- output: ("text/html", "application/json", "application/xml", "image/webp", "*/*")
-:)
-declare function local:parse-accept-header($accept as xs:string) as xs:string* {
-    tokenize($accept, ",")
-        ! normalize-space() (: trim value :)
-        ! tokenize(., ";")[1] (: drop q :)
+(:~
+ : Read and split accept header into a list of mime types, if present
+ : q-values are ignored, order is preserved
+ :
+ : input: "text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8"
+ : output: ("text/html", "application/json", "application/xml", "image/webp", "*/*")
+ :)
+declare function local:parse-accept-header() as xs:string* {
+    if (request:get-header-names() = "Accept") then (
+        tokenize(request:get-header("Accept"), ",")
+            ! normalize-space() (: trim value :)
+            ! tokenize(., ";")[1] (: drop q :)
+    ) else ()
 };
 
 declare function local:prefers-json($mime-types as xs:string*) as xs:boolean {
@@ -64,7 +69,7 @@ declare function local:prefers-json($mime-types as xs:string*) as xs:boolean {
         exists($json-index) and (empty($xml-index) or $xml-index > $json-index)
 };
 
-declare variable $json-preferred := local:prefers-json(local:parse-accept-header(request:get-header("Accept")));
+declare variable $json-preferred := local:prefers-json(local:parse-accept-header());
 
 declare function local:render-semver-range($semver as xs:string?, $semver-min as xs:string?, $semver-max as xs:string?) as xs:string {
     if (exists($semver)) then (
