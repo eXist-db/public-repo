@@ -27,6 +27,6 @@
     "bootstrap": "^5.3.8"
   },
   "devDependencies": {
-    "cypress": "^15.2.0"
+    "cypress": "^15.3.0"
   }
 }
