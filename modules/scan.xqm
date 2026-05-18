@@ -18,6 +18,33 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare namespace expath="http://expath.org/ns/pkg";
 
 (:~
+ : Derive a versioned filename from a XAR binary's expath-pkg.xml descriptor.
+ : Returns "{abbrev}-{version}.xar" to prevent filename collisions when different
+ : versions of the same package are uploaded with the same filename.
+ :
+ : @see https://github.com/eXist-db/public-repo/issues/133
+ :)
+declare function scanrepo:derive-versioned-filename($xar-binary as xs:base64Binary) as xs:string {
+    let $expath-pkg :=
+        compression:unzip(
+            $xar-binary,
+            function ($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean {
+                $path eq "expath-pkg.xml"
+            },
+            (),
+            function ($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()* {
+                $data
+            },
+            ()
+        )
+    let $pkg := $expath-pkg/*[1]
+    let $abbrev := $pkg/@abbrev/string()
+    let $version := $pkg/@version/string()
+    return
+        $abbrev || "-" || $version || ".xar"
+};
+
+(:~
  : Helper function to store resources and set permissions for access by repo group
  :)
 declare function scanrepo:store($collection-uri as xs:string, $resource-name as xs:string, $contents as item()?) as xs:string {
