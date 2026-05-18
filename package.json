@@ -6,7 +6,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npx cypress run"
+    "test": "npx cypress run",
+    "test:api": "node --test test/api/*.test.js"
   },
   "repository": {
     "type": "git",
