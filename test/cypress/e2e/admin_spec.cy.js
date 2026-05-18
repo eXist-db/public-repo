@@ -33,13 +33,38 @@ describe('admin page', () => {
           .selectFile('@test-app')
         cy.get('#upload')
           .click()
+        // After fix for #133, stored filename is derived from expath-pkg.xml as {abbrev}-{version}.xar
         cy.get('#uploaded > tr > td')
-          .contains('test-app.xar')
+          .contains('test-app-1.0.1.xar')
+
+        // Confirm the GUI upload produced a downloadable versioned resource at the expected URL
+        cy.request('public/test-app-1.0.1.xar').its('status').should('eq', 200)
+
         cy.reload()
         cy.get('.package-list >h3')
           .contains('test-app')
         cy.get('[href="?logout=true"]')
           .click()
         cy.url().should('not.include', '/admin')
+    })
+
+    it('uploading same package twice should not overwrite first version (#133)', () => {
+        cy.fixture('test-app.xar', null).as('test-app')
+        cy.login('repo', 'repo')
+        cy.url().should('include', '/admin')
+
+        // Upload the same package twice - the versioned filename prevents collisions
+        cy.get('#files').selectFile('@test-app')
+        cy.get('#upload').click()
+        cy.get('#uploaded > tr > td')
+          .contains('test-app-1.0.1.xar')
+
+        // Second upload of same XAR should succeed (same version overwrites same version, not a different one)
+        cy.get('#files').selectFile('@test-app')
+        cy.get('#upload').click()
+        cy.get('#uploaded > tr > td')
+          .contains('test-app-1.0.1.xar')
+
+        cy.get('[href="?logout=true"]').click()
     })
 })
