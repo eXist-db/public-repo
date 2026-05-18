@@ -7,15 +7,20 @@ async function handleUpload () {
         const file = files.files[fileIndex];
         const data = new FormData()
         data.append('files[]', file)
-        await fetch('publish', {
+        const response = await fetch('publish', {
             'method' : 'POST',
             'body' : data
         })
+        const result = await response.json().catch(() => ({}))
+        // The server derives a versioned filename ({abbrev}-{version}.xar) from the
+        // package's expath-pkg.xml descriptor; show that so the user knows what was
+        // actually stored. Falls back to the local upload name if the response is
+        // missing or malformed.
+        const storedName = result?.files?.[0]?.name ?? file.name
 
-        //append file name to table
         const tr = document.createElement('tr')
         const td = document.createElement('td')
-        const text = document.createTextNode(file.name)
+        const text = document.createTextNode(storedName)
         td.appendChild(text)
         tr.appendChild(td)
         uploaded.appendChild(tr)
