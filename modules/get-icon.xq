@@ -22,7 +22,7 @@ return
         response:stream(doc($path), "media-type=" || xmldb:get-mime-type($path))
     (: png :)
     else if (util:binary-doc-available($path)) then
-        response:stream-binary(util:binary-doc($path), xmldb:get-mime-type($path))
+        response:stream-binary(util:binary-doc($path), xmldb:get-mime-type($path), $filename)
     else
         (
             response:set-status-code(404),
