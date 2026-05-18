@@ -13,7 +13,8 @@ jobs:
     strategy:
        fail-fast: false
        matrix:
-         exist-version: [latest, 7.0.0, 6.0.0, release]
+        # created with 7.0.0-SNAPSHOT, 6.3.0
+         exist-version: [latest, 6.0.0, release]
          java-version: [8, 21]
          exclude:
            - exist-version: release
@@ -21,8 +22,6 @@ jobs:
            - exist-version: 6.0.0
              java-version: 21
            - exist-version: latest
-             java-version: 8
-           - exist-version: 7.0.0
              java-version: 8
 
     steps:
