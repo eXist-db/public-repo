@@ -63,7 +63,10 @@ jobs:
       # Test       
       - name: Run smoke test
         run: bats --tap test/bats/*.bats
-      
+
+      - name: Run API tests
+        run: npm run test:api
+
       - name: run e2e test
         run: npx cypress run
 
