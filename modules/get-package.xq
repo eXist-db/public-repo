@@ -66,6 +66,11 @@ return
                 response:stream-binary($xar, "application/zip", $xar-filename)
     else
         (
+            local:log-package-not-found-event($xar-filename),
             response:set-status-code(404),
-            <p>Package file not found!</p>
+            response:set-header("Content-Type", "application/xml"),
+            <error>
+                <status>404</status>
+                <message>Package file "{$xar-filename}" not found.</message>
+            </error>
         )

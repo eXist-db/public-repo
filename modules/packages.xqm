@@ -68,7 +68,7 @@ declare function packages:render-list-item($package-group as element(package-gro
     return
        element { node-name($node) } {
             attribute class { "package " || $package/type },
-            <a href="{$info-url}" class="package-icon-area"><img class="app-icon" src="{$icon}" /></a>,
+            <a href="{$info-url}" class="package-icon-area"><img class="app-icon" src="{$icon}" alt="{$title}" /></a>,
             <div class="package-info">
                 <h3 class="package-title"><a href="{$info-url}">{$title}</a></h3>
                 <p class="package-description">{$package/description/string()}</p>
@@ -125,7 +125,7 @@ declare function packages:render-group-detail(
 
     return
         <article class="package package-detail {$newest-package/type}">
-            <div class="package-icon-area"><img class="app-icon" src="{$icon}" /></div>
+            <div class="package-icon-area"><img class="app-icon" src="{$icon}" alt="{$title}" /></div>
             <div class="package-info">
                 <h2>{$title}</h2>
                 {

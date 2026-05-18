@@ -227,5 +227,13 @@ if ($isGet and $exist:path eq "") then (
 (: Respond with a 404 Not Found error  :)
 ) else (
     response:set-status-code(404),
-    <data>Not found</data>
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/templates/error.html"/>
+        <view>
+            <forward url="{$exist:controller}/modules/view.xq">
+                <set-header name="Cache-Control" value="no-cache"/>
+                <add-parameter name="base-url" value="{$app-root-absolute-url}"/>
+            </forward>
+        </view>
+    </dispatch>
 )

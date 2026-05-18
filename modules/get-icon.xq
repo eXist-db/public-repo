@@ -26,5 +26,9 @@ return
     else
         (
             response:set-status-code(404),
-            <p>Icon file not found!</p>
+            response:set-header("Content-Type", "application/xml"),
+            <error>
+                <status>404</status>
+                <message>Icon file "{$filename}" not found.</message>
+            </error>
         )
