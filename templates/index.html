@@ -7,7 +7,8 @@
     <div class="col-md-12 col-lg-8 offset-lg-2">
         <form method="GET" action="search" class="form">
             <div class="input-group">
-                <input class="form-control" type="text" name="q" placeholder="search for package names or abbrevs..."/>
+                <label for="index-search" class="visually-hidden">Search for packages</label>
+                <input class="form-control" type="text" name="q" id="index-search" placeholder="search for package names or abbrevs..."/>
                 <button class="btn btn-lg btn-primary" type="submit">Search</button>
             </div>
         </form>
@@ -29,8 +30,8 @@
                 URL.")
             </li>
             <li>
-                From the comand line using the nodejs based command line client <a href="https://www.npmjs.com/package/@existdb/xst">xst</a>
-                To install the latest version of the monex application, compatbile with the instance it is installed to run:
+                From the command line using the nodejs based command line client <a href="https://www.npmjs.com/package/@existdb/xst">xst</a>.
+                To install the latest version of the monex application, compatible with the instance it is installed to run:
                 <code>xst package install from-registry monex</code>
             </li>
         </ul>
