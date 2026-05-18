@@ -29,6 +29,8 @@ module namespace log="http://exist-db.org/xquery/app/log";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 import module namespace dbu="http://exist-db.org/xquery/utility/db" at "db-utility.xqm";
 
+declare namespace request="http://exist-db.org/xquery/request";
+
 declare variable $log:base-collection := $config:logs-col;
 declare variable $log:file-permission := map:merge((
     $dbu:default-permissions,
@@ -36,8 +38,27 @@ declare variable $log:file-permission := map:merge((
 ));
 
 (:~
- : Append entries to the structured application event log
- :  
+ : Classify a User-Agent string into a client type for analytics
+ :)
+declare function log:classify-client($user-agent as xs:string?) as xs:string {
+    if (empty($user-agent) or $user-agent eq "") then
+        "unknown"
+    else if (contains(lower-case($user-agent), "packageservice") or contains(lower-case($user-agent), "exist")) then
+        "packageservice"
+    else if (contains(lower-case($user-agent), "xst") or contains(lower-case($user-agent), "@existdb")) then
+        "xst"
+    else if (contains(lower-case($user-agent), "curl")) then
+        "curl"
+    else if (contains(lower-case($user-agent), "mozilla") or contains(lower-case($user-agent), "chrome") or contains(lower-case($user-agent), "safari")) then
+        "browser"
+    else
+        "other"
+};
+
+(:~
+ : Append entries to the structured application event log.
+ : Automatically captures the client type from the User-Agent header.
+ :
  : @param $event the event to be appended
  : @returns nothing
  :)
@@ -45,11 +66,17 @@ declare function log:event($event as element(event)) as empty-sequence() {
     let $today := current-date()
     let $log-collection := log:collection($today)
     let $log-document-name := log:document-name($today)
-    
+    let $user-agent := request:get-header("User-Agent")
+    let $enriched-event :=
+        element event {
+            $event/*,
+            element client-type { log:classify-client($user-agent) }
+        }
+
     return
         if (doc-available($log-collection || "/" || $log-document-name))
-        then log:append-log($log-collection, $log-document-name, $event)
-        else log:create-log($log-collection, $log-document-name, $event)
+        then log:append-log($log-collection, $log-document-name, $enriched-event)
+        else log:create-log($log-collection, $log-document-name, $enriched-event)
 };
 
 declare %private

@@ -277,6 +277,35 @@ declare function app:view-package($node as node(), $model as map(*)) {
     )
 };
 
+(:~
+ : Load client-type download statistics
+ :)
+declare %templates:wrap
+function app:client-type-stats($node as node(), $model as map(*)) as map(*) {
+    let $client-stats :=
+        for $event in collection($config:logs-col)//event[type eq "get-package"]
+        group by $client-type := ($event/client-type/string(), "unknown")[1]
+        let $count := count($event)
+        order by $count descending
+        return
+            map {
+                "client-type": $client-type,
+                "count": $count
+            }
+    return
+        map { "client-stats": $client-stats }
+};
+
+declare %templates:wrap
+function app:client-stat-type($node as node(), $model as map(*)) {
+    $model?client-stat?client-type
+};
+
+declare %templates:wrap
+function app:client-stat-count($node as node(), $model as map(*)) {
+    $model?client-stat?count
+};
+
 declare
     %templates:replace
 function app:featured-packages ($node as node(), $model as map(*)) as element(div)? {
