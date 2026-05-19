@@ -179,6 +179,27 @@ declare function packages:render-group-detail(
                                     </tr>
                                 )
                             }
+                            {
+                                if (exists($newest-package/dependency)) then (
+                                    <tr>
+                                        <th>Dependencies:</th>
+                                        <td>
+                                            <ul class="list-unstyled mb-0">
+                                            {
+                                                for $dep in $newest-package/dependency
+                                                let $dep-name := $dep/@package/string()
+                                                let $dep-version := ($dep/@semver, $dep/@semver-min ! ("&gt;=" || .), $dep/@version)[1]
+                                                return
+                                                    <li>
+                                                        { $dep-name }
+                                                        { if ($dep-version) then " " || $dep-version else () }
+                                                    </li>
+                                            }
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                ) else ()
+                            }
                             <tr>
                                 <th>Download:</th>
                                 <td><a href="{$download-url}" title="click to download package">{$path/string()}</a></td>

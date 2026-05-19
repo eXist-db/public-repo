@@ -7,6 +7,7 @@ xquery version "3.1";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 
 declare namespace request="http://exist-db.org/xquery/request";
+declare namespace response="http://exist-db.org/xquery/response";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
@@ -111,17 +112,26 @@ declare function local:feed() {
     let $subtitle := "Repository for apps and libraries on eXist-db.org."
     let $self-href := request:get-url()
     let $id := "urn:uuid:" || util:uuid("existdb-public-package-repository-feed")
-    let $updated := xmldb:last-modified($config:packages-col, "apps.xml")
+    let $last-modified := xmldb:last-modified($config:metadata-col, $config:package-groups-doc-name)
+    let $etag := '"feed-' || string($last-modified) || '"'
+    let $if-none-match := request:get-header("If-None-Match")
     let $feed-entries := local:feed-entries()
     return
-        <feed xmlns="http://www.w3.org/2005/Atom">
-            <title>{$title}</title>
-            <subtitle>{$subtitle}</subtitle>
-            <link href="{$self-href}" rel="self" />
-            <id>{$id}</id>
-            <updated>{$updated}</updated>
-            {$feed-entries}
-        </feed>
+        if ($if-none-match eq $etag) then (
+            response:set-status-code(304),
+            response:set-header("ETag", $etag)
+        ) else (
+            response:set-header("ETag", $etag),
+            response:set-header("Last-Modified", format-dateTime($last-modified, "[FNn,3-3], [D01] [MNn,3-3] [Y0001] [H01]:[m01]:[s01] GMT")),
+            <feed xmlns="http://www.w3.org/2005/Atom">
+                <title>{$title}</title>
+                <subtitle>{$subtitle}</subtitle>
+                <link href="{$self-href}" rel="self" />
+                <id>{$id}</id>
+                <updated>{$last-modified}</updated>
+                {$feed-entries}
+            </feed>
+        )
 };
 
 local:feed()

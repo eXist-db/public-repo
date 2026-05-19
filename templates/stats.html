@@ -9,6 +9,21 @@
                     <td data-template="app:package-stats-item"></td>
                 </tr>
             </table>
+            <h2>Downloads by Client Type</h2>
+            <table class="table" data-template="app:client-type-stats">
+                <thead>
+                    <tr>
+                        <th>Client Type</th>
+                        <th>Downloads</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-template="templates:each" data-template-from="client-stats" data-template-to="client-stat">
+                        <td data-template="app:client-stat-type"></td>
+                        <td data-template="app:client-stat-count"></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

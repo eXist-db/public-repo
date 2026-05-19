@@ -79,7 +79,10 @@ function scanrepo:handle-expath-pkg-metadata($root as element(expath:package)) a
     $root/(@name, expath:title, @abbrev, @version) !
         element { local-name(.) } { ./string() },
     $root/expath:dependency[@processor eq $config:exist-processor-name] !
-        element requires { ./@* }
+        element requires { ./@* },
+    (: Capture non-processor package dependencies for display on detail pages :)
+    $root/expath:dependency[not(@processor)][@package] !
+        element dependency { ./@* }
 };
 
 (:~
