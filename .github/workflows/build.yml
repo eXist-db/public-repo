@@ -100,12 +100,9 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: npm ci --no-optional
-      - name: Build XAR
-        run: ant
       - name: Perform Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLIC_REPO: ${{ secrets.PUBLIC_REPO }}
         run: npx semantic-release
-        # NOTE: Requires GITHUB_TOKEN (automatic) and PUBLIC_REPO secrets to be configured
-        # in the repository settings by a repo admin.
+        # semantic-release/exec runs `ant` as its publishCmd after computing
+        # the next version and writing it into package.json + build.properties.
