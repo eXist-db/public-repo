@@ -1,13 +1,16 @@
 {
   "name": "public-repo",
-  "version": "4.1.1",
+  "version": "0.0.0-development",
   "description": "EXPath Package Repository",
   "directories": {
     "test": "test"
   },
   "scripts": {
+    "build": "ant",
+    "build:clean": "ant rebuild",
     "test": "npx cypress run",
-    "test:api": "node --test test/api/*.test.js"
+    "test:api": "node --test test/api/*.test.js",
+    "test:smoke": "bats test/bats/*.bats"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,25 @@
+{
+  "branches": ["master"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "npm version ${nextRelease.version} --no-git-tag-version --allow-same-version && sed -i.bak 's/^project\\.version=.*/project.version=${nextRelease.version}/' build.properties && rm build.properties.bak",
+        "publishCmd": "ant"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {
+            "path": "build/*.xar",
+            "label": "EXPath Package (XAR)"
+          }
+        ]
+      }
+    ]
+  ]
+}

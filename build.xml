@@ -3,7 +3,6 @@
     <property file="local.build.properties" />
     <property file="build.properties" />
     <property name="build" value="./build" />
-    <!-- <property name="server.url" value="http://exist-db.org/exist/apps/public-repo/publish"/> -->
     <condition property="git.commit" value="${git.commit}" else="">
         <isset property="git.commit" />
     </condition>
@@ -34,14 +33,12 @@
         </copy>
         <copy todir="resources/scripts" flatten="true" overwrite="true">
             <resources>
-                <!-- bootstrap -->
                 <file file="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" />
                 <file file="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js.map" />
             </resources>
         </copy>
         <copy todir="resources/css" flatten="true" overwrite="true">
             <resources>
-                <!-- fileupload -->
                 <file file="node_modules/bootstrap/dist/css/bootstrap.min.css" />
                 <file file="node_modules/bootstrap/dist/css/bootstrap.min.css.map" />
             </resources>
@@ -64,15 +61,4 @@
             </fileset>
         </zip>
     </target>
-    <!--
-    <target name="upload">
-        <input message="Enter password:" addproperty="server.pass" defaultvalue="">
-            <handler type="secure"/>
-        </input>
-        <property name="xar" value="${project.name}-${project.version}${git.commit}.xar"/>
-        <exec executable="curl">
-            <arg line="-T ${build}/${xar} -u repo:${server.pass} ${server.url}/${xar}"/>
-        </exec>
-    </target>
-    -->
 </project>
