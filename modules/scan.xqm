@@ -17,11 +17,11 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
 
-declare function local:return-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()* {
+declare %private function scanrepo:return-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()* {
     $data
 };
 
-declare function local:match-file($match) {
+declare %private function scanrepo:match-file($match as xs:string) {
     function ($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean {
         $path eq $match
     }
@@ -35,13 +35,11 @@ declare function local:match-file($match) {
  : @see https://github.com/eXist-db/public-repo/issues/133
  :)
 declare function scanrepo:derive-versioned-filename($xar-binary as xs:base64Binary) as xs:string {
-    let $expath-pkg := compression:unzip( $xar-binary, local:match-file("expath-pkg.xml"), (), local:return-data#4, ())
-    let $repo := compression:unzip($xar-binary, local:match-file("repo.xml"), (), local:return-data#4, ())
-    return if (not(exists(($expath-pkg)))) then (
-        util:log("ERROR", $expath-pkg),
+    let $expath-pkg := compression:unzip($xar-binary, scanrepo:match-file("expath-pkg.xml"), (), scanrepo:return-data#4, ())
+    let $repo := compression:unzip($xar-binary, scanrepo:match-file("repo.xml"), (), scanrepo:return-data#4, ())
+    return if (not(exists($expath-pkg))) then (
         error(xs:QName("scanrepo:malformed-package"), "Failed to extract expath-pkg.xml from XAR")
-    ) else if (not(exists(($repo)))) then (
-        util:log("ERROR", $repo),
+    ) else if (not(exists($repo))) then (
         error(xs:QName("scanrepo:malformed-package"), "Failed to extract repo.xml from XAR")
     ) else (
         let $abbrev := $expath-pkg/*[1]/@abbrev/string()
