@@ -6,7 +6,7 @@ module.exports = defineConfig({
       // implement node event listeners here
     },
     baseUrl: 'http://localhost:8080/exist/apps/public-repo/',
-    fixturesFolder: "test/cypress/fixtures",
+    fixturesFolder: "test/fixtures",
     screenshotsFolder: "test/cypress/screenshots",
     videosFolder: "test/cypress/videos",
     downloadsFolder: "test/cypress/downloads",

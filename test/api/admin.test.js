@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const BASE_URL = process.env.PUBLIC_REPO_URL || 'http://localhost:8080/exist/apps/public-repo';
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const XAR_PATH = join(__dirname, '..', 'cypress', 'fixtures', 'test-app.xar');
+const XAR_PATH = join(__dirname, '..', 'fixtures', 'test-app.xar');
 
 describe('publish endpoint CSRF protection', () => {
     let sessionCookie;
