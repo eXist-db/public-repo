@@ -91,6 +91,40 @@ describe('/publish endpoint', () => {
         });
     });
 
+    describe('authenticated upload of test-app-2.xar', () => {
+        let res, body;
+
+        before(async () => {
+            res = await uploadXar('test-app-2.xar');
+            body = await res.json();
+        });
+
+        // We expect a 200 OK for a successful upload
+        it('should upload a package with authentication', async () => {
+            assert.ok(res.status === 200, `Expected 200 OK for successful upload, got ${res.status}`);
+        });
+
+        it('should return a successful upload response', async () => {
+            assert.ok(body, `Expected a response body`);
+        });
+
+        it('should return a list of files that were uploaded', async () => {
+            assert.equal(body.files.length, 1, `Expected one uploaded file, got ${body.files.length}`);
+        });
+
+        it('the file should have the name with the corrected version', async () => {
+            assert.equal(body.files[0].name, 'test-app-2.0.0.xar', `Expected file name 'test-app-2.0.0.xar', got ${body.files[0].name}`);
+        });
+ 
+        it('the file should have the correct type', async () => {
+            assert.equal(body.files[0].type, 'application/expath+xar', `Expected file type 'application/expath+xar', got ${body.files[0].type}`);
+        });
+
+        it('the file should have the correct size', async () => {
+            assert.equal(body.files[0].size, 1147, `Expected file size 1147, got ${body.files[0].size}`);
+        });
+    });
+
     describe('authenticated upload of a bad package', () => {
         let res, body;
 
@@ -105,8 +139,11 @@ describe('/publish endpoint', () => {
         });
 
         it('should return an error message in the response body', async () => {
-            // console.log('Response body for bad package upload:', body.result.error);
-            assert.ok(body.result.error, 'Expected an error message in the response body');
+            assert.equal(body.result.error, 'Failed to extract expath-pkg.xml from XAR', 'Expected an error message in the response body');
+        });
+
+        it('should return the filename in the response body', async () => {
+            assert.equal(body.result.name, 'broken-test-app.xar', 'Expected the filename in the response body');
         });
     });
 });
