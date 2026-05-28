@@ -1,7 +1,29 @@
 import { describe, it, before } from 'node:test';
+import fs from 'node:fs/promises';
+import { join } from 'node:path';
 import assert from 'node:assert/strict';
 
 const BASE_URL = process.env.PUBLIC_REPO_URL || 'http://localhost:8080/exist/apps/public-repo';
+const USER = process.env.PUBLIC_REPO_USERNAME || 'repo';
+const PASS = process.env.PUBLIC_REPO_PASSWORD || 'repo';
+
+const BASE_PATH = new URL('.', import.meta.url).pathname;
+
+// Upload a fixture XAR via Basic auth (CSRF-exempt). Used to seed
+// state that processor-matching tests depend on, independent of
+// whichever other test file uploaded it first under parallel
+// execution.
+async function uploadXar (xarFilename) {
+    const formData = new FormData();
+    const xarContent = await fs.readFile(join(BASE_PATH, '..', 'fixtures', xarFilename));
+    const blob = new Blob([xarContent], { type: 'application/octet-stream' });
+    formData.append('files[]', blob, xarFilename);
+    return fetch(`${BASE_URL}/publish`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Authorization': 'Basic ' + btoa(`${USER}:${PASS}`) }
+    });
+}
 
 describe('/find endpoint', () => {
     it('should return 404 for non-existent package abbrev', async () => {
@@ -70,6 +92,12 @@ describe('/find endpoint', () => {
     });
 
     describe('processor version matching', () => {
+        before(async () => {
+            // Seed test-app so processor-match assertions don't race with
+            // whichever other test file would otherwise upload it.
+            await uploadXar('test-app.xar');
+        });
+
         it('should not find a matching test-app package for the default processor', async () => {
             const res = await fetch(`${BASE_URL}/find?abbrev=test-app&version=1.0.1`, { redirect: 'manual' });
             assert.equal(res.status, 404);
