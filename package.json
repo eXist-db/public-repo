@@ -5,6 +5,7 @@
   "directories": {
     "test": "test"
   },
+  "type": "module",
   "scripts": {
     "build": "ant",
     "build:clean": "ant rebuild",

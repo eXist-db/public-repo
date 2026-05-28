@@ -41,13 +41,6 @@ declare variable $semver-max := request:get-parameter("semver-max", ());
 declare variable $zip := request:get-parameter("zip", ());
 declare variable $info := request:get-parameter("info", ());
 
-declare variable $versions-or-version-range :=
-        exists($versions)
-        or exists($semver)
-        or exists($semver-min)
-        or exists($semver-max)
-;
-
 (:~
  : Read and split accept header into a list of mime types, if present
  : q-values are ignored, order is preserved
@@ -118,7 +111,7 @@ declare function local:report-not-found ($message as xs:string) as item() {
 declare function local:render-version-query() as xs:string {
     if (exists($versions))
     then ("versions: " || string-join($versions, ', '))
-    else if ($versions-or-version-range)
+    else if (exists(($semver, $semver-min, $semver-max)))
     then ("semver-range: " || local:render-semver-range($semver, $semver-min, $semver-max))
     else ("compatible with processor version " || $exist-version-semver)
 };
@@ -141,12 +134,10 @@ declare variable $packages :=
 
 declare variable $package := 
     try {
-        if ($versions-or-version-range) then (
-            versions:get-newest-package-satisfying-version-attributes(
-                $packages, $versions, $semver, $semver-min, $semver-max)
-        ) else (
-            versions:get-newest-package-satisfying-exist-version($packages, $exist-version-semver)
-        )
+        $packages
+        => versions:get-packages-satisfying-version-attributes($versions, $semver, $semver-min, $semver-max)
+        => versions:get-packages-satisfying-exist-version($exist-version-semver)
+        => head()
     } catch * {
         util:log("info", "Error retrieving matching package in find.xq: " || $err:description)
     }

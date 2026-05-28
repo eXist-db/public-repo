@@ -12,6 +12,7 @@ import module namespace semver="http://exist-db.org/xquery/semver";
 
 (:~
  : Get all packages satisfying EXPath Package dependency version attributes
+ : Returns all packages unchanged, if no version requirements are provided
  :)
 declare function versions:get-packages-satisfying-version-attributes(
     $packages as element(package)*,
@@ -20,7 +21,9 @@ declare function versions:get-packages-satisfying-version-attributes(
     $semver-min as xs:string?, 
     $semver-max as xs:string?
 ) as element(package)* {
-    if (exists($versions)) then (
+    if (not(exists($versions)) and not(exists($semver)) and not(exists($semver-min)) and not(exists($semver-max))) then (
+        $packages
+    ) else if (exists($versions)) then (
         for-each($versions, function ($v as xs:string) {
             $packages[
                 semver:satisfies-expath-package-dependency-versioning-attributes(./version, $v, (), (), ())]

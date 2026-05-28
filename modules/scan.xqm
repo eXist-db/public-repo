@@ -11,11 +11,21 @@ import module namespace semver="http://exist-db.org/xquery/semver";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "config.xqm";
 
 declare namespace compression="http://exist-db.org/xquery/compression";
-declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
+declare namespace repo="http://exist-db.org/xquery/repo";
 declare namespace expath="http://expath.org/ns/pkg";
+
+declare %private function scanrepo:return-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()* {
+    $data
+};
+
+declare %private function scanrepo:match-file($match as xs:string) {
+    function ($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean {
+        $path eq $match
+    }
+};
 
 (:~
  : Derive a versioned filename from a XAR binary's expath-pkg.xml descriptor.
@@ -25,23 +35,18 @@ declare namespace expath="http://expath.org/ns/pkg";
  : @see https://github.com/eXist-db/public-repo/issues/133
  :)
 declare function scanrepo:derive-versioned-filename($xar-binary as xs:base64Binary) as xs:string {
-    let $expath-pkg :=
-        compression:unzip(
-            $xar-binary,
-            function ($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean {
-                $path eq "expath-pkg.xml"
-            },
-            (),
-            function ($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()* {
-                $data
-            },
-            ()
-        )
-    let $pkg := $expath-pkg/*[1]
-    let $abbrev := $pkg/@abbrev/string()
-    let $version := $pkg/@version/string()
-    return
-        $abbrev || "-" || $version || ".xar"
+    let $expath-pkg := compression:unzip($xar-binary, scanrepo:match-file("expath-pkg.xml"), (), scanrepo:return-data#4, ())
+    let $repo := compression:unzip($xar-binary, scanrepo:match-file("repo.xml"), (), scanrepo:return-data#4, ())
+    return if (not(exists($expath-pkg))) then (
+        error(xs:QName("scanrepo:malformed-package"), "Failed to extract expath-pkg.xml from XAR")
+    ) else if (not(exists($repo))) then (
+        error(xs:QName("scanrepo:malformed-package"), "Failed to extract repo.xml from XAR")
+    ) else (
+        let $abbrev := $expath-pkg/*[1]/@abbrev/string()
+        let $version := $expath-pkg/*[1]/@version/string()
+        return
+            $abbrev || "-" || $version || ".xar"
+    )
 };
 
 (:~
