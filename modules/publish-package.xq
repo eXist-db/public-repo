@@ -95,7 +95,6 @@ declare function local:origin-allowed() as xs:boolean {
             )
 };
 
-let $_ := util:log("info", request:get-parameter-names())
 
 let $xar-filename := request:get-uploaded-file-name($local:file-upload-parameter-name)
 let $xar-binary := request:get-uploaded-file-data($local:file-upload-parameter-name)
