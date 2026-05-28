@@ -68,4 +68,27 @@ describe('/find endpoint', () => {
         });
         assert.equal(res.status, 404);
     });
+
+    describe('processor version matching', () => {
+        it('should not find a matching test-app package for the default processor', async () => {
+            const res = await fetch(`${BASE_URL}/find?abbrev=test-app&version=1.0.1`, { redirect: 'manual' });
+            assert.equal(res.status, 404);
+        });
+
+        it('should not find a matching test-app package for processor 1.0.0', async () => {
+            const res = await fetch(`${BASE_URL}/find?abbrev=test-app&version=1.0.1&processor=1.0.0`, { redirect: 'manual' });
+            assert.equal(res.status, 404);
+        });
+
+        it('should find a matching test-app package for processor 5.0.0', async () => {
+            const res = await fetch(`${BASE_URL}/find?abbrev=test-app&version=1.0.1&processor=5.0.0`, { redirect: 'manual' });
+            assert.equal(res.status, 302);
+        });
+
+        it('should find a matching test-app package for processor 7.0.0', async () => {
+            const res = await fetch(`${BASE_URL}/find?abbrev=test-app&processor=7.0.0&info=true`, { redirect: 'manual' });
+            console.log('Response status for processor 7.0.0 with info:', await res.text());
+            assert.equal(res.status, 200);
+        });
+    });
 });
