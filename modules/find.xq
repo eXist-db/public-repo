@@ -65,23 +65,6 @@ declare function local:prefers-json($mime-types as xs:string*) as xs:boolean {
 
 declare variable $json-preferred := local:prefers-json(local:parse-accept-header());
 
-declare function local:log-find-event($package as element(package)?) as empty-sequence() {
-    if (exists($package)) then
-        (: /find is a public endpoint so the guest user may not have write permission to logs :)
-        try {
-            log:event(
-                element event {
-                    element dateTime { current-dateTime() },
-                    element type { "find-package" },
-                    element package-name { $package/name/string() },
-                    element package-version { $package/version/string() }
-                }
-            )
-        } catch * {
-            util:log("warn", "Could not log find event: " || $err:description)
-        }
-    else ()
-};
 
 declare function local:render-semver-range($semver as xs:string?, $semver-min as xs:string?, $semver-max as xs:string?) as xs:string {
     if (exists($semver)) then (
@@ -161,7 +144,7 @@ if (empty($packages)) then (
     local:report-not-found(
         ``[No matching version found for `{local:render-package-query()}`; `{local:render-version-query()}`.]``)
 ) else if ($info and $json-preferred) then (
-    local:log-find-event($package),
+    log:find-package-event($package),
     response:set-header("content-type", "application/json"),
     serialize(
         map {
@@ -176,7 +159,7 @@ if (empty($packages)) then (
         map { "method": "json" }
     )
 ) else if ($info) then (
-    local:log-find-event($package),
+    log:find-package-event($package),
     element found {
         $package/@sha256,
         $package/@path,
@@ -187,9 +170,9 @@ if (empty($packages)) then (
         attribute url { $abs-public || $package/@path }
     }
 ) else if ($zip) then (
-    local:log-find-event($package),
+    log:get-package-event($package),
     redirect:found($abs-public || $package/@path || ".zip")
 ) else (
-    local:log-find-event($package),
+    log:get-package-event($package),
     redirect:found($abs-public || $package/@path)
 )

@@ -104,3 +104,36 @@ declare %private function log:collection($date as xs:date) as xs:string {
 declare %private function log:document-name($date as xs:date) as xs:string {
     "public-repo-log-" || format-date($date, "[Y]-[M01]-[D01]") || ".xml"
 };
+
+
+declare function log:get-package-event($package as element(package)) as empty-sequence() {
+    log:event(
+        element event {
+            element dateTime { current-dateTime() },
+            element type { "get-package" },
+            element package-name { $package/name/string() },
+            element package-version { $package/version/string() }
+        }
+    )
+};
+
+declare function log:find-package-event($package as element(package)) as empty-sequence() {
+    log:event(
+        element event {
+            element dateTime { current-dateTime() },
+            element type { "find-package" },
+            element package-name { $package/name/string() },
+            element package-version { $package/version/string() }
+        }
+    )
+};
+
+declare function log:package-not-found-event($query as xs:string) as empty-sequence() {
+    log:event(
+        element event {
+            element dateTime { current-dateTime() },
+            element type { "not-found" },
+            element query { $query }
+        }
+    )
+};
