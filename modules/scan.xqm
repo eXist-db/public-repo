@@ -154,8 +154,10 @@ function scanrepo:entry-filter($path as xs:anyURI, $type as xs:string, $param as
  :)
 declare
 (:    %private:)
-function scanrepo:generate-package-group($packages as element(package)*) {
-    if (count(distinct-values($packages/name)) gt 1) then
+function scanrepo:generate-package-group($packages as element(package)*) as element(package-group)? {
+    if (empty($packages)) then
+        ()
+    else if (count(distinct-values($packages/name)) gt 1) then
         error(QName("scanrepo", "group-error"), "Supplied packages do not have the same name")
     else
         (: Identify newest version of the package; sort previous versions newest to oldest; use SemVer 2.0 rules, coercing where needed :)
@@ -182,18 +184,37 @@ function scanrepo:generate-package-group($packages as element(package)*) {
 
 
 (:~
- : Update a package group, creating it if necessary
+ : Merge a newly-published <package> into its package-group, creating the
+ : group if it does not yet exist.
+ :
+ : The new package is combined directly with the existing group's other
+ : versions; raw-packages is not re-queried. That avoids two failure modes
+ : that surfaced under concurrent /publish calls:
+ :
+ : 1. XPTY0004 from semver:sort when the re-query returned the empty
+ :    sequence (because a sibling thread had not yet applied its own
+ :    pending update).
+ : 2. Lost-update: a group being overwritten with a stale set that did
+ :    not include another concurrent publish's contribution.
+ :
+ : Concurrent invocations are still serialized at the publish-package
+ : entry point via util:exclusive-lock; this function is correct in
+ : isolation, the lock protects the publish operation end-to-end.
+ :
+ : @see https://github.com/eXist-db/public-repo/issues/{TBD}
  :)
-declare function scanrepo:update-package-group($raw-package-name as xs:string) {
-    let $raw-packages := doc($config:raw-packages-doc)/raw-packages
-    let $raw-packages-to-group := $raw-packages/package[name = $raw-package-name]
+declare function scanrepo:update-package-group($new-package as element(package)) {
+    let $name := $new-package/name/string()
     let $package-groups := doc($config:package-groups-doc)/package-groups
-    let $current-package-group := $package-groups/package-group[name eq $raw-package-name]
+    let $current-group := $package-groups/package-group[name eq $name]
+    (: Replace any same-path entry in the existing group; merge with the rest. :)
+    let $other-versions := $current-group/packages/package[not(@path eq $new-package/@path)]
+    let $merged := scanrepo:generate-package-group(($new-package, $other-versions))
     return
-        if (exists($current-package-group)) then
-            update replace $current-package-group with scanrepo:generate-package-group($raw-packages-to-group)
+        if (exists($current-group)) then
+            update replace $current-group with $merged
         else
-            update insert scanrepo:generate-package-group($raw-packages-to-group) into $package-groups
+            update insert $merged into $package-groups
 };
 
 (:~
@@ -233,14 +254,25 @@ declare function scanrepo:extract-raw-package($xar-filename as xs:string) as ele
 };
 
 (:~
- : Publish a stored package by adding it to the raw-packages and package-groups metadata
+ : Publish a stored package by adding it to the raw-packages and package-groups metadata.
+ :
+ : Concurrent invocations are serialized on the package-groups document via
+ : util:exclusive-lock. Without serialization, two parallel /publish calls
+ : can interleave such that one thread's update-package-group reads the
+ : metadata state before another thread's add-raw-package has been applied,
+ : producing either a 500 (XPTY0004 in semver:sort on an empty package set)
+ : or a lost-update that leaves the package-group missing one of the
+ : concurrent uploads.
  :)
 declare function scanrepo:publish-package($xar-filename as xs:string) {
     let $package := scanrepo:extract-raw-package($xar-filename)
     return
-        (
-            scanrepo:add-raw-package($package),
-            scanrepo:update-package-group($package/name)
+        util:exclusive-lock(
+            doc($config:package-groups-doc),
+            (
+                scanrepo:add-raw-package($package),
+                scanrepo:update-package-group($package)
+            )
         )
 };
 
