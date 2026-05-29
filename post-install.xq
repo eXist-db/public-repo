@@ -77,5 +77,11 @@ if (doc-available($config:raw-packages-doc) and doc-available($config:package-gr
 else
     scanrepo:rebuild-all-package-metadata() ! sm:chown(xs:anyURI(.), config:repo-permissions()?owner),
 
-(: Ensure get-package.xq is run as "repo:repo", so that logs will always be writable :)
-sm:chmod(xs:anyURI($target || "/modules/get-package.xq"), "rwsr-sr-x")
+(: 
+ : Ensure that logs on public routes will always be written.
+ : Due to their nature being strictly read-only, they can run as "repo:repo".
+ : Making them non-writable, the module contents itself cannot be overwritten even by repo itself.
+ : get-package.xq, find.xq 
+ :)
+sm:chmod(xs:anyURI($target || "/modules/get-package.xq"), "r-sr-sr-x"),
+sm:chmod(xs:anyURI($target || "/modules/find.xq"), "r-sr-sr-x")
