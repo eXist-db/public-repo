@@ -10,6 +10,7 @@ import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at 
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
+declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
@@ -33,12 +34,65 @@ declare function local:log-put-package-event($filename as xs:string) as empty-se
         log:event($event)
 };
 
-declare function local:upload-and-publish($xar-filename as xs:string, $xar-binary as xs:base64Binary) as map(*) {
+(:~
+ : Store the upload in a staging collection, then move it into the packages
+ : collection under its versioned filename.
+ :
+ : The upload's binary is stored before it is passed to any other function: eXist 7
+ : closes a binary value once a function it was passed to returns, so it could not
+ : be stored afterwards. See https://github.com/eXist-db/exist/issues/6725
+ : The versioned filename is derived from the staged copy instead.
+ :
+ : @param $staging-col the collection to stage the upload in
+ : @param $xar-binary the uploaded XAR content
+ : @return the versioned filename in the packages collection
+ :)
+declare function local:stage-and-move($staging-col as xs:string, $xar-binary as xs:base64Binary) as xs:string {
+    let $staged-filename := "upload.xar"
+    let $staged-path := scanrepo:store($staging-col, $staged-filename, $xar-binary)
     (: Derive a versioned filename to prevent collisions when different versions
      : of a package are uploaded with the same filename.
      : See https://github.com/eXist-db/public-repo/issues/133 :)
-    let $versioned-filename := scanrepo:derive-versioned-filename($xar-binary)
-    let $path := scanrepo:store($config:packages-col, $versioned-filename, $xar-binary)
+    let $versioned-filename := scanrepo:derive-versioned-filename(util:binary-doc($staged-path))
+    let $rename := xmldb:rename($staging-col, $staged-filename, $versioned-filename)
+    (: replaces an existing upload of the same version :)
+    let $move := xmldb:move($staging-col, $config:packages-col, $versioned-filename)
+    return $versioned-filename
+};
+
+(:~
+ : Publish an upload through a staging collection that exists only for this upload.
+ :
+ : Staging keeps incomplete or malformed uploads out of the packages collection.
+ : The staging collection is removed afterwards, whether the upload succeeded or not;
+ : only a crash mid-upload can leave it behind.
+ :
+ : @param $xar-binary the uploaded XAR content
+ : @return the versioned filename in the packages collection
+ :)
+declare function local:store-versioned($xar-binary as xs:base64Binary) as xs:string {
+    let $staging-col := xmldb:create-collection($config:app-data-col, "staging-" || util:uuid())
+    let $outcome :=
+        try {
+            map { "filename": local:stage-and-move($staging-col, $xar-binary) }
+        } catch * {
+            map { "code": $err:code, "description": $err:description, "value": $err:value }
+        }
+    let $cleanup :=
+        try {
+            xmldb:remove($staging-col)
+        } catch * {
+            util:log("warn", "Could not remove staging collection " || $staging-col || ": " || $err:description)
+        }
+    return
+        if (map:contains($outcome, "filename"))
+        then $outcome?filename
+        else error($outcome?code, $outcome?description, $outcome?value)
+};
+
+declare function local:upload-and-publish($xar-filename as xs:string, $xar-binary as xs:base64Binary) as map(*) {
+    let $versioned-filename := local:store-versioned($xar-binary)
+    let $path := $config:packages-col || "/" || $versioned-filename
     let $publish := scanrepo:publish-package($versioned-filename)
     return
         map {
