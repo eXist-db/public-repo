@@ -10,6 +10,7 @@ import module namespace scanrepo="http://exist-db.org/xquery/admin/scanrepo" at 
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace sm="http://exist-db.org/xquery/securitymanager";
+declare namespace util="http://exist-db.org/xquery/util";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
@@ -19,6 +20,11 @@ declare option output:media-type "application/json";
 
 declare variable $local:file-upload-parameter-name := "files[]";
 
+(:~
+ : Append a put-package event to the repository log.
+ :
+ : @param $filename the stored XAR filename (versioned)
+ :)
 declare function local:log-put-package-event($filename as xs:string) as empty-sequence() {
     let $package := doc($config:raw-packages-doc)//package[@path eq $filename]
     let $event := 
@@ -33,12 +39,34 @@ declare function local:log-put-package-event($filename as xs:string) as empty-se
         log:event($event)
 };
 
+(:~
+ : Store an uploaded XAR and publish it to the repository.
+ :
+ : The upload is staged under the multipart filename (a single read of the
+ : request binary), then derive-versioned-filename unzips the payload to
+ : determine "{abbrev}-{version}.xar". Each pass that reads the binary uses
+ : its own util:binary-doc copy — reusing one BinaryValue exhausts the
+ : stream once xmldb:store streams instead of materializing (eXist-db/exist#6467).
+ :
+ : @param $xar-filename the original multipart upload filename
+ : @param $xar-binary the uploaded XAR content
+ : @return a map with a "files" array describing the stored package
+ :
+ : @see https://github.com/eXist-db/public-repo/issues/133
+ : @see https://github.com/eXist-db/exist/pull/6467
+ :)
 declare function local:upload-and-publish($xar-filename as xs:string, $xar-binary as xs:base64Binary) as map(*) {
-    (: Derive a versioned filename to prevent collisions when different versions
-     : of a package are uploaded with the same filename.
-     : See https://github.com/eXist-db/public-repo/issues/133 :)
-    let $versioned-filename := scanrepo:derive-versioned-filename($xar-binary)
-    let $path := scanrepo:store($config:packages-col, $versioned-filename, $xar-binary)
+    let $staging-name := $xar-filename
+    let $staging-path := scanrepo:store($config:packages-col, $staging-name, $xar-binary)
+    let $versioned-filename := scanrepo:derive-versioned-filename(util:binary-doc($staging-path))
+    let $path :=
+        if ($versioned-filename eq $staging-name) then
+            $staging-path
+        else (
+            let $final-path := scanrepo:store($config:packages-col, $versioned-filename, util:binary-doc($staging-path))
+            let $_ := xmldb:remove($config:packages-col, $staging-name)
+            return $final-path
+        )
     let $publish := scanrepo:publish-package($versioned-filename)
     return
         map {
@@ -52,6 +80,9 @@ declare function local:upload-and-publish($xar-filename as xs:string, $xar-binar
         }
 };
 
+(:~
+ : Return true when the current user is allowed to publish packages.
+ :)
 declare function local:user-can-publish() as xs:boolean {
     let $user := (
         request:get-attribute($config:login-domain || ".user"),
@@ -63,19 +94,26 @@ declare function local:user-can-publish() as xs:boolean {
     )
 };
 
-(: True when the request authenticated via HTTP Basic. CLI clients
- : (xst, packageservice, curl --user) use Basic and cannot be CSRF-forged
- : without the user's password, so they are exempt from the Origin check. :)
+(:~
+ : Return true when the request authenticated via HTTP Basic.
+ :
+ : CLI clients (xst, packageservice, curl --user) use Basic and cannot be
+ : CSRF-forged without the user's password, so they are exempt from the
+ : Origin check.
+ :)
 declare function local:is-basic-auth() as xs:boolean {
     let $auth := request:get-header("Authorization")
     return exists($auth) and starts-with(lower-case($auth), "basic ")
 };
 
-(: Same-origin check for cookie-authenticated state-changing requests.
+(:~
+ : Same-origin check for cookie-authenticated state-changing requests.
+ :
  : Returns true if the request is exempt (Basic auth) or if the Origin
  : (preferred) or Referer header's scheme+host+port match this server.
  : Returns false otherwise — including when both headers are absent on a
- : cookie-auth request (no header, no trust). :)
+ : cookie-auth request (no header, no trust).
+ :)
 declare function local:origin-allowed() as xs:boolean {
     if (local:is-basic-auth()) then
         true()

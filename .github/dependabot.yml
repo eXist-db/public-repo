@@ -6,9 +6,17 @@ updates:
     interval: "weekly"
   commit-message:
     prefix: "chore(gha):"
+  groups:
+    github-actions:
+      patterns:
+        - "*"
 - package-ecosystem: npm
   directory: "/"
   schedule:
     interval: "weekly"
   commit-message:
     prefix: "chore(npm):"
+  groups:
+    semantic-release:
+      patterns:
+        - "semantic-release*"
