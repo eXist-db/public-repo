@@ -1,7 +1,7 @@
 xquery version "3.1";
 
 (:~
- : HTML templating functions for populating web views of the public-repo
+ : Templating functions for the public-repo web views, called from templates/*.html.
  :)
 
 module namespace app="http://exist-db.org/xquery/app";
@@ -19,17 +19,37 @@ declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
+(:~
+ : The app's URL path up to and including "public-repo/", from the request URI.
+ :)
 (: TODO shouldn't we get $repoURL from $config? - joewiz :)
 declare variable $app:repo-url := concat(substring-before(request:get-uri(), "public-repo/"), "public-repo/");
 
+(:~
+ : The repository settings element.
+ :)
 declare variable $app:settings := doc($config:app-data-col || '/' || $config:settings-doc-name)/settings;
 
+(:~
+ : The repository title from the settings.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @return the title, if configured
+ :)
 declare
     %templates:wrap
 function app:title($node as node(), $model as map(*)) as xs:string? {
     $app:settings/title/string()
 }; 
 
+(:~
+ : The repository description from the settings.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @return the description, if configured
+ :)
 declare
     %templates:wrap
 function app:description($node as node(), $model as map(*)) as xs:string? {
@@ -37,11 +57,12 @@ function app:description($node as node(), $model as map(*)) as xs:string? {
 };
 
 (:~
- : Set the base-elements href attribute to a URL that will be used to resolve relative paths
- : since $base-url is set in the controller and cannot have a trailing slash it will be appended here
+ : Set the base element's href to $base-url with a trailing slash.
  :
- : @param $base-url this must be set by the controller for any request that will render a HTML page
- : @returns attribute(href) relative paths will be resolved with its value 
+ : @param $node the template node
+ : @param $model the template model
+ : @param $base-url the app's base URL without trailing slash, set by the controller
+ : @return the href attribute
  :)
 declare
     %templates:wrap
@@ -49,6 +70,14 @@ function app:base-url($node as node(), $model as map(*), $base-url as xs:string)
     attribute href { $base-url || "/" }
 }; 
 
+(:~
+ : Search the package groups and render the results.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @param $q the search term
+ : @return a list of matching package groups, or a message if $q is empty or nothing matched
+ :)
 declare
     %templates:replace
 function app:search-package ($node as node(), $model as map(*), $q as xs:string?) as element() {
@@ -70,7 +99,11 @@ function app:search-package ($node as node(), $model as map(*), $q as xs:string?
 };
 
 (:~
- : Read setting from model and either show or omit the search form in the top navigation bar
+ : Show the top navigation search form if ?show-top-nav-search is true.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @return the form, or the empty sequence
  :)
 declare %templates:replace
 function app:show-top-nav-search ($node as node(), $model as map(*)) as element()? {
@@ -78,7 +111,12 @@ function app:show-top-nav-search ($node as node(), $model as map(*)) as element(
 };
 
 (:~
- : Load the package groups document for the admin page's package-groups section
+ : Load the package groups and their publication dates for the admin page.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @return a map with ?package-groups, ordered by abbrev, and ?dates-published,
+ :   the versions and publication dates per package name from the put-package log
  :)
 declare %templates:wrap
 function app:load-package-groups($node as node(), $model as map(*)) {
@@ -101,28 +139,44 @@ function app:load-package-groups($node as node(), $model as map(*)) {
 };
 
 (:~
- : Load the package title for the admin page's package-groups section
+ : The title of the current package group.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?package-group
+ : @return the title
  :)
 declare function app:package-group-title($node as node(), $model as map(*)) {
     $model?package-group/title/string()
 };
 
 (:~
- : Load the package title for the admin page's package-groups section
+ : The abbrevs of the current package group, current and legacy.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?package-group
+ : @return the abbrevs
  :)
 declare function app:package-group-abbrev($node as node(), $model as map(*)) {
     $model?package-group/abbrev/string()
 };
 
 (:~
- : Load the package title for the admin page's package-groups section
+ : The unique name of the current package group.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?package-group
+ : @return the name
  :)
 declare function app:package-group-name($node as node(), $model as map(*)) {
     $model?package-group/name/string()
 };
 
 (:~
- : Load the packages for each package-group
+ : Load the packages of the current package group.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?package-group
+ : @return a map with ?packages
  :)
 declare %templates:wrap function app:load-packages($node as node(), $model as map(*)) {
     map { "packages": $model?package-group//package }
@@ -130,14 +184,22 @@ declare %templates:wrap function app:load-packages($node as node(), $model as ma
 
 
 (:~
- : Load the package version
+ : The version of the current package.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?package
+ : @return the version element
  :)
 declare function app:package-version($node as node(), $model as map(*)) {
     $model?package/version
 };
 
 (:~
- : Load the package version
+ : The eXist-db version requirements of the current package.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?package
+ : @return one "name: value" string per requirement, e.g. "semver-min: 5.0.0"
  :)
 declare function app:package-requires($node as node(), $model as map(*)) {
     let $requires := $model?package/requires[@processor eq $config:exist-processor-name]
@@ -146,7 +208,11 @@ declare function app:package-requires($node as node(), $model as map(*)) {
 };
 
 (:~
- : Load the package version
+ : When the current package version was published.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?package and ?dates-published
+ : @return "MM/DD/YYYY HH:MM:SS", "Today HH:MM:SS", or "- (Predates logging)"
  :)
 declare function app:package-date-published($node as node(), $model as map(*)) {
     let $date-published := $model?dates-published[?package-name eq $model?package/name]?versions[?version eq $model?package/version]?date-published => head()
@@ -161,7 +227,12 @@ declare function app:package-date-published($node as node(), $model as map(*)) {
 };
 
 (:~
- : Load the get-package logs for the admin section's table
+ : Load the download counts of the most downloaded packages.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @param $top-n the number of packages
+ : @return a map with ?package-logs, one map per package with its name and count, most downloaded first
  :)
 declare %templates:wrap
 function app:top-download-stats ($node as node(), $model as map(*), $top-n as xs:integer) as map(*) {
@@ -169,7 +240,11 @@ function app:top-download-stats ($node as node(), $model as map(*), $top-n as xs
 };
 
 (:~
- : Load the package title for the admin section's table
+ : Render the package group of the current download stats entry.
+ :
+ : @param $node the template node, the list item to render into
+ : @param $model the template model, with ?package-log
+ : @return the rendered list item
  :)
 declare %templates:wrap
 function app:package-stats-item($node as node(), $model as map(*)) {
@@ -177,6 +252,13 @@ function app:package-stats-item($node as node(), $model as map(*)) {
     => packages:render-list-item($node)
 };
 
+(:~
+ : The download count of the current download stats entry.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?package-log
+ : @return the download count
+ :)
 declare
     %templates:wrap
 function app:package-stats-download($node as node(), $model as map(*)) {
@@ -184,7 +266,12 @@ function app:package-stats-download($node as node(), $model as map(*)) {
 };
 
 (:~
- : Rebuild the package-groups metadata
+ : Rebuild the package-groups metadata, if requested.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @param $rebuild-package-groups-metadata true to rebuild
+ : @return a success message, or the empty sequence
  :)
 declare function app:rebuild-package-groups-metadata($node as node(), $model as map(*), $rebuild-package-groups-metadata as xs:boolean?) {
     if ($rebuild-package-groups-metadata) then
@@ -196,17 +283,27 @@ declare function app:rebuild-package-groups-metadata($node as node(), $model as 
 };
 
 (:~
- : Landing page - show the compact version of all package groups
+ : List all package groups on the landing page.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @return one list item per package group
  :)
 declare function app:list-packages($node as node(), $model as map(*)) as element(li)* {
     packages:list-all()
 };
 
 (:~
- : Single package group view - show the full version of this package group
+ : Show the package group with the requested abbrev.
  :
- : Package is found via the abbrev URL parameter, with an optional eXist version parameter.
- : If the eXist version parameter is missing, eXist 2.2.0 is assumed (see config.xqm).
+ : Only the packages compatible with the eXist-db-min-version request parameter
+ : (default $config:default-exist-version) are shown in full. A legacy abbrev
+ : redirects to the current one. If several package groups share the abbrev,
+ : their names are listed first.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @return the rendered package groups, or a message with status 404
  :)
 declare function app:view-package($node as node(), $model as map(*)) {
     let $abbrev := request:get-parameter("abbrev", ())
@@ -278,7 +375,11 @@ declare function app:view-package($node as node(), $model as map(*)) {
 };
 
 (:~
- : Load client-type download statistics
+ : Load the download counts per client type.
+ :
+ : @param $node the template node
+ : @param $model the template model
+ : @return a map with ?client-stats, one map per client type with its count, most downloads first
  :)
 declare %templates:wrap
 function app:client-type-stats($node as node(), $model as map(*)) as map(*) {
@@ -296,16 +397,37 @@ function app:client-type-stats($node as node(), $model as map(*)) as map(*) {
         map { "client-stats": $client-stats }
 };
 
+(:~
+ : The client type of the current client stats entry.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?client-stat
+ : @return the client type
+ :)
 declare %templates:wrap
 function app:client-stat-type($node as node(), $model as map(*)) {
     $model?client-stat?client-type
 };
 
+(:~
+ : The download count of the current client stats entry.
+ :
+ : @param $node the template node
+ : @param $model the template model, with ?client-stat
+ : @return the download count
+ :)
 declare %templates:wrap
 function app:client-stat-count($node as node(), $model as map(*)) {
     $model?client-stat?count
 };
 
+(:~
+ : Render the featured packages listed in the settings.
+ :
+ : @param $node the template node, whose attributes are copied to the result
+ : @param $model the template model
+ : @return the featured package groups, or the empty sequence if there are none
+ :)
 declare
     %templates:replace
 function app:featured-packages ($node as node(), $model as map(*)) as element(div)? {
