@@ -1,16 +1,17 @@
-const { defineConfig } = require("cypress");
+import { defineConfig } from 'cypress'
 
-module.exports = defineConfig({
+export default defineConfig({
+  allowCypressEnv: false,
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents (on, config) {
       // implement node event listeners here
     },
     baseUrl: 'http://localhost:8080/exist/apps/public-repo/',
-    fixturesFolder: "test/fixtures",
-    screenshotsFolder: "test/cypress/screenshots",
-    videosFolder: "test/cypress/videos",
-    downloadsFolder: "test/cypress/downloads",
-    supportFile: "test/cypress/support/e2e.js",
-    specPattern: 'test/cypress/e2e/**/*.{js,jsx,ts,tsx}',
-  },
-});
+    fixturesFolder: 'test/fixtures',
+    screenshotsFolder: 'test/cypress/screenshots',
+    videosFolder: 'test/cypress/videos',
+    downloadsFolder: 'test/cypress/downloads',
+    supportFile: 'test/cypress/support/e2e.js',
+    specPattern: 'test/cypress/e2e/**/*.{js,jsx,ts,tsx}'
+  }
+})
