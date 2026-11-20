@@ -29,7 +29,7 @@
   },
   "homepage": "https://exist-db.org/exist/apps/public-repo/",
   "dependencies": {
-    "bootstrap": "^5.3.8"
+    "bootstrap": "^5.3.9"
   },
   "devDependencies": {
     "@semantic-release/exec": "^7.1.0",
